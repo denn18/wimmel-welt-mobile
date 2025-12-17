@@ -23,3 +23,6 @@ Das Skript erstellt einen temporären Clone, kopiert die Dateien ohne `.git` in 
   - Setze für Integrationstests eine separate Test-Datenbank über `MONGO_DB_URL`/`MONGODB_URI` und optional `MONGO_DB_NAME` (z.B. `mongodb://localhost:27017/wimmelwelt_test`).
   - Optional kannst du mit `npm run test:db --prefix docs/backend-snapshot` die Verbindung zur Test-DB pingen.
 - **App:** `make app-lint` oder `npm run lint --prefix app` prüft die mobile App.
+
+## Betrieb & Deployment
+Details zu Branch-/Release-Strategie, Deploy-Targets und Monitoring/Logging-Zugängen stehen in [`docs/operating-model.md`](docs/operating-model.md).
