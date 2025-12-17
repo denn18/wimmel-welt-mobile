@@ -2,6 +2,8 @@
 
 Dieses Repo dient als mobile Version von Wimmel Welt. Das Backend wird direkt aus dem funktionierenden "kleine Welt"-Repo übernommen, ohne dort Änderungen vorzunehmen.
 
+Für die fachliche Logik der mobilen Screens (Formulare, Suche, Chat, Rechtstexte) muss die bestehende Web-App als Quelle der Wahrheit dienen. Siehe die Paritäts-Checkliste unter [`docs/mobile-frontend-parity.md`](docs/mobile-frontend-parity.md).
+
 ## Backend aus "kleine Welt" übernehmen
 Nutze das Skript, um das Backend lokal zu kopieren (shallow clone) und hier unter `backend/` abzulegen:
 
