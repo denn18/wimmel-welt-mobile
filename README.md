@@ -25,4 +25,4 @@ Das Skript erstellt einen temporären Clone, kopiert die Dateien ohne `.git` in 
 - **App:** `make app-lint` oder `npm run lint --prefix app` prüft die mobile App.
 
 ## Betrieb & Deployment
-Details zu Branch-/Release-Strategie, Deploy-Targets und Monitoring/Logging-Zugängen stehen in [`docs/operating-model.md`](docs/operating-model.md).
+Details zu Branch-/Release-Strategie, Deploy-Targets und Monitoring/Logging-Zugängen stehen in [`docs/operating-model.md`](docs/operating-model.md). Der operative Go-Live-, Rollback- und Alert-Ablauf ist im [Betriebs-Runbook](docs/operational-runbook.md) beschrieben.
