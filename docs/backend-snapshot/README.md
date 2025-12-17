@@ -26,3 +26,9 @@ npm run dev
 ```
 
 The server boots via `src/server.js`, loads environment variables from `./.env`, and binds to port `2000` unless overridden. Ensure `MONGO_DB_URL` points to a reachable database before starting; without it the server logs a warning and will not connect to MongoDB.
+
+## Tests und Linting
+- `npm run lint` lintet den Snapshot-Code.
+- `npm run test` bzw. `npm run test:unit` startet die Node.js-Tests (nutzen Mocks, keine echte DB).
+- Für Integrationschecks kannst du eine Test-Datenbank per `MONGO_DB_URL`/`MONGODB_URI` und optional `MONGO_DB_NAME` setzen, z.B. `mongodb://localhost:27017/wimmelwelt_test`.
+- `npm run test:db` prüft die Verbindung zur hinterlegten Test-DB ohne Seed zu verändern.
