@@ -24,22 +24,24 @@ const initialStats: OverviewStats = {
 
 const featureCards = [
   {
+    icon: 'navigate-circle',
+    title: 'Platz finden',
+    description: 'Finde schnell und einfach die passende Kindertagespflege, ganz in deiner Nähe.',
+  },
+  {
     icon: 'shield-checkmark',
     title: 'Persönliche Kindertagespflege',
-    description:
-      'Finde liebevolle Kindertagespflegepersonen in deiner Nähe, die genau zu den Bedürfnissen deiner Familie passen.',
+    description: 'Abgestimmte Betreuungskonzepte, die genau zu den Bedürfnissen deiner Familie passen.',
   },
   {
     icon: 'document-lock',
     title: 'Transparente Kindertagespflege',
-    description:
-      'Vergleiche pädagogische Konzepte, freie Kindertagespflegeplätze und Altersgrenzen auf einen Blick.',
+    description: 'Vergleiche pädagogische Konzepte, freie Plätze und Altersgrenzen auf einen Blick.',
   },
   {
     icon: 'chatbubbles',
     title: 'Direkte Kommunikation',
-    description:
-      'Nutze unseren Messenger für schnelle Absprachen, Kennenlerntermine und individuelle Fragen rund um deine Betreuung.',
+    description: 'Schnelle Absprachen, Kennenlerntermine und Fragen direkt über unseren Messenger.',
   },
 ];
 
@@ -83,47 +85,60 @@ export default function HomeScreen() {
       style={styles.screen}
       contentContainerStyle={styles.content}
       refreshControl={<RefreshControl refreshing={loading} onRefresh={loadStats} tintColor="#0f172a" />}>
-      <View style={styles.heroCard}>
-        <View style={styles.heroTextContainer}>
-          <View style={styles.brandPill}>
-            <Text style={styles.brandPillText}>Willkommen bei Wimmel Welt</Text>
-          </View>
+      <View style={styles.header}>
+        <Text style={styles.brandTitle}>Wimmel Welt</Text>
+        <View style={styles.badgeRow}>
+          <View style={[styles.brandDot, { backgroundColor: '#3b7bfb' }]} />
+          <View style={[styles.brandDot, { backgroundColor: '#4c52ff' }]} />
+          <View style={[styles.brandDot, { backgroundColor: '#fda34b' }]} />
+        </View>
+      </View>
+
+      <View style={styles.heroSection}>
+        <View style={styles.heroImageWrapper}>
+          <Image
+            source={require('@/assets/images/hero-family.svg')}
+            style={styles.heroImage}
+            contentFit="cover"
+          />
+        </View>
+
+        <View style={styles.heroContent}>
+          <Text style={styles.tagline}>Willkommen bei Wimmel Welt</Text>
           <Text style={styles.headline}>Gemeinsam schaffen wir einen sicheren Ort zum Wachsen.</Text>
           <Text style={styles.subheadline}>
             Unsere Plattform verbindet Familien mit engagierten Kindertagespflegepersonen. Entdecke Betreuungsmöglichkeiten,
             koordiniere Anfragen und bleibe mit deinem Netzwerk in Kontakt – alles an einem Ort.
           </Text>
+
           <View style={styles.ctaRow}>
             <Pressable style={styles.primaryCta}>
-              <Text style={styles.primaryCtaText}>Jetzt registrieren</Text>
+              <Text style={styles.primaryCtaText}>Platz finden</Text>
             </Pressable>
             <Pressable style={styles.secondaryCta}>
-              <Text style={styles.secondaryCtaText}>Bereits registriert? Jetzt einloggen</Text>
+              <Text style={styles.secondaryCtaText}>Als Tagesmutter anmelden</Text>
             </Pressable>
           </View>
-          <Text style={styles.helperText}>
-            Wimmel Welt macht Kindertagespflege, Kindervermittlung und die Suche nach freien Betreuungsplätzen so einfach wie
-            möglich – für Familien und Tagespflegepersonen gleichermaßen.
-          </Text>
-        </View>
-        <View style={styles.heroIllustrationWrapper}>
-          <Image
-            source={require('@/assets/images/hero-family.svg')}
-            style={styles.heroIllustration}
-            contentFit="contain"
-          />
+
+          <Pressable style={styles.tertiaryCta}>
+            <Text style={styles.tertiaryCtaText}>Bereits registriert? Jetzt einloggen</Text>
+          </Pressable>
         </View>
       </View>
 
-      <View style={styles.statsGrid}>
-        <StatCard label="Tagespflegepersonen" value={stats.caregivers} hint="in deiner Umgebung" />
-        <StatCard label="Familien" value={stats.parents} hint="nutzen Wimmel Welt" />
-        <StatCard label="Platzierungen" value={stats.matches} hint="erfolgreich vermittelt" />
-        <View style={[styles.statCard, styles.secondaryCard]}>
-          <Text style={styles.statLabel}>Sicherheit</Text>
-          <View style={styles.securityRow}>
-            <Ionicons name="shield-checkmark" size={20} color="#2563eb" />
-            <Text style={styles.securityText}>Geprüfte Profile & sichere Betreuung</Text>
+      <View style={styles.statsCard}>
+        <View style={styles.statRow}>
+          <StatCard label="Tagespflegepersonen" value={stats.caregivers} hint="in deiner Umgebung" />
+          <StatCard label="Familien" value={stats.parents} hint="nutzen Wimmel Welt" />
+        </View>
+        <View style={styles.statRow}>
+          <StatCard label="Platzierungen" value={stats.matches} hint="erfolgreich vermittelt" />
+          <View style={[styles.statCard, styles.secondaryCard]}>
+            <Text style={styles.statLabel}>Sicherheit</Text>
+            <View style={styles.securityRow}>
+              <Ionicons name="shield-checkmark" size={20} color="#2563eb" />
+              <Text style={styles.securityText}>Geprüfte Profile & sichere Betreuung</Text>
+            </View>
           </View>
         </View>
       </View>
@@ -173,55 +188,73 @@ function StatCard({ label, value, hint }: StatCardProps) {
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: '#e7efff',
+    backgroundColor: '#e8f1ff',
   },
   content: {
-    padding: 22,
-    paddingBottom: 36,
-    gap: 18,
+    paddingHorizontal: 18,
+    paddingTop: 12,
+    paddingBottom: 48,
+    gap: 20,
   },
-  heroCard: {
-    backgroundColor: '#fdfefe',
-    borderRadius: 32,
-    padding: 20,
+  header: {
+    alignItems: 'center',
+    gap: 6,
+  },
+  brandTitle: {
+    fontSize: 18,
+    fontWeight: '800',
+    color: '#1e2b4a',
+  },
+  badgeRow: {
     flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  brandDot: {
+    width: 14,
+    height: 14,
+    borderRadius: 12,
+  },
+  heroSection: {
+    backgroundColor: '#f6f9ff',
+    borderRadius: 28,
+    padding: 16,
     gap: 18,
     shadowColor: '#9fb9f5',
     shadowOpacity: 0.35,
-    shadowOffset: { width: 0, height: 10 },
-    shadowRadius: 24,
+    shadowOffset: { width: 0, height: 12 },
+    shadowRadius: 22,
     elevation: 6,
   },
-  heroTextContainer: {
-    flex: 1,
-    gap: 10,
+  heroImageWrapper: {
+    backgroundColor: '#e1edff',
+    borderRadius: 22,
+    overflow: 'hidden',
+    height: 200,
   },
-  heroIllustrationWrapper: {
-    width: 160,
-    height: 180,
-  },
-  heroIllustration: {
+  heroImage: {
     width: '100%',
     height: '100%',
   },
-  brandPill: {
+  heroContent: {
+    gap: 10,
+  },
+  tagline: {
     alignSelf: 'flex-start',
     paddingHorizontal: 12,
     paddingVertical: 6,
     backgroundColor: '#e4edff',
     borderRadius: 999,
-  },
-  brandPillText: {
     color: '#1d4ed8',
     fontWeight: '700',
     letterSpacing: 0.5,
     fontSize: 12,
   },
   headline: {
-    fontSize: 24,
+    fontSize: 26,
     fontWeight: '800',
     color: '#0f172a',
-    lineHeight: 32,
+    lineHeight: 34,
   },
   subheadline: {
     fontSize: 14,
@@ -229,13 +262,14 @@ const styles = StyleSheet.create({
     lineHeight: 22,
   },
   ctaRow: {
-    flexDirection: 'column',
-    gap: 10,
+    flexDirection: 'row',
+    gap: 12,
+    flexWrap: 'wrap',
   },
   primaryCta: {
+    flex: 1,
     backgroundColor: '#2563eb',
     paddingVertical: 14,
-    paddingHorizontal: 18,
     borderRadius: 999,
     alignItems: 'center',
     shadowColor: '#2563eb',
@@ -250,10 +284,10 @@ const styles = StyleSheet.create({
     fontSize: 15,
   },
   secondaryCta: {
+    flex: 1,
     borderWidth: 1,
     borderColor: '#bfd5ff',
     paddingVertical: 14,
-    paddingHorizontal: 18,
     borderRadius: 999,
     alignItems: 'center',
     backgroundColor: '#f5f7ff',
@@ -263,21 +297,34 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     fontSize: 14,
   },
-  helperText: {
-    fontSize: 13,
-    color: '#475569',
-    lineHeight: 20,
+  tertiaryCta: {
+    alignSelf: 'center',
+    paddingVertical: 4,
   },
-  statsGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
+  tertiaryCtaText: {
+    color: '#0f1f44',
+    fontWeight: '700',
+    fontSize: 14,
+    textDecorationLine: 'underline',
+  },
+  statsCard: {
+    backgroundColor: '#f6f9ff',
+    borderRadius: 22,
+    padding: 16,
     gap: 12,
-    marginTop: 10,
+    shadowColor: '#9fb9f5',
+    shadowOpacity: 0.25,
+    shadowOffset: { width: 0, height: 10 },
+    shadowRadius: 18,
+    elevation: 3,
+  },
+  statRow: {
+    flexDirection: 'row',
+    gap: 12,
   },
   statCard: {
-    flexBasis: '48%',
-    flexGrow: 1,
-    backgroundColor: '#f8fbff',
+    flex: 1,
+    backgroundColor: '#fdfefe',
     padding: 16,
     borderRadius: 18,
     shadowColor: '#b8ccf5',
@@ -292,7 +339,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   statValue: {
-    fontSize: 24,
+    fontSize: 22,
     fontWeight: '800',
     color: '#0f172a',
     marginTop: 4,
@@ -317,17 +364,17 @@ const styles = StyleSheet.create({
     lineHeight: 18,
   },
   featureList: {
-    marginTop: 18,
-    gap: 12,
+    marginTop: 4,
+    gap: 10,
   },
   featureCard: {
-    backgroundColor: '#f8fbff',
+    backgroundColor: '#fdfefe',
     borderRadius: 18,
     padding: 14,
     flexDirection: 'row',
     gap: 12,
     shadowColor: '#b8ccf5',
-    shadowOpacity: 0.15,
+    shadowOpacity: 0.2,
     shadowOffset: { width: 0, height: 3 },
     shadowRadius: 10,
     elevation: 1,
