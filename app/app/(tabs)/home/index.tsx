@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
-import { useFocusEffect } from 'expo-router';
+import { useFocusEffect, useRouter } from 'expo-router';
 import { useCallback, useMemo, useState } from 'react';
 import { Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -47,6 +47,7 @@ const initialStats: OverviewStats = {
 };
 
 export default function HomeScreen() {
+  const router = useRouter();
   const [stats, setStats] = useState<OverviewStats>(initialStats);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -125,15 +126,15 @@ export default function HomeScreen() {
               </Text>
 
               <View style={styles.primaryActions}>
-                <Pressable style={styles.primaryCta}>
+                <Pressable style={styles.primaryCta} onPress={() => router.push('/(tabs)/dashboard')}>
                   <Text style={styles.primaryCtaText}>Platz finden</Text>
                 </Pressable>
-                <Pressable style={styles.secondaryCta}>
+                <Pressable style={styles.secondaryCta} onPress={() => router.push('/login')}>
                   <Text style={styles.secondaryCtaText}>Als Tagesmutter anmelden</Text>
                 </Pressable>
               </View>
 
-              <Pressable style={styles.tertiaryCta}>
+              <Pressable style={styles.tertiaryCta} onPress={() => router.push('/login')}>
                 <Text style={styles.tertiaryCtaText}>Bereits registriert? Jetzt einloggen</Text>
               </Pressable>
             </View>
