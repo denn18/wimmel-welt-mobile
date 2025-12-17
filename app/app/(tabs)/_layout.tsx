@@ -11,14 +11,14 @@ export default function TabLayout() {
 
   return (
     <Tabs
-      initialRouteName="home/index"
+      initialRouteName="home"
       screenOptions={{
         tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
         headerShown: false,
         tabBarButton: HapticTab,
       }}>
       <Tabs.Screen
-        name="home/index"
+        name="home"
         options={{
           title: 'Home',
           tabBarIcon: ({ color }) => <IconSymbol size={26} name="house.fill" color={color} />,
@@ -46,7 +46,7 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="dashboard"
+        name="explore"
         options={{
           title: 'Info',
           tabBarIcon: ({ color }) => <IconSymbol size={26} name="info.circle.fill" color={color} />,
