@@ -49,16 +49,15 @@ Join our community of developers creating universal apps.
 - [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
 - [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
 
-## Backend configuration
+## Backend & Observability configuration
 
-This mobile project does not currently contain any API client or authentication logic. To point future API calls at the backend
-snapshot in `docs/backend-snapshot` or a deployed environment, create a local `.env` file (based on `.env.example`) and set
-`EXPO_PUBLIC_API_BASE_URL` to the appropriate endpoint:
+The app reads its environment from `EXPO_PUBLIC_*` variables. Create a local `.env` based on `.env.example` to point the app at
+the correct backend and telemetry targets:
 
-- Development (local backend): `http://localhost:2000`
-- Staging: `https://stage-api.example.com`
-- Production: `https://api.example.com`
+- `EXPO_PUBLIC_APP_ENV`: `development`, `staging`, or `production` (defaults to `staging`).
+- `EXPO_PUBLIC_API_URL`: Base URL for the backend (e.g. `http://localhost:2000`, `https://api-staging.wimmelwelt.de`).
+- `EXPO_PUBLIC_OTEL_EXPORTER_OTLP_ENDPOINT`: OTLP collector endpoint (default `https://otel.wimmelwelt.de`).
+- `EXPO_PUBLIC_LOG_ENDPOINT`: Log aggregation endpoint (default `https://logs.wimmelwelt.de`).
 
-You can add additional environment-specific keys as needed (for example, if the backend requires client IDs or OAuth scopes).
-Expo automatically injects `EXPO_PUBLIC_` variables into the app bundle, making them available for any future API client
-implementation.
+These values are exposed via `config/environment.ts` and used by the shared API client in `services/api-client.ts`, ensuring that
+all network and observability calls target the same environment.
