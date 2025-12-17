@@ -7,6 +7,8 @@
 - **Hotfix-Branches**: `hotfix/<ticket-oder-bug>` basieren auf `main`, werden nach dem Fix sowohl in `main` als auch zurück in `develop` gemergt.
 - **Release-Kandidaten**: Optionale `release/<version>`-Branches, falls mehrere Stabilisierungsschritte nötig sind; werden nach Abschluss in `main` und `develop` gemergt und mit `vX.Y.Z` getaggt.
 
+> Operative Abläufe, Freigaben, Rollback-Pfade und Alert-Routing sind im **Betriebs-Runbook** dokumentiert: [`docs/operational-runbook.md`](operational-runbook.md). Nutze es als verbindliches Go-Live- und Incident-Playbook.
+
 ## Backend-Deploy-Targets
 | Umgebung | API-URL | Deployment-Branch | DB | Auth | Storage |
 | --- | --- | --- | --- | --- | --- |
@@ -18,6 +20,7 @@
 - `FILE_STORAGE_MODE`: Standard `s3`; auf Staging kann `local` genutzt werden, falls kein S3 nötig ist.
 - `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY`: jeweils als Deployment-Secret hinterlegen; niemals im Repo.
 - Optional können granulare Mongo-Einstellungen (`MONGODB_HOST`, `MONGODB_USERNAME`, `MONGODB_PASSWORD`, `MONGODB_DB_NAME`, `MONGODB_OPTIONS`) genutzt werden, falls kein kompletter URI bereitgestellt wird.
+- CI/CD-Gates prüfen die Pflicht-Variablen pro Umgebung (Prod: `MONGODB_URI`, `AUTH_SECRET`, `AWS_*`, `FILE_STORAGE_MODE=s3`, Log-/OTEL-Endpoints + Prod-Token; Staging: Gegenstücke mit Staging-Token). Fehlt eine Variable, bricht die Pipeline vor dem Deploy ab.
 
 ## Monitoring & Logging
 - **APM/Tracing**: OpenTelemetry-Collector erreichbar unter `https://otel.wimmelwelt.de`. Services exportieren OTLP über `OTEL_EXPORTER_OTLP_ENDPOINT`; für Staging/Prod getrennte API-Tokens im CI/CD hinterlegen.

@@ -1,5 +1,7 @@
 # Release-Checklist & Betriebsleitfaden
 
+> Operative Details (RACI, Go-Live-, Rollback- und Alert-Abläufe) stehen im [Betriebs-Runbook](operational-runbook.md). Diese Checkliste referenziert die dortigen Gates und macht sie für Staging/Prod messbar.
+
 ## 1. Release-Checklist (Staging & Prod)
 
 - **Smoke-Tests (App/UI)**
@@ -25,6 +27,19 @@
   - Changelog und Tickets reviewed.
   - Monitoring/Alerts grün (siehe unten).
   - Rollback-Plan verlinkt.
+  - Pflicht-Secrets/Env-Vars für Zielumgebung hinterlegt (Prod: `MONGODB_URI`, `AUTH_SECRET`, `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `FILE_STORAGE_MODE=s3`, `AWS_REGION`, `LOG_ENDPOINT`, `OTEL_EXPORTER_OTLP_ENDPOINT` + Prod-Token; Staging: Gegenstücke mit Staging-Token und ggf. `FILE_STORAGE_MODE=local`). CI/CD-Gate schlägt fehl, wenn eine Variable leer ist.
+  - Kommunikationsplan bestätigt (Slack-Kanal, Statuspage-Template, On-Call aktiviert).
+
+**Staging-Gate-Protokoll (T-12h)**
+- Deployment `develop` → Staging durchgeführt, Artefakt-Version/Commit notiert.
+- Smoke-Tests (App + API) dokumentiert, Screenshots/Logs abgelegt.
+- Health-Checks `/health` + `/readiness` = **200**; Logs fließen in `backend-staging-*`; OTEL-Events mit Staging-Token sichtbar.
+- Bekannte offene P1/P2 in Staging adressiert oder explizit akzeptiert.
+
+**Go-Live-Entscheid (T-1h)**
+- Product Owner + Release Captain bestätigen Go/No-Go.
+- Backups <24h alt, Restore-Test <30 Tage; Down-Migration vorhanden.
+- On-Call/PagerDuty aktiv; Eskalationskette klar (siehe Runbook).
 
 ## 2. Observability, Monitoring & Alerting
 
