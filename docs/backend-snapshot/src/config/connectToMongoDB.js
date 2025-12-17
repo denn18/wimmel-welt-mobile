@@ -1,5 +1,6 @@
 // backend/src/config/connectToMongoDB.js
 import { MongoClient } from 'mongodb';
+import { logger } from '../utils/logger.js';
 
 let client = null;
 let db = null;
@@ -18,11 +19,11 @@ export async function connectToMongoDB() {
 
   const uri = readMongoUrl();
   if (!uri) {
-    console.warn('No MongoDB URL found. Set MONGO_DB_URL (oder MONGODB_URI) in backend/.env');
+    logger.warn('No MongoDB URL found. Set MONGO_DB_URL (oder MONGODB_URI) in backend/.env');
     return null;
   }
 
-  console.log('🔌 DB URL verwendet:', uri.startsWith('mongodb+srv://') ? 'mongodb+srv' : 'mongodb');
+  logger.info('🔌 DB URL verwendet:', uri.startsWith('mongodb+srv://') ? 'mongodb+srv' : 'mongodb');
 
   client = new MongoClient(uri, {
     serverSelectionTimeoutMS: 10_000,
@@ -35,7 +36,7 @@ export async function connectToMongoDB() {
   db = client.db(dbName);
 
   const ping = await db.admin().command({ ping: 1 });
-  console.log(`✅ Connected to MongoDB (database: ${db.databaseName || '(in URI)'}), ping.ok=${ping?.ok}`);
+  logger.info(`✅ Connected to MongoDB (database: ${db.databaseName || '(in URI)'}), ping.ok=${ping?.ok}`);
 
   return db;
 }

@@ -2,6 +2,8 @@ import express from 'express';
 import cors from 'cors';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { getClient, getDatabase } from './config/database.js';
+import { logger } from './utils/logger.js';
 
 import caregiversRouter from './routes/caregivers.js';
 import parentsRouter from './routes/parents.js';
@@ -23,7 +25,32 @@ const frontendDistPath = path.resolve(currentDir, '../../frontend/dist');
 const uploadsDir = path.resolve(currentDir, '../backend/uploads');
 
 app.get('/health', (_req, res) => {
-  res.json({ status: 'ok' });
+  res.json({ status: 'ok', uptime: process.uptime(), timestamp: new Date().toISOString() });
+});
+
+app.get('/readiness', async (_req, res) => {
+  const checks = { app: 'ok' };
+
+  try {
+    const client = getClient();
+    if (!client) {
+      checks.database = 'not-configured';
+      throw new Error('No MongoDB client configured');
+    }
+
+    const db = getDatabase();
+    const ping = await db.admin().command({ ping: 1 });
+    checks.database = ping?.ok === 1 ? 'ok' : 'degraded';
+
+    if (ping?.ok !== 1) {
+      throw new Error('MongoDB ping unsuccessful');
+    }
+
+    return res.json({ status: 'ok', checks });
+  } catch (error) {
+    logger.error('Readiness check failed', error);
+    return res.status(503).json({ status: 'degraded', checks, message: error.message });
+  }
 });
 
 app.use('/api/auth', authRouter);
