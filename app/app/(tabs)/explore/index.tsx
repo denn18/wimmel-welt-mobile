@@ -1,112 +1,190 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { Collapsible } from '@/components/ui/collapsible';
-import { ExternalLink } from '@/components/external-link';
-import ParallaxScrollView from '@/components/parallax-scroll-view';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { IconSymbol } from '@/components/ui/icon-symbol';
-import { Fonts } from '@/constants/theme';
+const onboardingSteps = [
+  {
+    title: 'Profil erstellen',
+    description: 'Füge Foto, Öffnungszeiten und freie Plätze hinzu, damit Familien dich finden.',
+    icon: 'person-add',
+  },
+  {
+    title: 'Anfragen managen',
+    description: 'Antworten, Kennenlerntermine und Dokumente direkt in der App koordinieren.',
+    icon: 'chatbubbles',
+  },
+  {
+    title: 'Betreuung starten',
+    description: 'Status-Updates teilen und Verträge sicher abschließen.',
+    icon: 'shield-checkmark',
+  },
+];
 
-export default function TabTwoScreen() {
+const resources = [
+  {
+    title: 'Checkliste für den Start',
+    description: 'Alle Pflichtfelder und Nachweise, die du für dein Profil brauchst.',
+    icon: 'list-circle',
+  },
+  {
+    title: 'Best Practices für Chats',
+    description: 'Vorlagen für erste Antworten und Terminabsprachen.',
+    icon: 'sparkles',
+  },
+  {
+    title: 'Rechtliches & Datenschutz',
+    description: 'Immer auf dem aktuellen Stand mit Impressum und Datenschutz.',
+    icon: 'document-text',
+  },
+];
+
+export default function ExploreScreen() {
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#D0D0D0', dark: '#353636' }}
-      headerImage={
-        <IconSymbol
-          size={310}
-          color="#808080"
-          name="chevron.left.forwardslash.chevron.right"
-          style={styles.headerImage}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText
-          type="title"
-          style={{
-            fontFamily: Fonts.rounded,
-          }}>
-          Explore
-        </ThemedText>
-      </ThemedView>
-      <ThemedText>This app includes example code to help you get started.</ThemedText>
-      <Collapsible title="File-based routing">
-        <ThemedText>
-          This app has two screens:{' '}
-          <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> and{' '}
-          <ThemedText type="defaultSemiBold">app/(tabs)/explore.tsx</ThemedText>
-        </ThemedText>
-        <ThemedText>
-          The layout file in <ThemedText type="defaultSemiBold">app/(tabs)/_layout.tsx</ThemedText>{' '}
-          sets up the tab navigator.
-        </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/router/introduction">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Android, iOS, and web support">
-        <ThemedText>
-          You can open this project on Android, iOS, and the web. To open the web version, press{' '}
-          <ThemedText type="defaultSemiBold">w</ThemedText> in the terminal running this project.
-        </ThemedText>
-      </Collapsible>
-      <Collapsible title="Images">
-        <ThemedText>
-          For static images, you can use the <ThemedText type="defaultSemiBold">@2x</ThemedText> and{' '}
-          <ThemedText type="defaultSemiBold">@3x</ThemedText> suffixes to provide files for
-          different screen densities
-        </ThemedText>
-        <Image
-          source={require('@/assets/images/react-logo.png')}
-          style={{ width: 100, height: 100, alignSelf: 'center' }}
-        />
-        <ExternalLink href="https://reactnative.dev/docs/images">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Light and dark mode components">
-        <ThemedText>
-          This template has light and dark mode support. The{' '}
-          <ThemedText type="defaultSemiBold">useColorScheme()</ThemedText> hook lets you inspect
-          what the user&apos;s current color scheme is, and so you can adjust UI colors accordingly.
-        </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/develop/user-interface/color-themes/">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Animations">
-        <ThemedText>
-          This template includes an example of an animated component. The{' '}
-          <ThemedText type="defaultSemiBold">components/HelloWave.tsx</ThemedText> component uses
-          the powerful{' '}
-          <ThemedText type="defaultSemiBold" style={{ fontFamily: Fonts.mono }}>
-            react-native-reanimated
-          </ThemedText>{' '}
-          library to create a waving hand animation.
-        </ThemedText>
-        {Platform.select({
-          ios: (
-            <ThemedText>
-              The <ThemedText type="defaultSemiBold">components/ParallaxScrollView.tsx</ThemedText>{' '}
-              component provides a parallax effect for the header image.
-            </ThemedText>
-          ),
-        })}
-      </Collapsible>
-    </ParallaxScrollView>
+    <SafeAreaView style={styles.safeArea}>
+      <ScrollView contentContainerStyle={styles.content}>
+        <View style={styles.header}>
+          <Text style={styles.subtitle}>Alles, was du für einen guten Start brauchst</Text>
+          <Text style={styles.title}>Info-Center</Text>
+        </View>
+
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Onboarding</Text>
+          <Text style={styles.sectionDescription}>
+            Schritt für Schritt von der Registrierung bis zur ersten Platzierung.
+          </Text>
+          <View style={styles.cardList}>
+            {onboardingSteps.map((step) => (
+              <View key={step.title} style={styles.card}>
+                <View style={styles.cardIcon}>
+                  <Ionicons name={step.icon as never} size={18} color="#2563eb" />
+                </View>
+                <View style={{ flex: 1, gap: 4 }}>
+                  <Text style={styles.cardTitle}>{step.title}</Text>
+                  <Text style={styles.cardDescription}>{step.description}</Text>
+                </View>
+              </View>
+            ))}
+          </View>
+        </View>
+
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Ressourcen</Text>
+          <Text style={styles.sectionDescription}>Vorlagen, Hilfen und aktuelle Infos aus der Web-App.</Text>
+          <View style={styles.cardList}>
+            {resources.map((item) => (
+              <View key={item.title} style={styles.card}>
+                <View style={styles.cardIcon}>
+                  <Ionicons name={item.icon as never} size={18} color="#2563eb" />
+                </View>
+                <View style={{ flex: 1, gap: 4 }}>
+                  <Text style={styles.cardTitle}>{item.title}</Text>
+                  <Text style={styles.cardDescription}>{item.description}</Text>
+                </View>
+                <Ionicons name="chevron-forward" size={18} color="#94a3b8" />
+              </View>
+            ))}
+          </View>
+        </View>
+
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Support</Text>
+          <View style={styles.supportRow}>
+            <View style={styles.supportIcon}>
+              <Ionicons name="headset" size={18} color="#2563eb" />
+            </View>
+            <View style={{ flex: 1, gap: 4 }}>
+              <Text style={styles.cardTitle}>Direkter Kontakt</Text>
+              <Text style={styles.cardDescription}>
+                Unsere Support-Tickets spiegeln die Web-Workflows – Antworten landen direkt im Postfach.
+              </Text>
+            </View>
+          </View>
+        </View>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  headerImage: {
-    color: '#808080',
-    bottom: -90,
-    left: -35,
-    position: 'absolute',
+  safeArea: {
+    flex: 1,
+    backgroundColor: '#f8fbff',
   },
-  titleContainer: {
+  content: {
+    padding: 18,
+    gap: 16,
+    paddingBottom: 42,
+  },
+  header: {
+    gap: 6,
+  },
+  title: {
+    fontSize: 26,
+    fontWeight: '800',
+    color: '#0f172a',
+  },
+  subtitle: {
+    color: '#475569',
+    fontWeight: '700',
+  },
+  section: {
+    backgroundColor: '#ffffff',
+    borderRadius: 18,
+    padding: 14,
+    gap: 10,
+    shadowColor: '#b8ccf5',
+    shadowOpacity: 0.16,
+    shadowRadius: 14,
+    shadowOffset: { width: 0, height: 10 },
+    elevation: 3,
+  },
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: '800',
+    color: '#0f172a',
+  },
+  sectionDescription: {
+    color: '#475569',
+    lineHeight: 18,
+  },
+  cardList: {
+    gap: 10,
+  },
+  card: {
     flexDirection: 'row',
-    gap: 8,
+    gap: 12,
+    alignItems: 'center',
+    backgroundColor: '#f6f9ff',
+    borderRadius: 14,
+    padding: 12,
+  },
+  cardIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    backgroundColor: '#eef2ff',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  cardTitle: {
+    fontWeight: '700',
+    color: '#0f172a',
+  },
+  cardDescription: {
+    color: '#475569',
+    lineHeight: 18,
+  },
+  supportRow: {
+    flexDirection: 'row',
+    gap: 12,
+    alignItems: 'flex-start',
+  },
+  supportIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    backgroundColor: '#eef2ff',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });
