@@ -1,1 +1,3 @@
 frontend/
+node_modules/
+docs/backend-snapshot/node_modules/
