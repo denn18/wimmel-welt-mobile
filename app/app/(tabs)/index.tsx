@@ -2,7 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
-import { RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { apiRequest } from '@/services/api-client';
 
@@ -27,18 +27,19 @@ const featureCards = [
     icon: 'shield-checkmark',
     title: 'Persönliche Kindertagespflege',
     description:
-      'Finde individuelle Betreuungsmodelle in deiner Nähe, die genau zur Lebensrealität deiner Familie passen.',
+      'Finde liebevolle Kindertagespflegepersonen in deiner Nähe, die genau zu den Bedürfnissen deiner Familie passen.',
   },
   {
     icon: 'document-lock',
     title: 'Transparente Kindertagespflege',
     description:
-      'Übersichtliche pädagogische Konzepte, freie Betreuungsplätze und Öffnungszeiten – alles in einem Ort.',
+      'Vergleiche pädagogische Konzepte, freie Kindertagespflegeplätze und Altersgrenzen auf einen Blick.',
   },
   {
     icon: 'chatbubbles',
     title: 'Direkte Kommunikation',
-    description: 'Tausche dich direkt mit Tagespflegepersonen aus, um Bedürfnisse, Fragen oder Termine abzustimmen.',
+    description:
+      'Nutze unseren Messenger für schnelle Absprachen, Kennenlerntermine und individuelle Fragen rund um deine Betreuung.',
   },
 ];
 
@@ -82,40 +83,41 @@ export default function HomeScreen() {
       style={styles.screen}
       contentContainerStyle={styles.content}
       refreshControl={<RefreshControl refreshing={loading} onRefresh={loadStats} tintColor="#0f172a" />}>
-      <View style={styles.heroContainer}>
-        <View style={styles.heroBackground}>
-          <Image
-            source={require('@/assets/images/splash-icon.png')}
-            style={styles.heroImage}
-            contentFit="contain"
-          />
-        </View>
+      <View style={styles.heroCard}>
         <View style={styles.heroTextContainer}>
-          <View style={styles.brandRow}>
-            <Text style={styles.brandName}>Wimmel Welt</Text>
-            <View style={styles.brandBadge}>
-              <View style={[styles.badgeDot, { backgroundColor: '#6ca3ff' }]} />
-              <View style={[styles.badgeDot, { backgroundColor: '#f4a261' }]} />
-            </View>
+          <View style={styles.brandPill}>
+            <Text style={styles.brandPillText}>Willkommen bei Wimmel Welt</Text>
           </View>
           <Text style={styles.headline}>Gemeinsam schaffen wir einen sicheren Ort zum Wachsen.</Text>
           <Text style={styles.subheadline}>
-            Finde schnell und einfach die passende Kindertagespflegeperson oder registriere dich als Tagesmutter, um deine
-            Betreuungsdienste anzubieten – alles an einem Ort.
+            Unsere Plattform verbindet Familien mit engagierten Kindertagespflegepersonen. Entdecke Betreuungsmöglichkeiten,
+            koordiniere Anfragen und bleibe mit deinem Netzwerk in Kontakt – alles an einem Ort.
           </Text>
+          <View style={styles.ctaRow}>
+            <Pressable style={styles.primaryCta}>
+              <Text style={styles.primaryCtaText}>Jetzt registrieren</Text>
+            </Pressable>
+            <Pressable style={styles.secondaryCta}>
+              <Text style={styles.secondaryCtaText}>Bereits registriert? Jetzt einloggen</Text>
+            </Pressable>
+          </View>
+          <Text style={styles.helperText}>
+            Wimmel Welt macht Kindertagespflege, Kindervermittlung und die Suche nach freien Betreuungsplätzen so einfach wie
+            möglich – für Familien und Tagespflegepersonen gleichermaßen.
+          </Text>
+        </View>
+        <View style={styles.heroIllustrationWrapper}>
+          <Image
+            source={require('@/assets/images/hero-family.svg')}
+            style={styles.heroIllustration}
+            contentFit="contain"
+          />
         </View>
       </View>
 
-      <View style={styles.ctaButton}>
-        <Text style={styles.ctaButtonText}>Platz finden</Text>
-      </View>
-
-      <View style={styles.statsRow}>
+      <View style={styles.statsGrid}>
         <StatCard label="Tagespflegepersonen" value={stats.caregivers} hint="in deiner Umgebung" />
         <StatCard label="Familien" value={stats.parents} hint="nutzen Wimmel Welt" />
-      </View>
-
-      <View style={styles.statsRow}>
         <StatCard label="Platzierungen" value={stats.matches} hint="erfolgreich vermittelt" />
         <View style={[styles.statCard, styles.secondaryCard]}>
           <Text style={styles.statLabel}>Sicherheit</Text>
@@ -130,7 +132,7 @@ export default function HomeScreen() {
         {featureCards.map((item) => (
           <View key={item.title} style={styles.featureCard}>
             <View style={styles.featureIcon}>
-              <Ionicons name={item.icon as never} size={20} color="#2563eb" />
+              <Ionicons name={item.icon as never} size={22} color="#2563eb" />
             </View>
             <View style={styles.featureCopy}>
               <Text style={styles.featureTitle}>{item.title}</Text>
@@ -171,98 +173,112 @@ function StatCard({ label, value, hint }: StatCardProps) {
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: '#eef5ff',
+    backgroundColor: '#e7efff',
   },
   content: {
+    padding: 22,
+    paddingBottom: 36,
+    gap: 18,
+  },
+  heroCard: {
+    backgroundColor: '#fdfefe',
+    borderRadius: 32,
     padding: 20,
-    paddingBottom: 32,
-  },
-  heroContainer: {
-    backgroundColor: '#f8fbff',
-    borderRadius: 28,
-    padding: 18,
     flexDirection: 'row',
-    gap: 14,
-    shadowColor: '#b8ccf5',
-    shadowOpacity: 0.4,
-    shadowOffset: { width: 0, height: 4 },
-    shadowRadius: 18,
-    elevation: 4,
-  },
-  heroBackground: {
-    width: 96,
-    height: 96,
-    backgroundColor: '#e4f1ff',
-    borderRadius: 999,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  heroImage: {
-    width: 72,
-    height: 72,
+    gap: 18,
+    shadowColor: '#9fb9f5',
+    shadowOpacity: 0.35,
+    shadowOffset: { width: 0, height: 10 },
+    shadowRadius: 24,
+    elevation: 6,
   },
   heroTextContainer: {
     flex: 1,
-    gap: 6,
+    gap: 10,
   },
-  brandRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+  heroIllustrationWrapper: {
+    width: 160,
+    height: 180,
   },
-  brandName: {
-    fontSize: 20,
-    fontWeight: '800',
-    color: '#0f172a',
+  heroIllustration: {
+    width: '100%',
+    height: '100%',
   },
-  brandBadge: {
-    flexDirection: 'row',
-    gap: 8,
-    padding: 6,
-    backgroundColor: '#e4f1ff',
+  brandPill: {
+    alignSelf: 'flex-start',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    backgroundColor: '#e4edff',
     borderRadius: 999,
   },
-  badgeDot: {
-    width: 10,
-    height: 10,
-    borderRadius: 999,
+  brandPillText: {
+    color: '#1d4ed8',
+    fontWeight: '700',
+    letterSpacing: 0.5,
+    fontSize: 12,
   },
   headline: {
-    fontSize: 18,
-    fontWeight: '700',
+    fontSize: 24,
+    fontWeight: '800',
     color: '#0f172a',
+    lineHeight: 32,
   },
   subheadline: {
     fontSize: 14,
     color: '#334155',
-    lineHeight: 20,
+    lineHeight: 22,
   },
-  ctaButton: {
-    marginTop: 18,
+  ctaRow: {
+    flexDirection: 'column',
+    gap: 10,
+  },
+  primaryCta: {
     backgroundColor: '#2563eb',
     paddingVertical: 14,
-    borderRadius: 18,
+    paddingHorizontal: 18,
+    borderRadius: 999,
     alignItems: 'center',
     shadowColor: '#2563eb',
-    shadowOpacity: 0.3,
-    shadowOffset: { width: 0, height: 6 },
-    shadowRadius: 10,
-    elevation: 2,
+    shadowOpacity: 0.25,
+    shadowOffset: { width: 0, height: 8 },
+    shadowRadius: 16,
+    elevation: 3,
   },
-  ctaButtonText: {
+  primaryCtaText: {
     color: '#fff',
     fontWeight: '700',
-    fontSize: 16,
+    fontSize: 15,
   },
-  statsRow: {
+  secondaryCta: {
+    borderWidth: 1,
+    borderColor: '#bfd5ff',
+    paddingVertical: 14,
+    paddingHorizontal: 18,
+    borderRadius: 999,
+    alignItems: 'center',
+    backgroundColor: '#f5f7ff',
+  },
+  secondaryCtaText: {
+    color: '#1d4ed8',
+    fontWeight: '700',
+    fontSize: 14,
+  },
+  helperText: {
+    fontSize: 13,
+    color: '#475569',
+    lineHeight: 20,
+  },
+  statsGrid: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     gap: 12,
-    marginTop: 14,
+    marginTop: 10,
   },
   statCard: {
-    flex: 1,
+    flexBasis: '48%',
+    flexGrow: 1,
     backgroundColor: '#f8fbff',
-    padding: 14,
+    padding: 16,
     borderRadius: 18,
     shadowColor: '#b8ccf5',
     shadowOpacity: 0.25,
@@ -302,7 +318,7 @@ const styles = StyleSheet.create({
   },
   featureList: {
     marginTop: 18,
-    gap: 10,
+    gap: 12,
   },
   featureCard: {
     backgroundColor: '#f8fbff',
