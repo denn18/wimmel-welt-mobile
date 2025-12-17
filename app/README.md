@@ -48,3 +48,17 @@ Join our community of developers creating universal apps.
 
 - [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
 - [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+
+## Backend configuration
+
+This mobile project does not currently contain any API client or authentication logic. To point future API calls at the backend
+snapshot in `docs/backend-snapshot` or a deployed environment, create a local `.env` file (based on `.env.example`) and set
+`EXPO_PUBLIC_API_BASE_URL` to the appropriate endpoint:
+
+- Development (local backend): `http://localhost:2000`
+- Staging: `https://stage-api.example.com`
+- Production: `https://api.example.com`
+
+You can add additional environment-specific keys as needed (for example, if the backend requires client IDs or OAuth scopes).
+Expo automatically injects `EXPO_PUBLIC_` variables into the app bundle, making them available for any future API client
+implementation.
