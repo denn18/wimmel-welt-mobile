@@ -1,26 +1,11 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { useFocusEffect } from 'expo-router';
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { apiRequest } from '@/services/api-client';
-
-type Caregiver = { id: string };
-type Parent = { id: string };
-type Match = { id: string };
-
-type OverviewStats = {
-  caregivers: number;
-  parents: number;
-  matches: number;
-};
-
-const initialStats: OverviewStats = {
-  caregivers: 0,
-  parents: 0,
-  matches: 0,
-};
 
 const featureCards = [
   {
@@ -44,6 +29,22 @@ const featureCards = [
     description: 'Schnelle Absprachen, Kennenlerntermine und Fragen direkt über unseren Messenger.',
   },
 ];
+
+type Caregiver = { id: string };
+type Parent = { id: string };
+type Match = { id: string };
+
+type OverviewStats = {
+  caregivers: number;
+  parents: number;
+  matches: number;
+};
+
+const initialStats: OverviewStats = {
+  caregivers: 0,
+  parents: 0,
+  matches: 0,
+};
 
 export default function HomeScreen() {
   const [stats, setStats] = useState<OverviewStats>(initialStats);
@@ -80,90 +81,99 @@ export default function HomeScreen() {
     }, [loadStats])
   );
 
+  const highlightStats = useMemo(
+    () => [
+      { label: 'Tagespflegepersonen', value: stats.caregivers, hint: 'in deiner Umgebung' },
+      { label: 'Familien', value: stats.parents, hint: 'nutzen Wimmel Welt' },
+      { label: 'Platzierungen', value: stats.matches, hint: 'erfolgreich vermittelt' },
+    ],
+    [stats]
+  );
+
   return (
-    <ScrollView
-      style={styles.screen}
-      contentContainerStyle={styles.content}
-      refreshControl={<RefreshControl refreshing={loading} onRefresh={loadStats} tintColor="#0f172a" />}>
-      <View style={styles.header}>
-        <Text style={styles.brandTitle}>Wimmel Welt</Text>
-        <View style={styles.badgeRow}>
-          <View style={[styles.brandDot, { backgroundColor: '#3b7bfb' }]} />
-          <View style={[styles.brandDot, { backgroundColor: '#4c52ff' }]} />
-          <View style={[styles.brandDot, { backgroundColor: '#fda34b' }]} />
-        </View>
-      </View>
-
-      <View style={styles.heroSection}>
-        <View style={styles.heroImageWrapper}>
-          <Image
-            source={require('@/assets/images/hero-family.svg')}
-            style={styles.heroImage}
-            contentFit="cover"
-          />
-        </View>
-
-        <View style={styles.heroContent}>
-          <Text style={styles.tagline}>Willkommen bei Wimmel Welt</Text>
-          <Text style={styles.headline}>Gemeinsam schaffen wir einen sicheren Ort zum Wachsen.</Text>
-          <Text style={styles.subheadline}>
-            Unsere Plattform verbindet Familien mit engagierten Kindertagespflegepersonen. Entdecke Betreuungsmöglichkeiten,
-            koordiniere Anfragen und bleibe mit deinem Netzwerk in Kontakt – alles an einem Ort.
-          </Text>
-
-          <View style={styles.ctaRow}>
-            <Pressable style={styles.primaryCta}>
-              <Text style={styles.primaryCtaText}>Platz finden</Text>
-            </Pressable>
-            <Pressable style={styles.secondaryCta}>
-              <Text style={styles.secondaryCtaText}>Als Tagesmutter anmelden</Text>
-            </Pressable>
+    <SafeAreaView style={styles.safeArea}>
+      <ScrollView
+        style={styles.screen}
+        contentContainerStyle={styles.content}
+        refreshControl={<RefreshControl refreshing={loading} onRefresh={loadStats} tintColor="#0f172a" />}>
+        <View style={styles.heroShell}>
+          <View style={styles.header}>
+            <Text style={styles.brandTitle}>Wimmel Welt</Text>
+            <View style={styles.badgeRow}>
+              <View style={[styles.brandDot, { backgroundColor: '#3b7bfb' }]} />
+              <View style={[styles.brandDot, { backgroundColor: '#4c52ff' }]} />
+              <View style={[styles.brandDot, { backgroundColor: '#fda34b' }]} />
+            </View>
           </View>
 
-          <Pressable style={styles.tertiaryCta}>
-            <Text style={styles.tertiaryCtaText}>Bereits registriert? Jetzt einloggen</Text>
-          </Pressable>
-        </View>
-      </View>
+          <View style={styles.heroCard}>
+            <View style={styles.heroBackdrop}>
+              <Image
+                source={require('@/assets/images/hero-family.svg')}
+                style={styles.heroImage}
+                contentFit="cover"
+              />
+            </View>
 
-      <View style={styles.statsCard}>
-        <View style={styles.statRow}>
-          <StatCard label="Tagespflegepersonen" value={stats.caregivers} hint="in deiner Umgebung" />
-          <StatCard label="Familien" value={stats.parents} hint="nutzen Wimmel Welt" />
-        </View>
-        <View style={styles.statRow}>
-          <StatCard label="Platzierungen" value={stats.matches} hint="erfolgreich vermittelt" />
-          <View style={[styles.statCard, styles.secondaryCard]}>
-            <Text style={styles.statLabel}>Sicherheit</Text>
-            <View style={styles.securityRow}>
-              <Ionicons name="shield-checkmark" size={20} color="#2563eb" />
-              <Text style={styles.securityText}>Geprüfte Profile & sichere Betreuung</Text>
+            <View style={styles.heroCopy}>
+              <Text style={styles.tagline}>Willkommen bei Wimmel Welt</Text>
+              <Text style={styles.headline}>Gemeinsam schaffen wir einen sicheren Ort zum Wachsen.</Text>
+              <Text style={styles.subheadline}>
+                Unsere Plattform verbindet Familien mit engagierten Kindertagespflegepersonen. Entdecke
+                Betreuungsmöglichkeiten, koordiniere Anfragen und bleibe mit deinem Netzwerk in Kontakt – alles an einem
+                Ort.
+              </Text>
+
+              <View style={styles.primaryActions}>
+                <Pressable style={styles.primaryCta}>
+                  <Text style={styles.primaryCtaText}>Platz finden</Text>
+                </Pressable>
+                <Pressable style={styles.secondaryCta}>
+                  <Text style={styles.secondaryCtaText}>Als Tagesmutter anmelden</Text>
+                </Pressable>
+              </View>
+
+              <Pressable style={styles.tertiaryCta}>
+                <Text style={styles.tertiaryCtaText}>Bereits registriert? Jetzt einloggen</Text>
+              </Pressable>
             </View>
           </View>
         </View>
-      </View>
 
-      <View style={styles.featureList}>
-        {featureCards.map((item) => (
-          <View key={item.title} style={styles.featureCard}>
-            <View style={styles.featureIcon}>
-              <Ionicons name={item.icon as never} size={22} color="#2563eb" />
-            </View>
-            <View style={styles.featureCopy}>
-              <Text style={styles.featureTitle}>{item.title}</Text>
-              <Text style={styles.featureDescription}>{item.description}</Text>
-            </View>
+        <View style={styles.statsCard}>
+          <Text style={styles.sectionTitle}>Aktuelle Übersicht</Text>
+          <View style={styles.statGrid}>
+            {highlightStats.map((item) => (
+              <StatCard key={item.label} label={item.label} value={item.value} hint={item.hint} />
+            ))}
           </View>
-        ))}
-      </View>
-
-      {error ? (
-        <View style={styles.errorBox}>
-          <Ionicons name="warning" size={18} color="#b91c1c" style={{ marginTop: 2 }} />
-          <Text style={styles.errorText}>{error}</Text>
         </View>
-      ) : null}
-    </ScrollView>
+
+        <View style={styles.featureSection}>
+          <Text style={styles.sectionTitle}>Alles auf einen Blick</Text>
+          <View style={styles.featureList}>
+            {featureCards.map((item) => (
+              <View key={item.title} style={styles.featureCard}>
+                <View style={styles.featureIcon}>
+                  <Ionicons name={item.icon as never} size={22} color="#2563eb" />
+                </View>
+                <View style={styles.featureCopy}>
+                  <Text style={styles.featureTitle}>{item.title}</Text>
+                  <Text style={styles.featureDescription}>{item.description}</Text>
+                </View>
+              </View>
+            ))}
+          </View>
+        </View>
+
+        {error ? (
+          <View style={styles.errorBox}>
+            <Ionicons name="warning" size={18} color="#b91c1c" style={{ marginTop: 2 }} />
+            <Text style={styles.errorText}>{error}</Text>
+          </View>
+        ) : null}
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
@@ -186,15 +196,21 @@ function StatCard({ label, value, hint }: StatCardProps) {
 }
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: '#e7f1ff',
+  },
   screen: {
     flex: 1,
-    backgroundColor: '#e8f1ff',
   },
   content: {
     paddingHorizontal: 18,
     paddingTop: 12,
     paddingBottom: 48,
     gap: 20,
+  },
+  heroShell: {
+    gap: 14,
   },
   header: {
     alignItems: 'center',
@@ -215,28 +231,28 @@ const styles = StyleSheet.create({
     height: 14,
     borderRadius: 12,
   },
-  heroSection: {
+  heroCard: {
     backgroundColor: '#f6f9ff',
     borderRadius: 28,
     padding: 16,
-    gap: 18,
+    gap: 16,
     shadowColor: '#9fb9f5',
     shadowOpacity: 0.35,
     shadowOffset: { width: 0, height: 12 },
     shadowRadius: 22,
     elevation: 6,
   },
-  heroImageWrapper: {
-    backgroundColor: '#e1edff',
-    borderRadius: 22,
+  heroBackdrop: {
+    backgroundColor: '#e3edff',
+    borderRadius: 24,
     overflow: 'hidden',
-    height: 200,
+    height: 220,
   },
   heroImage: {
     width: '100%',
     height: '100%',
   },
-  heroContent: {
+  heroCopy: {
     gap: 10,
   },
   tagline: {
@@ -261,7 +277,7 @@ const styles = StyleSheet.create({
     color: '#334155',
     lineHeight: 22,
   },
-  ctaRow: {
+  primaryActions: {
     flexDirection: 'row',
     gap: 12,
     flexWrap: 'wrap',
@@ -318,12 +334,19 @@ const styles = StyleSheet.create({
     shadowRadius: 18,
     elevation: 3,
   },
-  statRow: {
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: '800',
+    color: '#0f172a',
+  },
+  statGrid: {
     flexDirection: 'row',
     gap: 12,
+    flexWrap: 'wrap',
   },
   statCard: {
     flex: 1,
+    minWidth: '45%',
     backgroundColor: '#fdfefe',
     padding: 16,
     borderRadius: 18,
@@ -348,23 +371,18 @@ const styles = StyleSheet.create({
     color: '#64748b',
     marginTop: 2,
   },
-  secondaryCard: {
-    justifyContent: 'center',
-    gap: 8,
-  },
-  securityRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  securityText: {
-    fontSize: 14,
-    color: '#0f172a',
-    flex: 1,
-    lineHeight: 18,
+  featureSection: {
+    backgroundColor: '#f6f9ff',
+    borderRadius: 22,
+    padding: 16,
+    gap: 12,
+    shadowColor: '#9fb9f5',
+    shadowOpacity: 0.25,
+    shadowOffset: { width: 0, height: 10 },
+    shadowRadius: 18,
+    elevation: 3,
   },
   featureList: {
-    marginTop: 4,
     gap: 10,
   },
   featureCard: {
