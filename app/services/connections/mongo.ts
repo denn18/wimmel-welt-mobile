@@ -2,9 +2,13 @@
 import { buildApiUrl, buildFallbackApiUrl } from '../../utils/url';
 import type { ConnectionCheckResult } from './server';
 
-async function fetchWithTimeout(url: string, ms: number) {
+const REQUEST_TIMEOUT_MS = 10_000;
+const RESPONSE_SNIPPET_LIMIT = 500;
+
+async function fetchWithTimeout(url: string, timeoutMs: number = REQUEST_TIMEOUT_MS) {
   const controller = new AbortController();
-  const t = setTimeout(() => controller.abort(), ms);
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+
   try {
     return await fetch(url, {
       signal: controller.signal,
@@ -13,103 +17,74 @@ async function fetchWithTimeout(url: string, ms: number) {
       },
     });
   } finally {
-    clearTimeout(t);
+    clearTimeout(timer);
   }
 }
 
+function responseSnippet(text: string) {
+  if (!text) return '';
+  if (text.length <= RESPONSE_SNIPPET_LIMIT) return text;
+  return `${text.slice(0, RESPONSE_SNIPPET_LIMIT)}…`;
+}
+
 async function tryReadiness(url: string) {
-  const res = await fetchWithTimeout(url, 10_000);
+  const res = await fetchWithTimeout(url);
   const text = await res.text();
 
   let json: any = null;
+  let parseError = false;
   try {
     json = text ? JSON.parse(text) : null;
   } catch {
-    // ignore
+    parseError = true;
   }
 
-  return { res, text, json };
+  return { res, text, json, parseError };
+}
+
+function buildErrorDetails(url: string, res: Response, text: string, parseError: boolean) {
+  const details: string[] = [`URL: ${url}`, `HTTP Status: ${res.status}`];
+  const snippet = responseSnippet(text);
+  details.push(`Antwort: ${snippet || '—'}`);
+  if (parseError) {
+    details.push('Antwort konnte nicht als JSON gelesen werden (HTML statt JSON?)');
+  }
+  return details.join(' | ');
 }
 
 export async function checkMongoConnection(): Promise<ConnectionCheckResult> {
   const startedAt = Date.now();
-
-  const primaryUrl = buildApiUrl('/readiness');
+  const readinessUrls = [buildApiUrl('/readiness')];
   const fallbackUrl = buildFallbackApiUrl('/readiness');
-
-  try {
-    // 1) Primary
-    const a = await tryReadiness(primaryUrl);
-
-    const dbStatus = a.json?.checks?.database ?? 'unbekannt';
-    if (a.res.ok && a.json?.status === 'ok' && dbStatus === 'ok') {
-      return {
-        status: 'ok',
-        message: `MongoDB verbunden`,
-        durationMs: Date.now() - startedAt,
-      };
-    }
-
-    if (!a.res.ok) {
-      throw new Error(
-        `Primary /readiness fehlgeschlagen (${a.res.status}). URL: ${primaryUrl}\nAntwort: ${a.text || '—'}`
-      );
-    }
-
-    throw new Error(
-      `Primary /readiness nicht ok. URL: ${primaryUrl}\nstatus=${a.json?.status ?? '—'}, database=${dbStatus}\nAntwort: ${a.text || '—'}`
-    );
-
-    // 2) Fallback (wenn gewünscht/optional)
-    // const b = await tryReadiness(fallbackUrl);
-    // ...
-  } catch (error) {
-    return {
-      status: 'error',
-      message: error instanceof Error ? error.message : 'Unbekannter MongoDB-Fehler',
-      durationMs: Date.now() - startedAt,
-    };
+  if (fallbackUrl && !readinessUrls.includes(fallbackUrl)) {
+    readinessUrls.push(fallbackUrl);
   }
+
+  const errors: string[] = [];
+
+  for (const url of readinessUrls) {
+    try {
+      const result = await tryReadiness(url);
+      const dbStatus = result.json?.checks?.database ?? 'unbekannt';
+
+      if (result.res.ok && result.json?.status === 'ok' && dbStatus === 'ok') {
+        return {
+          status: 'ok',
+          message: 'MongoDB verbunden',
+          durationMs: Date.now() - startedAt,
+        };
+      }
+
+      const errorDetails = buildErrorDetails(url, result.res, result.text, result.parseError);
+      errors.push(`${errorDetails} | database=${dbStatus}`);
+    } catch (error) {
+      errors.push(`URL: ${url} | Fehler: ${error instanceof Error ? error.message : String(error)}`);
+    }
+  }
+
+  return {
+    status: 'error',
+    message: errors.join(' || '),
+    durationMs: Date.now() - startedAt,
+  };
 }
-
-
-
-
-
-// import { buildApiUrl } from '../../utils/url';
-// import { ConnectionCheckResult } from './server';
-
-// export async function checkMongoConnection(): Promise<ConnectionCheckResult> {
-//   const startedAt = Date.now();
-
-//   try {
-//     const response = await fetch(buildApiUrl('/readiness'));
-
-//     if (!response.ok) {
-//       const body = await response.text();
-//       throw new Error(`Readiness fehlgeschlagen (${response.status}): ${body || 'Keine Details'}`);
-//     }
-
-//     const payload = (await response.json()) as { status?: string; checks?: { database?: string } };
-//     const duration = Date.now() - startedAt;
-//     const dbStatus = payload?.checks?.database ?? 'unbekannt';
-
-//     if (payload?.status !== 'ok' || dbStatus !== 'ok') {
-//       throw new Error(`MongoDB Status: ${dbStatus}`);
-//     }
-
-//     return {
-//       status: 'ok',
-//       message: `MongoDB verbunden (${duration}ms)`,
-//       durationMs: duration,
-//     };
-//   } catch (error) {
-//     const duration = Date.now() - startedAt;
-
-//     return {
-//       status: 'error',
-//       message: error instanceof Error ? error.message : 'Unbekannter MongoDB-Fehler',
-//       durationMs: duration,
-//     };
-//   }
-// }
