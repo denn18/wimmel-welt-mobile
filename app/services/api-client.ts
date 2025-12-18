@@ -1,4 +1,4 @@
-import { environment } from '../config/environment';
+import { buildApiUrl } from '../utils/url';
 
 type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
 
@@ -6,11 +6,6 @@ type ApiRequestOptions = RequestInit & {
   method?: HttpMethod;
   headers?: Record<string, string>;
 };
-
-function buildUrl(path: string) {
-  const sanitizedPath = path.startsWith('/') ? path.slice(1) : path;
-  return `${environment.apiUrl}/${sanitizedPath}`;
-}
 
 async function handleResponse<T>(response: Response): Promise<T> {
   if (!response.ok) {
@@ -34,7 +29,7 @@ async function handleResponse<T>(response: Response): Promise<T> {
 
 export async function apiRequest<T>(path: string, options: ApiRequestOptions = {}) {
   const { headers, ...rest } = options;
-  const url = buildUrl(path);
+  const url = buildApiUrl(path);
 
   const response = await fetch(url, {
     headers: {
