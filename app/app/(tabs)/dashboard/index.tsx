@@ -1,350 +1,686 @@
+// app/(tabs)/dashboard/index.tsx
 import { Ionicons } from '@expo/vector-icons';
-import { useFocusEffect } from 'expo-router';
-import { useCallback, useMemo, useState } from 'react';
-import { RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Image } from 'expo-image';
+import { useFocusEffect, useRouter } from 'expo-router';
+import { useCallback, useMemo, useRef, useState } from 'react';
+import {
+  ActivityIndicator,
+  Keyboard,
+  Pressable,
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { apiRequest } from '../../../services/api-client';
+// OPTIONAL (wenn du es hast): für "Nachricht" wie im Web
+// import { useAuth } from '../../../context/AuthContext';
 
-const sections = [
-  {
-    title: 'Heute zu erledigen',
-    items: [
-      'Neue Anfragen prüfen und beantworten',
-      'Offene Profileinträge aktualisieren',
-      'Chat-Nachrichten der Familien beantworten',
-    ],
-    icon: 'checkmark-done',
-  },
-  {
-    title: 'Nächste Schritte',
-    items: ['Profil komplettieren', 'Betreuungsplätze bestätigen', 'Termin für Kennenlernen planen'],
-    icon: 'sparkles',
-  },
-];
+const BRAND = 'rgb(49,66,154)';
 
-type OverviewStats = {
-  caregivers: number;
-  parents: number;
-  matches: number;
+type LocationSuggestion = {
+  postalCode?: string;
+  city?: string;
+  daycareName?: string;
 };
 
-const initialStats: OverviewStats = {
-  caregivers: 0,
-  parents: 0,
-  matches: 0,
+type Caregiver = {
+  id: string;
+  daycareName?: string;
+  name?: string;
+
+  firstName?: string;
+  lastName?: string;
+  birthDate?: string;
+  age?: number;
+
+  caregiverSince?: string;
+  yearsOfExperience?: number;
+
+  postalCode?: string;
+  city?: string;
+
+  logoImageUrl?: string;
+  profileImageUrl?: string;
+
+  availableSpots?: number;
+  hasAvailability?: boolean;
+
+  childrenCount?: number;
+  maxChildAge?: number;
 };
+
+type Filters = { postalCode: string; city: string; search: string };
+
+function calculateAge(value?: string) {
+  if (!value) return null;
+  const date = new Date(value);
+  if (Number.isNaN(date.valueOf())) return null;
+
+  const now = new Date();
+  let age = now.getFullYear() - date.getFullYear();
+  const hasBirthdayPassed =
+    now.getMonth() > date.getMonth() || (now.getMonth() === date.getMonth() && now.getDate() >= date.getDate());
+  if (!hasBirthdayPassed) age -= 1;
+
+  return age >= 0 ? age : null;
+}
+
+function calculateYearsSince(value?: string) {
+  if (!value) return null;
+  const date = new Date(value);
+  if (Number.isNaN(date.valueOf())) return null;
+
+  const now = new Date();
+  let years = now.getFullYear() - date.getFullYear();
+  const hasAnniversaryPassed =
+    now.getMonth() > date.getMonth() || (now.getMonth() === date.getMonth() && now.getDate() >= date.getDate());
+  if (!hasAnniversaryPassed) years -= 1;
+
+  return years >= 0 ? years : null;
+}
+
+function formatAvailableSpotsLabel(spots?: number) {
+  const value = typeof spots === 'number' ? spots : 0;
+  if (value === 1) return '1 freier Platz';
+  return `${value} freie Plätze`;
+}
+
+function buildQuery(path: string, params?: Record<string, string | number | undefined>) {
+  const pairs = Object.entries(params ?? {}).filter(([, v]) => v !== undefined && v !== '' && v !== null);
+  if (!pairs.length) return path;
+  const qs = pairs
+    .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(String(v))}`)
+    .join('&');
+  return `${path}?${qs}`;
+}
+
+/**
+ * Wenn deine API Dateipfade wie "/uploads/..." liefert, braucht das eine Base-URL.
+ * - Falls du schon eine helper-Funktion wie assetUrl(...) hast, nutze die stattdessen.
+ * - EXPO_PUBLIC_API_URL kannst du in .env setzen (z.B. https://api.deine-domain.de)
+ */
+function assetUrl(maybePath?: string) {
+  if (!maybePath) return '';
+  if (/^https?:\/\//i.test(maybePath)) return maybePath;
+  const base = (process.env.EXPO_PUBLIC_API_URL ?? '').replace(/\/$/, '');
+  return base ? `${base}${maybePath.startsWith('/') ? '' : '/'}${maybePath}` : maybePath;
+}
 
 export default function DashboardScreen() {
-  const [stats, setStats] = useState<OverviewStats>(initialStats);
+  const router = useRouter();
+  // OPTIONAL:
+  // const { user } = useAuth();
+
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filters, setFilters] = useState<Filters>({ postalCode: '', city: '', search: '' });
+
+  const [caregivers, setCaregivers] = useState<Caregiver[]>([]);
   const [loading, setLoading] = useState(false);
+
+  const [suggestions, setSuggestions] = useState<LocationSuggestion[]>([]);
+  const [loadingSuggestions, setLoadingSuggestions] = useState(false);
+  const [suggestionsOpen, setSuggestionsOpen] = useState(false);
+
   const [error, setError] = useState<string | null>(null);
 
-  const loadStats = useCallback(async () => {
+  const inputRef = useRef<TextInput | null>(null);
+
+  const activeLocation = useMemo(() => {
+    if (filters.postalCode || filters.city) return [filters.postalCode, filters.city].filter(Boolean).join(' ');
+    if (filters.search) return filters.search;
+    return '';
+  }, [filters]);
+
+  const fetchCaregivers = useCallback(async () => {
     setLoading(true);
     setError(null);
-
     try {
-      const [caregivers, parents, matches] = await Promise.all([
-        apiRequest<{ id: string }[]>('api/caregivers'),
-        apiRequest<{ id: string }[]>('api/parents'),
-        apiRequest<{ id: string }[]>('api/matches'),
-      ]);
+      const params: Record<string, string> = {};
+      if (filters.postalCode) params.postalCode = filters.postalCode;
+      if (filters.city) params.city = filters.city;
+      if (filters.search) params.search = filters.search;
 
-      setStats({
-        caregivers: caregivers.length,
-        parents: parents.length,
-        matches: matches.length,
-      });
-    } catch (err) {
-      console.error('Failed to load dashboard stats', err);
-      setError('Übersicht konnte nicht geladen werden. Bitte versuche es erneut.');
+      const url = buildQuery('api/caregivers', params);
+      const data = await apiRequest<Caregiver[]>(url);
+      setCaregivers(data ?? []);
+    } catch (e) {
+      console.error('Failed to load caregivers', e);
+      setError('Daten konnten nicht geladen werden. Bitte versuche es erneut.');
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [filters]);
 
   useFocusEffect(
     useCallback(() => {
-      void loadStats();
-    }, [loadStats])
+      void fetchCaregivers();
+    }, [fetchCaregivers])
   );
 
-  const highlightStats = useMemo(
-    () => [
-      { label: 'aktive Tagespflegepersonen', value: stats.caregivers, icon: 'people' },
-      { label: 'Familien in Betreuung', value: stats.parents, icon: 'home' },
-      { label: 'erfolgreiche Platzierungen', value: stats.matches, icon: 'ribbon' },
-    ],
-    [stats]
+  // Suggestions (PLZ/Ort) – Logik wie im Web
+  const loadSuggestions = useCallback(async (q: string) => {
+    const trimmed = q.trim();
+    if (!trimmed || trimmed.length < 2) {
+      setSuggestions([]);
+      return;
+    }
+
+    setLoadingSuggestions(true);
+    try {
+      const url = buildQuery('api/caregivers/locations', { q: trimmed });
+      const data = await apiRequest<LocationSuggestion[]>(url);
+      setSuggestions(data ?? []);
+    } catch (e) {
+      console.error('Failed to load caregiver locations', e);
+      setSuggestions([]);
+    } finally {
+      setLoadingSuggestions(false);
+    }
+  }, []);
+
+  const handleSuggestionSelect = useCallback((suggestion: LocationSuggestion) => {
+    const label = [suggestion.postalCode, suggestion.city].filter(Boolean).join(' ');
+    setSearchTerm(label);
+    setFilters({ postalCode: suggestion.postalCode ?? '', city: suggestion.city ?? '', search: '' });
+    setSuggestionsOpen(false);
+    Keyboard.dismiss();
+  }, []);
+
+  const handleSearchSubmit = useCallback(() => {
+    const trimmed = searchTerm.trim();
+    if (!trimmed) {
+      setFilters({ postalCode: '', city: '', search: '' });
+      setSuggestionsOpen(false);
+      Keyboard.dismiss();
+      return;
+    }
+
+    const parts = trimmed.split(/\s+/);
+    const first = parts[0];
+    if (/^\d{5}$/.test(first)) {
+      const cityName = parts.slice(1).join(' ').trim();
+      setFilters({ postalCode: first, city: cityName, search: '' });
+    } else {
+      setFilters({ postalCode: '', city: '', search: trimmed });
+    }
+
+    setSuggestionsOpen(false);
+    Keyboard.dismiss();
+  }, [searchTerm]);
+
+  const handleOpenMessenger = useCallback(
+    (caregiver: Caregiver) => {
+      // wie im Web: wenn nicht eingeloggt -> login
+      // if (!user) {
+      //   router.push('/login');
+      //   return;
+      // }
+      router.push(`/nachrichten/${caregiver.id}`);
+    },
+    [router]
   );
 
   return (
     <SafeAreaView style={styles.safeArea}>
+      {/* Overlay zum Schließen der Suggestions */}
+      {suggestionsOpen ? (
+        <Pressable
+          style={styles.overlay}
+          onPress={() => {
+            setSuggestionsOpen(false);
+            Keyboard.dismiss();
+          }}
+        />
+      ) : null}
+
       <ScrollView
         contentContainerStyle={styles.content}
-        refreshControl={<RefreshControl refreshing={loading} onRefresh={loadStats} tintColor="#0f172a" />}>
-        <View style={styles.header}>
-          <View>
-            <Text style={styles.subtitle}>Dein Tagespflege-Cockpit</Text>
-            <Text style={styles.title}>Dashboard</Text>
-          </View>
-          <View style={styles.pill}>
-            <Ionicons name="shield-checkmark" size={16} color="#1d4ed8" />
-            <Text style={styles.pillText}>Sicher verbunden</Text>
-          </View>
+        refreshControl={<RefreshControl refreshing={loading} onRefresh={fetchCaregivers} tintColor={BRAND} />}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Top Title (zentriert wie Screenshot) */}
+        <View style={styles.topHeader}>
+          <Text style={styles.topTitle}>Wimmel Welt</Text>
         </View>
 
-        <View style={styles.statGrid}>
-          {highlightStats.map((item) => (
-            <View key={item.label} style={styles.statCard}>
-              <View style={styles.statIcon}>
-                <Ionicons name={item.icon as never} size={18} color="#2563eb" />
-              </View>
-              <Text style={styles.statValue}>{item.value ? item.value.toLocaleString('de-DE') : '—'}</Text>
-              <Text style={styles.statLabel}>{item.label}</Text>
-            </View>
-          ))}
+        {/* Header */}
+        <View style={styles.headerBlock}>
+          <Text style={styles.pageTitle}>Familienzentrum</Text>
+          <Text style={styles.pageSubtitle}>
+            Finde Tagespflegepersonen in deiner Nähe, vergleiche Profile und starte persönliche Gespräche.
+          </Text>
         </View>
 
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Live-Aktivitäten</Text>
-          <View style={styles.activityList}>
-            <ActivityRow icon="mail" title="Neue Anfrage" description="Familie Schröder hat dir geschrieben." time="vor 5 Min" />
-            <ActivityRow icon="chatbubbles" title="Chat" description="Kita Sonnenschein antwortete im Gruppenchat." time="vor 12 Min" />
-            <ActivityRow icon="calendar" title="Termin bestätigt" description="Kennenlernen am Freitag, 14:00 Uhr" time="vor 32 Min" />
+        {/* Search Card */}
+        <View style={styles.searchCard}>
+          <Text style={styles.label}>Ort oder Postleitzahl suchen</Text>
+
+          <View style={styles.inputWrap}>
+            <TextInput
+              ref={(r) => (inputRef.current = r)}
+              value={searchTerm}
+              onChangeText={(t) => {
+                setSearchTerm(t);
+                setSuggestionsOpen(true);
+                void loadSuggestions(t);
+              }}
+              onFocus={() => {
+                setSuggestionsOpen(true);
+                void loadSuggestions(searchTerm);
+              }}
+              placeholder="aktuell nur 33332, Gütersloh :)"
+              placeholderTextColor="#94A3B8"
+              style={styles.input}
+              returnKeyType="search"
+              onSubmitEditing={handleSearchSubmit}
+            />
           </View>
-        </View>
 
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>To-Dos</Text>
-          <View style={styles.todoGrid}>
-            {sections.map((section) => (
-              <View key={section.title} style={styles.todoCard}>
-                <View style={styles.todoHeader}>
-                  <View style={styles.todoIcon}>
-                    <Ionicons name={section.icon as never} size={18} color="#2563eb" />
-                  </View>
-                  <Text style={styles.todoTitle}>{section.title}</Text>
+          {/* Suggestions Dropdown */}
+          {suggestionsOpen && (loadingSuggestions || suggestions.length > 0) ? (
+            <View style={styles.suggestionBox}>
+              {loadingSuggestions ? (
+                <View style={styles.suggestionLoading}>
+                  <ActivityIndicator />
+                  <Text style={styles.suggestionLoadingText}>Orte werden geladen…</Text>
                 </View>
-                {section.items.map((item) => (
-                  <View key={item} style={styles.todoRow}>
-                    <Ionicons name="ellipse" size={8} color="#94a3b8" />
-                    <Text style={styles.todoText}>{item}</Text>
-                  </View>
-                ))}
+              ) : (
+                <View style={styles.suggestionList}>
+                  {suggestions.map((s, idx) => {
+                    const label = [s.postalCode, s.city].filter(Boolean).join(' ');
+                    return (
+                      <Pressable
+                        key={`${s.postalCode ?? 'x'}-${s.city ?? 'y'}-${idx}`}
+                        onPress={() => handleSuggestionSelect(s)}
+                        style={styles.suggestionRow}
+                      >
+                        <Text style={styles.suggestionPrimary}>{label || s.daycareName || ''}</Text>
+                        {s.daycareName ? (
+                          <Text style={styles.suggestionSecondary}>Empfohlen: {s.daycareName}</Text>
+                        ) : null}
+                      </Pressable>
+                    );
+                  })}
+                </View>
+              )}
+            </View>
+          ) : null}
+
+          <View style={styles.searchFooter}>
+            <Pressable style={styles.searchBtn} onPress={handleSearchSubmit}>
+              <Text style={styles.searchBtnText}>Suche aktualisieren</Text>
+            </Pressable>
+
+            <View style={styles.searchMeta}>
+              <View style={styles.profilePill}>
+                <Text style={styles.profilePillText}>{caregivers.length} Profile</Text>
               </View>
-            ))}
+              {activeLocation ? <Text style={styles.activeFilter}>Aktueller Filter: {activeLocation}</Text> : null}
+            </View>
           </View>
         </View>
 
-        {error ? (
-          <View style={styles.errorBox}>
-            <Ionicons name="warning" size={18} color="#b91c1c" style={{ marginTop: 2 }} />
-            <Text style={styles.errorText}>{error}</Text>
+        {/* Result Header */}
+        <View style={styles.resultsHeader}>
+          <Text style={styles.resultsTitle}>Gefundene Kindertagespflegepersonen</Text>
+          <Text style={styles.resultsSubtitle}>
+            Scroll durch die Kacheln, vergleiche Angebote und öffne Details.
+          </Text>
+        </View>
+
+        {/* Caregiver Cards */}
+        <View style={styles.list}>
+          {caregivers.map((caregiver) => {
+            const logoUrl = caregiver.logoImageUrl ? assetUrl(caregiver.logoImageUrl) : '';
+            const profileImageUrl = caregiver.profileImageUrl ? assetUrl(caregiver.profileImageUrl) : '';
+
+            const locationLabel = [caregiver.postalCode, caregiver.city].filter(Boolean).join(' ');
+
+            const caregiverFullName = [caregiver.firstName, caregiver.lastName].filter(Boolean).join(' ').trim();
+            const caregiverAge = caregiver.age ?? calculateAge(caregiver.birthDate) ?? null;
+
+            const yearsOfExperience =
+              caregiver.yearsOfExperience ?? calculateYearsSince(caregiver.caregiverSince) ?? null;
+
+            const experienceText =
+              yearsOfExperience !== null
+                ? yearsOfExperience === 0
+                  ? 'Seit diesem Jahr Tagespflegeperson'
+                  : `Seit ${yearsOfExperience} ${yearsOfExperience === 1 ? 'Jahr' : 'Jahren'} Tagespflegeperson`
+                : null;
+
+            const personParts: string[] = [];
+            if (caregiverFullName) personParts.push(`Tagespflegeperson: ${caregiverFullName}`);
+            else if (caregiver.name) personParts.push(`Tagespflegeperson: ${caregiver.name}`);
+            if (caregiverAge !== null) personParts.push(`${caregiverAge} ${caregiverAge === 1 ? 'Jahr' : 'Jahre'} alt`);
+            if (experienceText) personParts.push(experienceText);
+
+            const personInfo = personParts.join(' · ');
+
+            return (
+              <View key={caregiver.id} style={styles.card}>
+                {/* Left column (Logo + Profilbild) */}
+                <View style={styles.leftCol}>
+                  <View style={styles.logoBox}>
+                    {logoUrl ? (
+                      <Image source={{ uri: logoUrl }} style={styles.logoImg} contentFit="contain" />
+                    ) : (
+                      <Text style={styles.placeholderSmall}>Logo folgt</Text>
+                    )}
+                  </View>
+
+                  <View style={styles.avatarBox}>
+                    {profileImageUrl ? (
+                      <Image source={{ uri: profileImageUrl }} style={styles.avatarImg} contentFit="cover" />
+                    ) : (
+                      <Text style={styles.placeholderSmall}>Kein Bild</Text>
+                    )}
+                  </View>
+                </View>
+
+                {/* Right content */}
+                <View style={styles.rightCol}>
+                  <Text style={styles.cardTitle}>{caregiver.daycareName || caregiver.name || '—'}</Text>
+
+                  {personInfo ? <Text style={styles.cardInfo}>{personInfo}</Text> : null}
+
+                  <View style={styles.chipRow}>
+                    <View style={styles.chip}>
+                      <Text style={styles.chipText}>{locationLabel || 'Ort folgt'}</Text>
+                    </View>
+
+                    <View style={[styles.chip, styles.chipGreen]}>
+                      <Text style={[styles.chipText, styles.chipGreenText]}>
+                        {formatAvailableSpotsLabel(caregiver.availableSpots)}
+                      </Text>
+                    </View>
+                  </View>
+
+                  <View style={styles.chipRow}>
+                    <View style={styles.chip}>
+                      <Text style={styles.chipText}>{`${caregiver.childrenCount ?? 0} Kinder in Betreuung`}</Text>
+                    </View>
+                    {caregiver.maxChildAge ? (
+                      <View style={styles.chip}>
+                        <Text style={styles.chipText}>bis {caregiver.maxChildAge} Jahre</Text>
+                      </View>
+                    ) : null}
+                  </View>
+
+                  <View style={styles.btnRow}>
+                    <Pressable
+                      style={styles.primaryAction}
+                      onPress={() => router.push(`/kindertagespflege/${caregiver.id}`)}
+                    >
+                      <Ionicons name="chatbubble-ellipses" size={16} color="#fff" />
+                      <Text style={styles.primaryActionText}>Kindertagespflege kennenlernen</Text>
+                    </Pressable>
+
+                    <Pressable style={styles.secondaryAction} onPress={() => handleOpenMessenger(caregiver)}>
+                      <Ionicons name="mail" size={16} color={BRAND} />
+                      <Text style={styles.secondaryActionText}>Nachricht</Text>
+                    </Pressable>
+                  </View>
+                </View>
+              </View>
+            );
+          })}
+
+          {!loading && !caregivers.length ? (
+            <View style={styles.emptyBox}>
+              <Text style={styles.emptyText}>
+                Keine Tagespflegepersonen gefunden. Probiere eine andere Postleitzahl oder bitte eine Tagespflegeperson,
+                ein Profil anzulegen.
+              </Text>
+            </View>
+          ) : null}
+
+          {error ? (
+            <View style={styles.errorBox}>
+              <Ionicons name="warning" size={18} color="#b91c1c" style={{ marginTop: 2 }} />
+              <Text style={styles.errorText}>{error}</Text>
+            </View>
+          ) : null}
+        </View>
+
+        {/* Footer (Copyright wie Screenshot) */}
+        {/* <View style={styles.footer}>
+          <Text style={styles.footerText}>© 2025 Wimmel Welt. Alle Rechte vorbehalten.</Text>
+
+          <View style={styles.footerLinks}>
+            <Pressable onPress={() => router.push('/datenschutz')}>
+              <Text style={styles.footerLink}>Datenschutz</Text>
+            </Pressable>
+            <Text style={styles.footerDot}>·</Text>
+            <Pressable onPress={() => router.push('/impressum')}>
+              <Text style={styles.footerLink}>Impressum</Text>
+            </Pressable>
+            <Text style={styles.footerDot}>·</Text>
+            <Pressable onPress={() => router.push('/kontakt')}>
+              <Text style={styles.footerLink}>Kontakt</Text>
+            </Pressable>
           </View>
-        ) : null}
+        </View> */}
+
       </ScrollView>
     </SafeAreaView>
   );
 }
 
-type ActivityRowProps = {
-  icon: string;
-  title: string;
-  description: string;
-  time: string;
-};
-
-function ActivityRow({ icon, title, description, time }: ActivityRowProps) {
-  return (
-    <View style={styles.activityRow}>
-      <View style={styles.activityIcon}>
-        <Ionicons name={icon as never} size={18} color="#1d4ed8" />
-      </View>
-      <View style={{ flex: 1, gap: 2 }}>
-        <Text style={styles.activityTitle}>{title}</Text>
-        <Text style={styles.activityDescription}>{description}</Text>
-        <Text style={styles.activityTime}>{time}</Text>
-      </View>
-    </View>
-  );
-}
-
 const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: '#f8fbff',
-  },
+  safeArea: { flex: 1, backgroundColor: '#EEF3FF' },
+
   content: {
     paddingHorizontal: 18,
-    paddingBottom: 48,
-    paddingTop: 16,
-    gap: 18,
+    paddingTop: 10,
+    paddingBottom: 20,
+    gap: 14,
   },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    gap: 12,
+
+  overlay: {
+    ...StyleSheet.absoluteFillObject,
+    zIndex: 5,
   },
-  title: {
-    fontSize: 24,
-    fontWeight: '800',
-    color: '#0f172a',
+
+  topHeader: { alignItems: 'center', paddingTop: 2, paddingBottom: 4 },
+  topTitle: { fontSize: 28, fontWeight: '900', color: BRAND, letterSpacing: 0.2 },
+
+  headerBlock: { gap: 6 },
+  pageTitle: { fontSize: 28, fontWeight: '900', color: BRAND },
+  pageSubtitle: { fontSize: 14, color: '#475569', lineHeight: 20 },
+
+  searchCard: {
+    backgroundColor: 'rgba(255,255,255,0.82)',
+    borderRadius: 24,
+    padding: 16,
+    gap: 10,
+    shadowColor: '#9BB9FF',
+    shadowOpacity: 0.22,
+    shadowOffset: { width: 0, height: 12 },
+    shadowRadius: 18,
+    elevation: 4,
+    zIndex: 10, // damit suggestions über anderen Elementen liegen
   },
-  subtitle: {
-    color: '#475569',
-    fontWeight: '600',
-    marginBottom: 4,
-  },
-  pill: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    backgroundColor: '#e0ebff',
+
+  label: { fontSize: 14, fontWeight: '800', color: '#0F172A' },
+
+  inputWrap: {
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#BFD3FF',
+    backgroundColor: 'rgba(255,255,255,0.95)',
     paddingHorizontal: 12,
-    paddingVertical: 8,
+    paddingVertical: 10,
+  },
+  input: { fontSize: 16, color: '#0F172A' },
+
+  suggestionBox: {
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: '#D9E6FF',
+    backgroundColor: '#fff',
+    overflow: 'hidden',
+  },
+  suggestionLoading: { flexDirection: 'row', alignItems: 'center', gap: 10, padding: 12 },
+  suggestionLoadingText: { color: '#64748B', fontWeight: '600' },
+  suggestionList: { maxHeight: 220 },
+  suggestionRow: { paddingHorizontal: 12, paddingVertical: 12, borderTopWidth: 1, borderTopColor: '#EFF5FF' },
+  suggestionPrimary: { color: BRAND, fontWeight: '800' },
+  suggestionSecondary: { marginTop: 2, color: '#64748B', fontSize: 12 },
+
+  searchFooter: { marginTop: 4, gap: 10 },
+  searchBtn: {
+    alignSelf: 'flex-end',
+    backgroundColor: '#2F5FE8',
+    borderRadius: 999,
+    paddingHorizontal: 18,
+    paddingVertical: 12,
+    shadowColor: '#2F5FE8',
+    shadowOpacity: 0.22,
+    shadowOffset: { width: 0, height: 10 },
+    shadowRadius: 16,
+    elevation: 2,
+  },
+  searchBtnText: { color: '#fff', fontWeight: '900', fontSize: 14 },
+
+  searchMeta: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 10 },
+  profilePill: { backgroundColor: '#EAF2FF', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 999 },
+  profilePillText: { color: BRAND, fontWeight: '900', fontSize: 12 },
+  activeFilter: { color: '#64748B', fontSize: 12, flex: 1, textAlign: 'right' },
+
+  resultsHeader: { gap: 2, marginTop: 4 },
+  resultsTitle: { fontSize: 18, fontWeight: '900', color: BRAND },
+  resultsSubtitle: { fontSize: 12.5, color: '#64748B' },
+
+  list: { gap: 12 },
+
+  card: {
+    flexDirection: 'row',
+    gap: 12,
+    padding: 14,
+    borderRadius: 22,
+    backgroundColor: 'rgba(255,255,255,0.86)',
+    borderWidth: 1,
+    borderColor: '#D9E6FF',
+    shadowColor: '#A7C2FF',
+    shadowOpacity: 0.18,
+    shadowOffset: { width: 0, height: 10 },
+    shadowRadius: 16,
+    elevation: 3,
+  },
+
+  leftCol: { width: 76, gap: 10, alignItems: 'center' },
+  logoBox: {
+    width: 64,
+    height: 64,
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: '#D9E6FF',
+    backgroundColor: '#F3F7FF',
+    alignItems: 'center',
+    justifyContent: 'center',
+    overflow: 'hidden',
+  },
+  logoImg: { width: '100%', height: '100%' },
+
+  avatarBox: {
+    width: 64,
+    height: 64,
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: '#D9E6FF',
+    backgroundColor: '#F3F7FF',
+    alignItems: 'center',
+    justifyContent: 'center',
+    overflow: 'hidden',
+  },
+  avatarImg: { width: '100%', height: '100%' },
+
+  placeholderSmall: { fontSize: 10, fontWeight: '800', color: '#94A3B8', textAlign: 'center' },
+
+  rightCol: { flex: 1, gap: 8 },
+
+  cardTitle: { fontSize: 18, fontWeight: '900', color: BRAND },
+  cardInfo: { color: '#475569', lineHeight: 18 },
+
+  chipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  chip: {
+    backgroundColor: '#EEF3FF',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
     borderRadius: 999,
   },
-  pillText: {
-    color: '#1d4ed8',
-    fontWeight: '700',
-  },
-  statGrid: {
-    flexDirection: 'row',
-    gap: 12,
-    flexWrap: 'wrap',
-  },
-  statCard: {
+  chipText: { color: '#334155', fontWeight: '700', fontSize: 12 },
+
+  chipGreen: { backgroundColor: '#EAF7EE' },
+  chipGreenText: { color: '#1F6B3A' },
+
+  btnRow: { flexDirection: 'row', gap: 10, marginTop: 2, flexWrap: 'wrap' },
+
+  primaryAction: {
     flex: 1,
-    minWidth: '47%',
-    backgroundColor: '#ffffff',
-    padding: 16,
-    borderRadius: 18,
+    minHeight: 38,
+    borderRadius: 999,
+    backgroundColor: '#2F5FE8',
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
     gap: 8,
-    shadowColor: '#b8ccf5',
-    shadowOpacity: 0.2,
-    shadowRadius: 16,
-    shadowOffset: { width: 0, height: 10 },
-    elevation: 3,
-  },
-  statIcon: {
-    width: 36,
-    height: 36,
-    borderRadius: 12,
-    backgroundColor: '#ebf2ff',
-    alignItems: 'center',
     justifyContent: 'center',
   },
-  statValue: {
-    fontSize: 22,
-    fontWeight: '800',
-    color: '#0f172a',
+  primaryActionText: { color: '#fff', fontWeight: '900', fontSize: 12.5 },
+
+  secondaryAction: {
+    minHeight: 38,
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: '#BFD3FF',
+    backgroundColor: 'rgba(255,255,255,0.95)',
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    justifyContent: 'center',
   },
-  statLabel: {
-    color: '#475569',
-    lineHeight: 18,
-  },
-  section: {
-    backgroundColor: '#ffffff',
+  secondaryActionText: { color: BRAND, fontWeight: '900', fontSize: 12.5 },
+
+  emptyBox: {
     borderRadius: 18,
-    padding: 16,
-    gap: 12,
-    shadowColor: '#b8ccf5',
-    shadowOpacity: 0.2,
-    shadowRadius: 16,
-    shadowOffset: { width: 0, height: 10 },
-    elevation: 3,
-  },
-  sectionTitle: {
-    fontSize: 16,
-    fontWeight: '800',
-    color: '#0f172a',
-  },
-  activityList: {
-    gap: 10,
-  },
-  activityRow: {
-    flexDirection: 'row',
-    gap: 12,
-    alignItems: 'flex-start',
-  },
-  activityIcon: {
-    width: 36,
-    height: 36,
-    borderRadius: 12,
-    backgroundColor: '#eef2ff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  activityTitle: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: '#0f172a',
-  },
-  activityDescription: {
-    color: '#475569',
-    lineHeight: 18,
-  },
-  activityTime: {
-    color: '#94a3b8',
-    fontSize: 12,
-  },
-  todoGrid: {
-    flexDirection: 'row',
-    gap: 12,
-    flexWrap: 'wrap',
-  },
-  todoCard: {
-    flex: 1,
-    minWidth: '47%',
-    backgroundColor: '#f6f9ff',
-    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#D9E6FF',
+    backgroundColor: 'rgba(255,255,255,0.82)',
     padding: 14,
-    gap: 10,
   },
-  todoHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-  },
-  todoIcon: {
-    width: 32,
-    height: 32,
-    borderRadius: 12,
-    backgroundColor: '#e6edff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  todoTitle: {
-    fontWeight: '700',
-    color: '#0f172a',
-  },
-  todoRow: {
-    flexDirection: 'row',
-    gap: 8,
-    alignItems: 'center',
-  },
-  todoText: {
-    color: '#475569',
-    lineHeight: 18,
-    flex: 1,
-  },
+  emptyText: { color: '#64748B', lineHeight: 18 },
+
   errorBox: {
     flexDirection: 'row',
     alignItems: 'flex-start',
     gap: 8,
     padding: 12,
-    backgroundColor: '#fef2f2',
+    backgroundColor: '#FEF2F2',
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#fecdd3',
+    borderColor: '#FECACA',
   },
-  errorText: {
-    color: '#b91c1c',
-    flex: 1,
-    fontSize: 13,
-    lineHeight: 18,
+  errorText: { color: '#B91C1C', flex: 1, fontSize: 13, lineHeight: 18 },
+
+  footer: {
+    marginTop: 10,
+    alignItems: 'center',
+    gap: 10,
+    paddingVertical: 6,
   },
+  footerText: { color: '#475569', fontSize: 14, fontWeight: '700' },
+  footerLinks: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  footerLink: { color: '#334155', fontWeight: '700' },
+  footerDot: { color: '#94A3B8', fontWeight: '900' },
 });

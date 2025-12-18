@@ -1,55 +1,54 @@
 import { Tabs } from 'expo-router';
-import React from 'react';
+import { Ionicons } from '@expo/vector-icons';
 
-import { HapticTab } from '../../components/haptic-tab';
-import { IconSymbol } from '../../components/ui/icon-symbol';
-import { Colors } from '../../constants/theme';
-import { useColorScheme } from '../../hooks/use-color-scheme';
+const BRAND = 'rgb(49,66,154)';
 
-export default function TabLayout() {
-  const colorScheme = useColorScheme();
-
+export default function TabsLayout() {
   return (
     <Tabs
-      initialRouteName="home"
       screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
         headerShown: false,
-        tabBarButton: HapticTab,
-      }}>
+        tabBarActiveTintColor: BRAND,
+        tabBarInactiveTintColor: '#94A3B8',
+      }}
+    >
       <Tabs.Screen
-        name="home"
+        name="index"
         options={{
           title: 'Home',
-          tabBarIcon: ({ color }) => <IconSymbol size={26} name="house.fill" color={color} />,
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="home" size={size} color={color} />
+          ),
         }}
       />
+
       <Tabs.Screen
-        name="dashboard"
+        name="dashboard/index"
         options={{
           title: 'Dashboard',
-          tabBarIcon: ({ color }) => <IconSymbol size={26} name="rectangle.grid.2x2.fill" color={color} />,
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="grid" size={size} color={color} />
+          ),
         }}
       />
+
       <Tabs.Screen
-        name="messages"
+        name="messages/index"
         options={{
           title: 'Nachrichten',
-          tabBarIcon: ({ color }) => <IconSymbol size={26} name="bubble.left.and.bubble.right.fill" color={color} />,
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="chatbubbles" size={size} color={color} />
+          ),
         }}
       />
+
       <Tabs.Screen
-        name="profile"
+        name="profile/index"
         options={{
           title: 'Profil',
-          tabBarIcon: ({ color }) => <IconSymbol size={26} name="person.crop.circle.fill" color={color} />,
-        }}
-      />
-      <Tabs.Screen
-        name="explore"
-        options={{
-          title: 'Info',
-          tabBarIcon: ({ color }) => <IconSymbol size={26} name="info.circle.fill" color={color} />,
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="person-circle" size={size} color={color} />
+          ),
         }}
       />
     </Tabs>

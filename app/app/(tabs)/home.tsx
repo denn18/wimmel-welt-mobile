@@ -1,32 +1,43 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { useFocusEffect, useRouter } from 'expo-router';
-import { useCallback, useMemo, useState } from 'react';
-import { Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useCallback, useState } from 'react';
+import {
+  ImageBackground,
+  Pressable,
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { apiRequest } from '../../services/api-client';
 
+const BRAND_TITLE_COLOR = 'rgb(49,66,154)';
+
 const featureCards = [
   {
-    icon: 'navigate-circle',
-    title: 'Platz finden',
-    description: 'Finde schnell und einfach die passende Kindertagespflege, ganz in deiner Nähe.',
-  },
-  {
-    icon: 'shield-checkmark',
+    key: 'personal',
     title: 'Persönliche Kindertagespflege',
-    description: 'Abgestimmte Betreuungskonzepte, die genau zu den Bedürfnissen deiner Familie passen.',
+    description:
+      'Finde liebevolle Kindertagespflegepersonen in deiner Nähe, die genau zu den Bedürfnissen deiner Familie passen.',
+    fallbackIcon: 'heart-circle',
   },
   {
-    icon: 'document-lock',
+    key: 'transparent',
     title: 'Transparente Kindertagespflege',
-    description: 'Vergleiche pädagogische Konzepte, freie Plätze und Altersgrenzen auf einen Blick.',
+    description:
+      'Vergleiche pädagogische Konzepte, freie Kindertagespflegeplätze und Altersgrenzen auf einen Blick.',
+    fallbackIcon: 'layers',
   },
   {
-    icon: 'chatbubbles',
+    key: 'chat',
     title: 'Direkte Kommunikation',
-    description: 'Schnelle Absprachen, Kennenlerntermine und Fragen direkt über unseren Messenger.',
+    description:
+      'Nutze unseren Messenger für schnelle Absprachen und individuelle Fragen rund um deine Betreuung.',
+    fallbackIcon: 'chatbubble-ellipses',
   },
 ];
 
@@ -40,11 +51,7 @@ type OverviewStats = {
   matches: number;
 };
 
-const initialStats: OverviewStats = {
-  caregivers: 0,
-  parents: 0,
-  matches: 0,
-};
+const initialStats: OverviewStats = { caregivers: 0, parents: 0, matches: 0 };
 
 export default function HomeScreen() {
   const router = useRouter();
@@ -82,359 +89,314 @@ export default function HomeScreen() {
     }, [loadStats])
   );
 
-  const highlightStats = useMemo(
-    () => [
-      { label: 'Tagespflegepersonen', value: stats.caregivers, hint: 'in deiner Umgebung' },
-      { label: 'Familien', value: stats.parents, hint: 'nutzen Wimmel Welt' },
-      { label: 'Platzierungen', value: stats.matches, hint: 'erfolgreich vermittelt' },
-    ],
-    [stats]
-  );
-
   return (
     <SafeAreaView style={styles.safeArea}>
-      <ScrollView
-        style={styles.screen}
-        contentContainerStyle={styles.content}
-        refreshControl={<RefreshControl refreshing={loading} onRefresh={loadStats} tintColor="#0f172a" />}>
-        <View style={styles.heroShell}>
-          <View style={styles.header}>
-            <Text style={styles.brandTitle}>Wimmel Welt</Text>
-            <View style={styles.badgeRow}>
-              <View style={[styles.brandDot, { backgroundColor: '#3b7bfb' }]} />
-              <View style={[styles.brandDot, { backgroundColor: '#4c52ff' }]} />
-              <View style={[styles.brandDot, { backgroundColor: '#fda34b' }]} />
-            </View>
+      <ImageBackground source={undefined} style={styles.bg} imageStyle={styles.bgImage}>
+        <ScrollView
+          style={styles.screen}
+          contentContainerStyle={styles.content}
+          refreshControl={<RefreshControl refreshing={loading} onRefresh={loadStats} />}
+          showsVerticalScrollIndicator={false}
+        >
+          {/* Top Title */}
+          <View style={styles.topHeader}>
+            <Text style={styles.topTitle}>Wimmel Welt</Text>
           </View>
 
-          <View style={styles.heroCard}>
-            <View style={styles.heroBackdrop}>
-              <Image
-                source={require('../../assets/images/hero-family.svg')}
-                style={styles.heroImage}
-                contentFit="cover"
-              />
-            </View>
+          {/* Hero Image */}
+          <View style={styles.heroImageShell}>
+            <Image
+              source={require('../../assets/images/hero-family.svg')}
+              style={styles.heroImage}
+              contentFit="cover"
+            />
+          </View>
 
-            <View style={styles.heroCopy}>
-              <Text style={styles.tagline}>Willkommen bei Wimmel Welt</Text>
-              <Text style={styles.headline}>Gemeinsam schaffen wir einen sicheren Ort zum Wachsen.</Text>
-              <Text style={styles.subheadline}>
-                Unsere Plattform verbindet Familien mit engagierten Kindertagespflegepersonen. Entdecke
-                Betreuungsmöglichkeiten, koordiniere Anfragen und bleibe mit deinem Netzwerk in Kontakt – alles an einem
-                Ort.
-              </Text>
+          {/* Main Text + CTAs */}
+          <View style={styles.mainBlock}>
+            <Text style={styles.headline}>
+              Gemeinsam schaffen wir einen sicheren Ort zum Wachsen.
+            </Text>
 
-              <View style={styles.primaryActions}>
-                <Pressable style={styles.primaryCta} onPress={() => router.push('/(tabs)/dashboard')}>
-                  <Text style={styles.primaryCtaText}>Platz finden</Text>
-                </Pressable>
-                <Pressable style={styles.secondaryCta} onPress={() => router.push('/login')}>
-                  <Text style={styles.secondaryCtaText}>Als Tagesmutter anmelden</Text>
-                </Pressable>
-              </View>
+            <Text style={styles.subheadline}>
+              Finde schnell und einfach die passende Kindertagespflegeperson oder melde dich als Tagesmutter an,
+              um deine Betreuungsdienste anzubieten - alles in einem Ort.
+            </Text>
 
-              <Pressable style={styles.tertiaryCta} onPress={() => router.push('/login')}>
-                <Text style={styles.tertiaryCtaText}>Bereits registriert? Jetzt einloggen</Text>
+            <View style={styles.ctaRow}>
+              <Pressable style={styles.primaryBtn} onPress={() => router.push('/(tabs)/dashboard')}>
+                <Text style={styles.primaryBtnText}>Betreuungsplatz finden</Text>
+              </Pressable>
+
+              <Pressable style={styles.secondaryBtn} onPress={() => router.push('/login')}>
+                <Text style={styles.secondaryBtnText}>Als Tagesmutter anmelden</Text>
               </Pressable>
             </View>
           </View>
-        </View>
 
-        <View style={styles.statsCard}>
-          <Text style={styles.sectionTitle}>Aktuelle Übersicht</Text>
-          <View style={styles.statGrid}>
-            {highlightStats.map((item) => (
-              <StatCard key={item.label} label={item.label} value={item.value} hint={item.hint} />
-            ))}
-          </View>
-        </View>
-
-        <View style={styles.featureSection}>
-          <Text style={styles.sectionTitle}>Alles auf einen Blick</Text>
+          {/* Feature Cards */}
           <View style={styles.featureList}>
             {featureCards.map((item) => (
-              <View key={item.title} style={styles.featureCard}>
-                <View style={styles.featureIcon}>
-                  <Ionicons name={item.icon as never} size={22} color="#2563eb" />
+              <View key={item.key} style={styles.featureCard}>
+                <View style={styles.featureIconWrap}>
+                  <Ionicons name={item.fallbackIcon as never} size={22} color="#2F5FE8" />
                 </View>
-                <View style={styles.featureCopy}>
+
+                <View style={styles.featureText}>
                   <Text style={styles.featureTitle}>{item.title}</Text>
-                  <Text style={styles.featureDescription}>{item.description}</Text>
+                  <Text style={styles.featureDesc}>{item.description}</Text>
                 </View>
               </View>
             ))}
           </View>
-        </View>
 
-        {error ? (
-          <View style={styles.errorBox}>
-            <Ionicons name="warning" size={18} color="#b91c1c" style={{ marginTop: 2 }} />
-            <Text style={styles.errorText}>{error}</Text>
-          </View>
-        ) : null}
-      </ScrollView>
+          {/* Error Box */}
+          {error ? (
+            <View style={styles.errorBox}>
+              <Ionicons name="warning" size={18} color="#b91c1c" />
+              <Text style={styles.errorText}>{error}</Text>
+            </View>
+          ) : null}
+
+          {/* Spacer damit Bottom-Nav nicht überdeckt */}
+          <View style={{ height: 86 }} />
+        </ScrollView>
+
+        {/* Bottom Navigation
+        <View style={styles.bottomNav}>
+          <Pressable style={styles.navItem} onPress={() => router.push('/(tabs)')}>
+            <Ionicons name="home" size={22} color={BRAND_TITLE_COLOR} />
+            <Text style={styles.navLabel}>Home</Text>
+          </Pressable>
+
+          <Pressable style={styles.navItem} onPress={() => router.push('/(tabs)/dashboard')}>
+            <Ionicons name="grid" size={22} color={BRAND_TITLE_COLOR} />
+            <Text style={styles.navLabel}>Dashboard</Text>
+          </Pressable>
+
+          <Pressable style={styles.navItem} onPress={() => router.push('/(tabs)/messages')}>
+            <Ionicons name="chatbubbles" size={22} color={BRAND_TITLE_COLOR} />
+            <Text style={styles.navLabel}>Nachrichten</Text>
+          </Pressable>
+
+          <Pressable style={styles.navItem} onPress={() => router.push('/(tabs)/profile')}>
+            <Ionicons name="person-circle" size={22} color={BRAND_TITLE_COLOR} />
+            <Text style={styles.navLabel}>Profil</Text>
+          </Pressable>
+        </View> */}
+      </ImageBackground>
     </SafeAreaView>
-  );
-}
-
-type StatCardProps = {
-  label: string;
-  value: number;
-  hint: string;
-};
-
-function StatCard({ label, value, hint }: StatCardProps) {
-  const formatted = value ? value.toLocaleString('de-DE') : '—';
-
-  return (
-    <View style={styles.statCard}>
-      <Text style={styles.statLabel}>{label}</Text>
-      <Text style={styles.statValue}>{formatted}</Text>
-      <Text style={styles.statHint}>{hint}</Text>
-    </View>
   );
 }
 
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#e7f1ff',
+    backgroundColor: '#EAF2FF',
   },
-  screen: {
+
+  bg: {
     flex: 1,
   },
+  bgImage: {
+    resizeMode: 'cover',
+  },
+
+  screen: { flex: 1 },
   content: {
     paddingHorizontal: 18,
-    paddingTop: 12,
-    paddingBottom: 48,
-    gap: 20,
+    paddingBottom: 10,
   },
-  heroShell: {
-    gap: 14,
-  },
-  header: {
+
+  topHeader: {
     alignItems: 'center',
-    gap: 6,
+    paddingTop: 6,
+    paddingBottom: 10,
   },
-  brandTitle: {
-    fontSize: 18,
+  topTitle: {
+    fontSize: 22,
     fontWeight: '800',
-    color: '#1e2b4a',
+    color: 'rgb(49,66,154)',
+    letterSpacing: 0.2,
   },
-  badgeRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-  },
-  brandDot: {
-    width: 14,
-    height: 14,
-    borderRadius: 12,
-  },
-  heroCard: {
-    backgroundColor: '#f6f9ff',
-    borderRadius: 28,
-    padding: 16,
-    gap: 16,
-    shadowColor: '#9fb9f5',
-    shadowOpacity: 0.35,
-    shadowOffset: { width: 0, height: 12 },
-    shadowRadius: 22,
-    elevation: 6,
-  },
-  heroBackdrop: {
-    backgroundColor: '#e3edff',
-    borderRadius: 24,
+
+  heroImageShell: {
+    borderRadius: 26,
     overflow: 'hidden',
-    height: 220,
+    backgroundColor: '#DCEBFF',
+    height: 250,
+    shadowColor: '#9BB9FF',
+    shadowOpacity: 0.28,
+    shadowOffset: { width: 0, height: 14 },
+    shadowRadius: 24,
+    elevation: 6,
   },
   heroImage: {
     width: '100%',
     height: '100%',
   },
-  heroCopy: {
+
+  mainBlock: {
+    marginTop: 14,
+    backgroundColor: 'rgba(255,255,255,0.78)',
+    borderRadius: 26,
+    padding: 16,
     gap: 10,
+    shadowColor: '#9BB9FF',
+    shadowOpacity: 0.16,
+    shadowOffset: { width: 0, height: 10 },
+    shadowRadius: 18,
+    elevation: 3,
   },
-  tagline: {
-    alignSelf: 'flex-start',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    backgroundColor: '#e4edff',
-    borderRadius: 999,
-    color: '#1d4ed8',
-    fontWeight: '700',
-    letterSpacing: 0.5,
-    fontSize: 12,
-  },
+
   headline: {
-    fontSize: 26,
-    fontWeight: '800',
-    color: '#0f172a',
-    lineHeight: 34,
+    fontSize: 24,
+    fontWeight: '900',
+    color: '#0F172A',
+    lineHeight: 32,
   },
+
   subheadline: {
-    fontSize: 14,
-    color: '#334155',
-    lineHeight: 22,
+    fontSize: 13,
+    color: '#475569',
+    lineHeight: 19,
   },
-  primaryActions: {
+
+  ctaRow: {
     flexDirection: 'row',
     gap: 12,
-    flexWrap: 'wrap',
+    marginTop: 6,
   },
-  primaryCta: {
+
+  primaryBtn: {
     flex: 1,
-    backgroundColor: '#2563eb',
-    paddingVertical: 14,
+    height: 44,
     borderRadius: 999,
+    backgroundColor: '#2F5FE8',
     alignItems: 'center',
-    shadowColor: '#2563eb',
+    justifyContent: 'center',
+    shadowColor: '#2F5FE8',
     shadowOpacity: 0.25,
-    shadowOffset: { width: 0, height: 8 },
+    shadowOffset: { width: 0, height: 10 },
     shadowRadius: 16,
     elevation: 3,
+    paddingHorizontal: 10,
   },
-  primaryCtaText: {
+  primaryBtnText: {
     color: '#fff',
-    fontWeight: '700',
-    fontSize: 15,
-  },
-  secondaryCta: {
-    flex: 1,
-    borderWidth: 1,
-    borderColor: '#bfd5ff',
-    paddingVertical: 14,
-    borderRadius: 999,
-    alignItems: 'center',
-    backgroundColor: '#f5f7ff',
-  },
-  secondaryCtaText: {
-    color: '#1d4ed8',
-    fontWeight: '700',
-    fontSize: 14,
-  },
-  tertiaryCta: {
-    alignSelf: 'center',
-    paddingVertical: 4,
-  },
-  tertiaryCtaText: {
-    color: '#0f1f44',
-    fontWeight: '700',
-    fontSize: 14,
-    textDecorationLine: 'underline',
-  },
-  statsCard: {
-    backgroundColor: '#f6f9ff',
-    borderRadius: 22,
-    padding: 16,
-    gap: 12,
-    shadowColor: '#9fb9f5',
-    shadowOpacity: 0.25,
-    shadowOffset: { width: 0, height: 10 },
-    shadowRadius: 18,
-    elevation: 3,
-  },
-  sectionTitle: {
-    fontSize: 16,
     fontWeight: '800',
-    color: '#0f172a',
+    fontSize: 13,
   },
-  statGrid: {
+
+  secondaryBtn: {
+    flex: 1.1,
+    height: 44,
+    borderRadius: 999,
+    backgroundColor: 'rgba(255,255,255,0.9)',
+    borderWidth: 1,
+    borderColor: '#BFD3FF',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 10,
+  },
+  secondaryBtnText: {
+    color: 'rgb(49,66,154)',
+    fontWeight: '800',
+    fontSize: 12.5,
+    textAlign: 'center',
+  },
+
+  featureList: {
+    marginTop: 14,
+    gap: 12,
+  },
+
+  featureCard: {
     flexDirection: 'row',
     gap: 12,
-    flexWrap: 'wrap',
-  },
-  statCard: {
-    flex: 1,
-    minWidth: '45%',
-    backgroundColor: '#fdfefe',
-    padding: 16,
-    borderRadius: 18,
-    shadowColor: '#b8ccf5',
-    shadowOpacity: 0.25,
-    shadowOffset: { width: 0, height: 4 },
-    shadowRadius: 12,
-    elevation: 2,
-  },
-  statLabel: {
-    fontSize: 12,
-    color: '#475569',
-    fontWeight: '600',
-  },
-  statValue: {
-    fontSize: 22,
-    fontWeight: '800',
-    color: '#0f172a',
-    marginTop: 4,
-  },
-  statHint: {
-    color: '#64748b',
-    marginTop: 2,
-  },
-  featureSection: {
-    backgroundColor: '#f6f9ff',
-    borderRadius: 22,
-    padding: 16,
-    gap: 12,
-    shadowColor: '#9fb9f5',
-    shadowOpacity: 0.25,
-    shadowOffset: { width: 0, height: 10 },
-    shadowRadius: 18,
-    elevation: 3,
-  },
-  featureList: {
-    gap: 10,
-  },
-  featureCard: {
-    backgroundColor: '#fdfefe',
+    backgroundColor: 'rgba(255,255,255,0.86)',
     borderRadius: 18,
     padding: 14,
-    flexDirection: 'row',
-    gap: 12,
-    shadowColor: '#b8ccf5',
-    shadowOpacity: 0.2,
-    shadowOffset: { width: 0, height: 3 },
-    shadowRadius: 10,
-    elevation: 1,
+    shadowColor: '#A7C2FF',
+    shadowOpacity: 0.18,
+    shadowOffset: { width: 0, height: 8 },
+    shadowRadius: 14,
+    elevation: 2,
   },
-  featureIcon: {
-    width: 36,
-    height: 36,
-    borderRadius: 12,
-    backgroundColor: '#e4f1ff',
+
+  featureIconWrap: {
+    width: 40,
+    height: 40,
+    borderRadius: 14,
+    backgroundColor: '#EAF2FF',
     alignItems: 'center',
     justifyContent: 'center',
   },
-  featureCopy: {
+
+  featureText: {
     flex: 1,
     gap: 4,
   },
   featureTitle: {
-    fontSize: 15,
-    fontWeight: '700',
-    color: '#0f172a',
+    fontSize: 14.5,
+    fontWeight: '900',
+    color: 'rgb(49,66,154)', // ✅ wie gewünscht
   },
-  featureDescription: {
-    fontSize: 13,
-    lineHeight: 18,
+  featureDesc: {
+    fontSize: 12.5,
     color: '#475569',
+    lineHeight: 18,
   },
+
   errorBox: {
+    marginTop: 10,
     flexDirection: 'row',
-    alignItems: 'flex-start',
     gap: 8,
+    alignItems: 'flex-start',
     padding: 12,
-    backgroundColor: '#fef2f2',
-    borderRadius: 12,
+    borderRadius: 14,
+    backgroundColor: '#FEF2F2',
     borderWidth: 1,
-    borderColor: '#fecdd3',
-    marginTop: 14,
+    borderColor: '#FECACA',
   },
   errorText: {
-    color: '#b91c1c',
     flex: 1,
+    color: '#B91C1C',
     fontSize: 13,
     lineHeight: 18,
+  },
+
+  bottomNav: {
+    position: 'absolute',
+    left: 16,
+    right: 16,
+    bottom: 12,
+    height: 64,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255,255,255,0.92)',
+    borderWidth: 1,
+    borderColor: 'rgba(191,211,255,0.9)',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-around',
+    shadowColor: '#9BB9FF',
+    shadowOpacity: 0.22,
+    shadowOffset: { width: 0, height: 14 },
+    shadowRadius: 20,
+    elevation: 10,
+    paddingHorizontal: 8,
+  },
+
+  navItem: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 4,
+    minWidth: 64,
+  },
+
+  navLabel: {
+    fontSize: 11.5,
+    fontWeight: '800',
+    color: 'rgb(49,66,154)',
   },
 });
