@@ -4,7 +4,7 @@ import { useCallback, useMemo, useState } from 'react';
 import { RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { apiRequest } from '@/services/api-client';
+import { apiRequest } from '../../services/api-client';
 
 const sections = [
   {

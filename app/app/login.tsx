@@ -13,7 +13,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { apiRequest } from '@/services/api-client';
+import { apiRequest } from '../services/api-client';
 
 export default function LoginScreen() {
   const router = useRouter();
