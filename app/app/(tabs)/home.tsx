@@ -163,6 +163,7 @@ export default function HomeScreen() {
         </ScrollView>
 
         {/* Bottom Navigation
+        Navbar, die Icons können wir später übernehmen, erstmal bleibt diese auskommentiert sonst habe wir eine doppelte. 
         <View style={styles.bottomNav}>
           <Pressable style={styles.navItem} onPress={() => router.push('/(tabs)')}>
             <Ionicons name="home" size={22} color={BRAND_TITLE_COLOR} />
