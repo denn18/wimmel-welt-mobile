@@ -1,5 +1,5 @@
 // services/connection/server.ts
-import { buildApiUrl, buildFallbackApiUrl, getApiBaseUrl } from '../../utils/url';
+import { buildApiUrl, getApiBaseUrl } from '../../utils/url';
 
 export type ConnectionCheckResult = {
   status: 'ok' | 'error';
@@ -32,6 +32,13 @@ function responseSnippet(text: string) {
   return `${text.slice(0, RESPONSE_SNIPPET_LIMIT)}…`;
 }
 
+function looksLikeHtml(contentType: string | null, body: string) {
+  if (!contentType && !body) return false;
+  const isHtmlHeader = contentType?.toLowerCase().includes('text/html');
+  const normalizedBody = body.trim().toLowerCase();
+  return isHtmlHeader || normalizedBody.startsWith('<!doctype html') || normalizedBody.startsWith('<html');
+}
+
 async function tryHealth(url: string) {
   const res = await fetchWithTimeout(url);
   const text = await res.text();
@@ -44,52 +51,57 @@ async function tryHealth(url: string) {
     parseError = true;
   }
 
-  return { res, text, json, parseError };
+  const contentType = res.headers.get('content-type');
+  const htmlDetected = looksLikeHtml(contentType, text);
+
+  return { res, text, json, parseError, contentType, htmlDetected };
 }
 
-function buildErrorDetails(url: string, res: Response, text: string, parseError: boolean) {
-  const details: string[] = [`URL: ${url}`, `HTTP Status: ${res.status}`];
+function buildErrorDetails(url: string, res: Response, text: string, contentType: string | null, parseError: boolean, htmlDetected: boolean) {
+  const details: string[] = [`URL: ${url}`, `HTTP Status: ${res.status}`, `Content-Type: ${contentType || '—'}`];
   const snippet = responseSnippet(text);
   details.push(`Antwort: ${snippet || '—'}`);
-  if (parseError) {
-    details.push('Antwort konnte nicht als JSON gelesen werden (HTML statt JSON?)');
+  if (htmlDetected || parseError) {
+    details.push('HTML statt JSON (wahrscheinlich Static/Catch-all überschreibt /health)');
   }
   return details.join(' | ');
 }
 
 export async function checkServerConnection(): Promise<ConnectionCheckResult> {
   const startedAt = Date.now();
-  const healthUrls = [buildApiUrl('/health')];
-  const fallbackUrl = buildFallbackApiUrl('/health');
-  if (fallbackUrl && !healthUrls.includes(fallbackUrl)) {
-    healthUrls.push(fallbackUrl);
-  }
+  const url = buildApiUrl('/health');
 
-  const errors: string[] = [];
-
-  for (const url of healthUrls) {
-    try {
-      const result = await tryHealth(url);
-      if (result.res.ok && result.json?.status === 'ok') {
-        return {
-          status: 'ok',
-          message: `Server erreichbar (${url})`,
-          durationMs: Date.now() - startedAt,
-        };
-      }
-
-      const errorDetails = buildErrorDetails(url, result.res, result.text, result.parseError);
-      errors.push(errorDetails);
-    } catch (error) {
-      errors.push(`URL: ${url} | Fehler: ${error instanceof Error ? error.message : String(error)}`);
+  try {
+    const result = await tryHealth(url);
+    if (result.res.ok && result.json?.status === 'ok') {
+      return {
+        status: 'ok',
+        message: `Server erreichbar (${url})`,
+        durationMs: Date.now() - startedAt,
+      };
     }
-  }
 
-  return {
-    status: 'error',
-    message: errors.join(' || '),
-    durationMs: Date.now() - startedAt,
-  };
+    const errorDetails = buildErrorDetails(
+      url,
+      result.res,
+      result.text,
+      result.contentType,
+      result.parseError,
+      result.htmlDetected,
+    );
+
+    return {
+      status: 'error',
+      message: errorDetails,
+      durationMs: Date.now() - startedAt,
+    };
+  } catch (error) {
+    return {
+      status: 'error',
+      message: `URL: ${url} | Fehler: ${error instanceof Error ? error.message : String(error)}`,
+      durationMs: Date.now() - startedAt,
+    };
+  }
 }
 
 export function getConnectionDebugInfo() {

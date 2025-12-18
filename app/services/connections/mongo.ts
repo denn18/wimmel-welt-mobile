@@ -1,5 +1,5 @@
 // services/connection/mongo.ts
-import { buildApiUrl, buildFallbackApiUrl } from '../../utils/url';
+import { buildApiUrl } from '../../utils/url';
 import type { ConnectionCheckResult } from './server';
 
 const REQUEST_TIMEOUT_MS = 10_000;
@@ -27,6 +27,13 @@ function responseSnippet(text: string) {
   return `${text.slice(0, RESPONSE_SNIPPET_LIMIT)}…`;
 }
 
+function looksLikeHtml(contentType: string | null, body: string) {
+  if (!contentType && !body) return false;
+  const isHtmlHeader = contentType?.toLowerCase().includes('text/html');
+  const normalizedBody = body.trim().toLowerCase();
+  return isHtmlHeader || normalizedBody.startsWith('<!doctype html') || normalizedBody.startsWith('<html');
+}
+
 async function tryReadiness(url: string) {
   const res = await fetchWithTimeout(url);
   const text = await res.text();
@@ -39,52 +46,58 @@ async function tryReadiness(url: string) {
     parseError = true;
   }
 
-  return { res, text, json, parseError };
+  const contentType = res.headers.get('content-type');
+  const htmlDetected = looksLikeHtml(contentType, text);
+
+  return { res, text, json, parseError, contentType, htmlDetected };
 }
 
-function buildErrorDetails(url: string, res: Response, text: string, parseError: boolean) {
-  const details: string[] = [`URL: ${url}`, `HTTP Status: ${res.status}`];
+function buildErrorDetails(url: string, res: Response, text: string, contentType: string | null, parseError: boolean, htmlDetected: boolean, dbStatus: string) {
+  const details: string[] = [`URL: ${url}`, `HTTP Status: ${res.status}`, `Content-Type: ${contentType || '—'}`, `database=${dbStatus}`];
   const snippet = responseSnippet(text);
   details.push(`Antwort: ${snippet || '—'}`);
-  if (parseError) {
-    details.push('Antwort konnte nicht als JSON gelesen werden (HTML statt JSON?)');
+  if (htmlDetected || parseError) {
+    details.push('HTML statt JSON (wahrscheinlich Static/Catch-all überschreibt /readiness)');
   }
   return details.join(' | ');
 }
 
 export async function checkMongoConnection(): Promise<ConnectionCheckResult> {
   const startedAt = Date.now();
-  const readinessUrls = [buildApiUrl('/readiness')];
-  const fallbackUrl = buildFallbackApiUrl('/readiness');
-  if (fallbackUrl && !readinessUrls.includes(fallbackUrl)) {
-    readinessUrls.push(fallbackUrl);
-  }
+  const url = buildApiUrl('/readiness');
 
-  const errors: string[] = [];
+  try {
+    const result = await tryReadiness(url);
+    const dbStatus = result.json?.checks?.database ?? 'unbekannt';
 
-  for (const url of readinessUrls) {
-    try {
-      const result = await tryReadiness(url);
-      const dbStatus = result.json?.checks?.database ?? 'unbekannt';
-
-      if (result.res.ok && result.json?.status === 'ok' && dbStatus === 'ok') {
-        return {
-          status: 'ok',
-          message: 'MongoDB verbunden',
-          durationMs: Date.now() - startedAt,
-        };
-      }
-
-      const errorDetails = buildErrorDetails(url, result.res, result.text, result.parseError);
-      errors.push(`${errorDetails} | database=${dbStatus}`);
-    } catch (error) {
-      errors.push(`URL: ${url} | Fehler: ${error instanceof Error ? error.message : String(error)}`);
+    if (result.res.ok && result.json?.status === 'ok' && dbStatus === 'ok') {
+      return {
+        status: 'ok',
+        message: 'MongoDB verbunden',
+        durationMs: Date.now() - startedAt,
+      };
     }
-  }
 
-  return {
-    status: 'error',
-    message: errors.join(' || '),
-    durationMs: Date.now() - startedAt,
-  };
+    const errorDetails = buildErrorDetails(
+      url,
+      result.res,
+      result.text,
+      result.contentType,
+      result.parseError,
+      result.htmlDetected,
+      dbStatus,
+    );
+
+    return {
+      status: 'error',
+      message: errorDetails,
+      durationMs: Date.now() - startedAt,
+    };
+  } catch (error) {
+    return {
+      status: 'error',
+      message: `URL: ${url} | Fehler: ${error instanceof Error ? error.message : String(error)}`,
+      durationMs: Date.now() - startedAt,
+    };
+  }
 }

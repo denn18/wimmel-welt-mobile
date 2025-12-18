@@ -2,7 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { getClient, getDatabase } from './config/database.js';
+import { getDatabase } from './config/database.js';
 import { logger } from './utils/logger.js';
 
 import caregiversRouter from './routes/caregivers.js';
@@ -16,7 +16,27 @@ import filesRouter from './routes/files.js';
 
 const app = express();
 
-app.use(cors());
+const allowedOrigins = new Set(['https://www.wimmel-welt.de']);
+const corsOptions = {
+  origin(origin, callback) {
+    if (!origin) return callback(null, true); // Native apps may not send an Origin header
+    if (allowedOrigins.has(origin)) return callback(null, true);
+    return callback(new Error('Origin not allowed by CORS'));
+  },
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  optionsSuccessStatus: 204,
+};
+
+app.use(cors(corsOptions));
+app.options('*', cors(corsOptions));
+app.use((err, _req, res, next) => {
+  if (err?.message === 'Origin not allowed by CORS') {
+    return res.status(403).json({ error: 'CORS origin denied' });
+  }
+
+  return next(err);
+});
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
@@ -25,31 +45,21 @@ const frontendDistPath = path.resolve(currentDir, '../../frontend/dist');
 const uploadsDir = path.resolve(currentDir, '../backend/uploads');
 
 app.get('/health', (_req, res) => {
-  res.json({ status: 'ok', uptime: process.uptime(), timestamp: new Date().toISOString() });
+  res.json({ status: 'ok' });
 });
 
 app.get('/readiness', async (_req, res) => {
-  const checks = { app: 'ok' };
+  const checks = { database: 'error' };
 
   try {
-    const client = getClient();
-    if (!client) {
-      checks.database = 'not-configured';
-      throw new Error('No MongoDB client configured');
-    }
-
     const db = getDatabase();
-    const ping = await db.admin().command({ ping: 1 });
-    checks.database = ping?.ok === 1 ? 'ok' : 'degraded';
-
-    if (ping?.ok !== 1) {
-      throw new Error('MongoDB ping unsuccessful');
-    }
-
-    return res.json({ status: 'ok', checks });
+    await db.admin().command({ ping: 1 });
+    checks.database = 'ok';
+    return res.status(200).json({ status: 'ok', checks });
   } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unknown error';
     logger.error('Readiness check failed', error);
-    return res.status(503).json({ status: 'degraded', checks, message: error.message });
+    return res.status(503).json({ status: 'error', checks, error: message });
   }
 });
 
