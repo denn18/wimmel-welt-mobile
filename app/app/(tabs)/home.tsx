@@ -5,7 +5,7 @@ import { useCallback, useMemo, useState } from 'react';
 import { Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { apiRequest } from '../services/api-client';
+import { apiRequest } from '../../services/api-client';
 
 const featureCards = [
   {
@@ -110,7 +110,7 @@ export default function HomeScreen() {
           <View style={styles.heroCard}>
             <View style={styles.heroBackdrop}>
               <Image
-                source={require('../assets/images/hero-family.svg')}
+                source={require('../../assets/images/hero-family.svg')}
                 style={styles.heroImage}
                 contentFit="cover"
               />
