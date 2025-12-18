@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 
 import { MaterialIcons } from '@expo/vector-icons';
 import { StyleSheet, Text, View, ActivityIndicator, Pressable } from 'react-native';
@@ -34,9 +34,10 @@ function StatusRow({ label, status, message }: StatusRowProps) {
 }
 
 export function StartupDebugOverlay({ children }: { children: React.ReactNode }) {
+  const [isDismissed, setIsDismissed] = useState(false);
   const { statuses, isReady, isRunning, retry } = useStartupConnectionCheck();
 
-  if (isReady) {
+  if (isReady || isDismissed) {
     return <>{children}</>;
   }
 
@@ -71,10 +72,16 @@ export function StartupDebugOverlay({ children }: { children: React.ReactNode })
             <Text style={styles.loadingText}>Prüfung läuft…</Text>
           </View>
         ) : statuses.server.status === 'error' || statuses.database.status === 'error' ? (
-          <Pressable style={styles.retryButton} onPress={retry}>
-            <MaterialIcons name="refresh" size={18} color="#0f172a" />
-            <Text style={styles.retryText}>Erneut versuchen</Text>
-          </Pressable>
+          <View style={styles.actions}>
+            <Pressable style={styles.skipButton} onPress={() => setIsDismissed(true)}>
+              <MaterialIcons name="close" size={18} color="#e2e8f0" />
+              <Text style={styles.skipText}>Ohne Verbindung fortfahren</Text>
+            </Pressable>
+            <Pressable style={styles.retryButton} onPress={retry}>
+              <MaterialIcons name="refresh" size={18} color="#0f172a" />
+              <Text style={styles.retryText}>Erneut versuchen</Text>
+            </Pressable>
+          </View>
         ) : null}
       </View>
     </View>
@@ -137,8 +144,28 @@ const styles = StyleSheet.create({
   loadingText: {
     color: '#cbd5e1',
   },
-  retryButton: {
+  actions: {
     marginTop: 4,
+    flexDirection: 'row',
+    gap: 10,
+  },
+  skipButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+    borderRadius: 12,
+    borderColor: 'rgba(226, 232, 240, 0.3)',
+    borderWidth: 1,
+  },
+  skipText: {
+    color: '#e2e8f0',
+    fontWeight: '700',
+  },
+  retryButton: {
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
@@ -146,7 +173,6 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: 14,
     borderRadius: 12,
-    alignSelf: 'flex-start',
   },
   retryText: {
     color: '#0f172a',
