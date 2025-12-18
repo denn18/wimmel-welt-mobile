@@ -1,7 +1,6 @@
 // utils/url.ts
 
-const DEFAULT_API_URL = 'https://www.wimmel-welt.onrender.com';
-const SECONDARY_API_URL = 'https://www.wimmel-welt.de';
+const DEFAULT_API_URL = 'https://www.wimmel-welt.de';
 
 const absoluteUrlPattern = /^https?:\/\//i;
 const localHostPattern = /^(https?:\/\/)?(localhost|127\.0\.0\.1|\[::1\])/i;
@@ -29,13 +28,7 @@ function envApiUrl(): string | null {
 }
 
 export function getApiBaseUrl(): string {
-  const env = envApiUrl();
-  if (env) return env;
-  return DEFAULT_API_URL;
-}
-
-export function getApiFallbackBaseUrl(): string {
-  return SECONDARY_API_URL;
+  return envApiUrl() || DEFAULT_API_URL;
 }
 
 function ensureLeadingSlash(path: string): string {
@@ -45,12 +38,6 @@ function ensureLeadingSlash(path: string): string {
 
 export function buildApiUrl(path: string): string {
   const base = getApiBaseUrl();
-  const cleanPath = ensureLeadingSlash(path);
-  return `${base}${cleanPath}`;
-}
-
-export function buildFallbackApiUrl(path: string): string {
-  const base = getApiFallbackBaseUrl();
   const cleanPath = ensureLeadingSlash(path);
   return `${base}${cleanPath}`;
 }

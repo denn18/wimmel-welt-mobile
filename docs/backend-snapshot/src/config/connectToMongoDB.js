@@ -31,7 +31,7 @@ function buildMongoUrlFromParts() {
 
 function readMongoUrl() {
   return (
-    process.env.MONGO_DB_URL || // wie früher
+    process.env.MONGO_DB_URL ||
     process.env.MONGODB_URI ||
     process.env.MONGO_URL ||
     buildMongoUrlFromParts() ||
@@ -44,30 +44,33 @@ export async function connectToMongoDB() {
 
   const uri = readMongoUrl();
   if (!uri) {
-    logger.warn('No MongoDB URL found. Set MONGO_DB_URL (oder MONGODB_URI) in backend/.env');
-    return null;
+    logger.error('No MongoDB URL configured. Set MONGO_DB_URL (or MONGODB_URI).');
+    throw new Error('MongoDB connection string missing');
   }
 
-  logger.info('🔌 DB URL verwendet:', uri.startsWith('mongodb+srv://') ? 'mongodb+srv' : 'mongodb');
+  logger.info('🔌 Using MongoDB URL', uri.startsWith('mongodb+srv://') ? 'mongodb+srv' : 'mongodb');
 
   client = new MongoClient(uri, {
     serverSelectionTimeoutMS: 10_000,
     connectTimeoutMS: 10_000,
   });
 
-  await client.connect();
+  try {
+    await client.connect();
+    const dbName = process.env.MONGO_DB_NAME || undefined;
+    db = client.db(dbName);
 
-  const dbName = process.env.MONGO_DB_NAME || undefined;
-  db = client.db(dbName);
-
-  const ping = await db.admin().command({ ping: 1 });
-  logger.info(`✅ Connected to MongoDB (database: ${db.databaseName || '(in URI)'}), ping.ok=${ping?.ok}`);
-
-  return db;
+    const ping = await db.admin().command({ ping: 1 });
+    logger.info(`✅ Connected to MongoDB (database: ${db.databaseName || '(in URI)'}), ping.ok=${ping?.ok}`);
+    return db;
+  } catch (error) {
+    logger.error('Failed to connect to MongoDB', error);
+    throw error;
+  }
 }
 
 export function getDatabase() {
-  if (!db) throw new Error('Database ist noch nicht verbunden. connectToMongoDB() zuerst aufrufen.');
+  if (!db) throw new Error('Database not connected. Call connectToMongoDB() first.');
   return db;
 }
 

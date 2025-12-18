@@ -1,7 +1,4 @@
-
-
-// backend/src/server.js neuer Code mit anpassung für Render Webhosting
-import './config/load-env.js'; // .env früh & einmal laden
+import './config/load-env.js';
 import http from 'http';
 import app from './app.js';
 import { connectDatabase } from './config/database.js';
@@ -10,38 +7,16 @@ import { logger } from './utils/logger.js';
 const PORT = process.env.PORT || 2000;
 
 async function startServer() {
-  await connectDatabase(); // genau 1× verbinden
-  const server = http.createServer(app);
-  server.listen(PORT, () => {
-    logger.info(`API server listening on port ${PORT}`);
-  });
+  try {
+    await connectDatabase();
+    const server = http.createServer(app);
+    server.listen(PORT, () => {
+      logger.info(`API server listening on port ${PORT}`);
+    });
+  } catch (error) {
+    logger.error('Failed to start server', error);
+    process.exit(1);
+  }
 }
 
-startServer().catch((error) => {
-  logger.error('Failed to start server', error);
-  process.exit(1);
-});
-
-
-
-//Funktionierender Server.js Code ohne Render für Lokal starten
-// backend/src/server.js
-// import './config/load-env.js'; // .env früh & einmal laden
-// import http from 'http';
-// import app from './app.js';
-// import { connectDatabase } from './config/database.js';
-
-// const PORT = process.env.PORT || 2000;
-
-// async function startServer() {
-//   await connectDatabase(); // genau 1× verbinden
-//   const server = http.createServer(app);
-//   server.listen(PORT, () => {
-//     console.log(`API server listening on port ${PORT}`);
-//   });
-// }
-
-// startServer().catch((error) => {
-//   console.error('Failed to start server', error);
-//   process.exit(1);
-// });
+startServer();
