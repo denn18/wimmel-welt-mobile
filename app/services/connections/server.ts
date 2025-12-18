@@ -7,9 +7,13 @@ export type ConnectionCheckResult = {
   durationMs: number;
 };
 
-async function fetchWithTimeout(url: string, ms: number) {
+const REQUEST_TIMEOUT_MS = 10_000;
+const RESPONSE_SNIPPET_LIMIT = 500;
+
+async function fetchWithTimeout(url: string, timeoutMs: number = REQUEST_TIMEOUT_MS) {
   const controller = new AbortController();
-  const t = setTimeout(() => controller.abort(), ms);
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+
   try {
     return await fetch(url, {
       signal: controller.signal,
@@ -18,128 +22,78 @@ async function fetchWithTimeout(url: string, ms: number) {
       },
     });
   } finally {
-    clearTimeout(t);
+    clearTimeout(timer);
   }
 }
 
+function responseSnippet(text: string) {
+  if (!text) return '';
+  if (text.length <= RESPONSE_SNIPPET_LIMIT) return text;
+  return `${text.slice(0, RESPONSE_SNIPPET_LIMIT)}…`;
+}
+
 async function tryHealth(url: string) {
-  const res = await fetchWithTimeout(url, 10_000);
+  const res = await fetchWithTimeout(url);
   const text = await res.text();
 
   let json: any = null;
+  let parseError = false;
   try {
     json = text ? JSON.parse(text) : null;
   } catch {
-    // ignore
+    parseError = true;
   }
 
-  return { res, text, json };
+  return { res, text, json, parseError };
+}
+
+function buildErrorDetails(url: string, res: Response, text: string, parseError: boolean) {
+  const details: string[] = [`URL: ${url}`, `HTTP Status: ${res.status}`];
+  const snippet = responseSnippet(text);
+  details.push(`Antwort: ${snippet || '—'}`);
+  if (parseError) {
+    details.push('Antwort konnte nicht als JSON gelesen werden (HTML statt JSON?)');
+  }
+  return details.join(' | ');
 }
 
 export async function checkServerConnection(): Promise<ConnectionCheckResult> {
   const startedAt = Date.now();
-
-  const primaryUrl = buildApiUrl('/health');
+  const healthUrls = [buildApiUrl('/health')];
   const fallbackUrl = buildFallbackApiUrl('/health');
-
-  try {
-    // 1) Primary
-    const a = await tryHealth(primaryUrl);
-
-    if (a.res.ok && a.json?.status === 'ok') {
-      return {
-        status: 'ok',
-        message: `Server erreichbar (${getApiBaseUrl()})`,
-        durationMs: Date.now() - startedAt,
-      };
-    }
-
-    // Wenn Primary antwortet aber nicht ok → Fehler zeigen (wichtig für Diagnose)
-    if (!a.res.ok) {
-      throw new Error(
-        `Primary /health fehlgeschlagen (${a.res.status}). URL: ${primaryUrl}\nAntwort: ${a.text || '—'}`
-      );
-    }
-    if (a.json?.status !== 'ok') {
-      throw new Error(
-        `Primary /health meldet keinen OK-Status. URL: ${primaryUrl}\nAntwort: ${a.text || '—'}`
-      );
-    }
-
-    // 2) Fallback (nur wenn Primary “komisch” war – normalerweise nie nötig)
-    const b = await tryHealth(fallbackUrl);
-
-    if (b.res.ok && b.json?.status === 'ok') {
-      return {
-        status: 'ok',
-        message: `Server erreichbar (Fallback Render)`,
-        durationMs: Date.now() - startedAt,
-      };
-    }
-
-    throw new Error(
-      `Fallback /health fehlgeschlagen (${b.res.status}). URL: ${fallbackUrl}\nAntwort: ${b.text || '—'}`
-    );
-  } catch (error) {
-    return {
-      status: 'error',
-      message: error instanceof Error ? error.message : 'Unbekannter Serverfehler',
-      durationMs: Date.now() - startedAt,
-    };
+  if (fallbackUrl && !healthUrls.includes(fallbackUrl)) {
+    healthUrls.push(fallbackUrl);
   }
+
+  const errors: string[] = [];
+
+  for (const url of healthUrls) {
+    try {
+      const result = await tryHealth(url);
+      if (result.res.ok && result.json?.status === 'ok') {
+        return {
+          status: 'ok',
+          message: `Server erreichbar (${url})`,
+          durationMs: Date.now() - startedAt,
+        };
+      }
+
+      const errorDetails = buildErrorDetails(url, result.res, result.text, result.parseError);
+      errors.push(errorDetails);
+    } catch (error) {
+      errors.push(`URL: ${url} | Fehler: ${error instanceof Error ? error.message : String(error)}`);
+    }
+  }
+
+  return {
+    status: 'error',
+    message: errors.join(' || '),
+    durationMs: Date.now() - startedAt,
+  };
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-// import { buildApiUrl } from '../../utils/url';
-
-// export type ConnectionCheckResult = {
-//   status: 'ok' | 'error';
-//   message: string;
-//   durationMs: number;
-// };
-
-// export async function checkServerConnection(): Promise<ConnectionCheckResult> {
-//   const startedAt = Date.now();
-
-//   try {
-//     const response = await fetch(buildApiUrl('/health'));
-
-//     if (!response.ok) {
-//       const body = await response.text();
-//       throw new Error(`Server antwortet mit ${response.status}: ${body || 'Keine Details'}`);
-//     }
-
-//     const payload = (await response.json()) as { status?: string; uptime?: number };
-//     const duration = Date.now() - startedAt;
-
-//     if (payload?.status !== 'ok') {
-//       throw new Error('Server meldet keinen OK-Status.');
-//     }
-
-//     return {
-//       status: 'ok',
-//       message: `Server erreichbar (Antwortzeit ~${duration}ms)`,
-//       durationMs: duration,
-//     };
-//   } catch (error) {
-//     const duration = Date.now() - startedAt;
-
-//     return {
-//       status: 'error',
-//       message: error instanceof Error ? error.message : 'Unbekannter Serverfehler',
-//       durationMs: duration,
-//     };
-//   }
-// }
+export function getConnectionDebugInfo() {
+  return {
+    apiBaseUrl: getApiBaseUrl(),
+  };
+}
