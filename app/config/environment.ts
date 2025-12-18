@@ -11,7 +11,7 @@ function normalizeBaseUrl(baseUrl: string) {
 
 export const environment = {
   name: normalizedEnv,
-  apiUrl: normalizeBaseUrl(process.env.EXPO_PUBLIC_API_URL ?? 'https://api-staging.wimmelwelt.de'),
+  apiUrl: normalizeBaseUrl(process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:2000'),
   otlpEndpoint: normalizeBaseUrl(
     process.env.EXPO_PUBLIC_OTEL_EXPORTER_OTLP_ENDPOINT ?? 'https://otel.wimmelwelt.de'
   ),

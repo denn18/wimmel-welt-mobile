@@ -2,7 +2,12 @@
 import { connectToMongoDB, getDatabase as _getDb, getClient } from './connectToMongoDB.js';
 
 export async function connectDatabase() {
-  return connectToMongoDB();
+  const connection = await connectToMongoDB();
+  if (!connection) {
+    throw new Error('MongoDB connection could not be established.');
+  }
+
+  return connection;
 }
 
 export function getDatabase() {
