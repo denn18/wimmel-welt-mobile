@@ -252,7 +252,9 @@ export default function DashboardScreen() {
 
           <View style={styles.inputWrap}>
             <TextInput
-              ref={(r) => (inputRef.current = r)}
+              ref={(r) => {
+                inputRef.current = r;
+              }}
               value={searchTerm}
               onChangeText={(t) => {
                 setSearchTerm(t);

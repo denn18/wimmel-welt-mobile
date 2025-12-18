@@ -5,11 +5,36 @@ import { logger } from '../utils/logger.js';
 let client = null;
 let db = null;
 
+function buildMongoUrlFromParts() {
+  const protocol = (process.env.MONGODB_PROTOCOL || '').trim();
+  const host = (process.env.MONGODB_HOST || '').trim();
+  const username = process.env.MONGODB_USERNAME?.trim();
+  const password = process.env.MONGODB_PASSWORD?.trim();
+  const port = process.env.MONGODB_PORT?.trim();
+  const dbName = process.env.MONGODB_DB_NAME?.trim();
+  const authSource = process.env.MONGODB_AUTH_SOURCE?.trim();
+  const options = process.env.MONGODB_OPTIONS?.trim();
+
+  if (!protocol || !host) return '';
+
+  const auth = username && password ? `${encodeURIComponent(username)}:${encodeURIComponent(password)}@` : '';
+  const portSegment = port && protocol === 'mongodb' ? `:${port}` : '';
+  const dbSegment = dbName ? `/${dbName}` : '';
+
+  const optionParts = [];
+  if (authSource) optionParts.push(`authSource=${encodeURIComponent(authSource)}`);
+  if (options) optionParts.push(options);
+  const optionSegment = optionParts.length ? `?${optionParts.join('&')}` : '';
+
+  return `${protocol}://${auth}${host}${portSegment}${dbSegment}${optionSegment}`;
+}
+
 function readMongoUrl() {
   return (
-    process.env.MONGO_DB_URL ||   // wie früher
+    process.env.MONGO_DB_URL || // wie früher
     process.env.MONGODB_URI ||
     process.env.MONGO_URL ||
+    buildMongoUrlFromParts() ||
     ''
   ).trim();
 }
