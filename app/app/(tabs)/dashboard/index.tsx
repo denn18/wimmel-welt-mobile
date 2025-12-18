@@ -17,6 +17,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { apiRequest } from '../../../services/api-client';
+import { assetUrl, FileReference } from '../../../utils/url';
 // OPTIONAL (wenn du es hast): für "Nachricht" wie im Web
 // import { useAuth } from '../../../context/AuthContext';
 
@@ -44,8 +45,8 @@ type Caregiver = {
   postalCode?: string;
   city?: string;
 
-  logoImageUrl?: string;
-  profileImageUrl?: string;
+  logoImageUrl?: FileReference;
+  profileImageUrl?: FileReference;
 
   availableSpots?: number;
   hasAvailability?: boolean;
@@ -97,18 +98,6 @@ function buildQuery(path: string, params?: Record<string, string | number | unde
     .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(String(v))}`)
     .join('&');
   return `${path}?${qs}`;
-}
-
-/**
- * Wenn deine API Dateipfade wie "/uploads/..." liefert, braucht das eine Base-URL.
- * - Falls du schon eine helper-Funktion wie assetUrl(...) hast, nutze die stattdessen.
- * - EXPO_PUBLIC_API_URL kannst du in .env setzen (z.B. https://api.deine-domain.de)
- */
-function assetUrl(maybePath?: string) {
-  if (!maybePath) return '';
-  if (/^https?:\/\//i.test(maybePath)) return maybePath;
-  const base = (process.env.EXPO_PUBLIC_API_URL ?? '').replace(/\/$/, '');
-  return base ? `${base}${maybePath.startsWith('/') ? '' : '/'}${maybePath}` : maybePath;
 }
 
 export default function DashboardScreen() {
