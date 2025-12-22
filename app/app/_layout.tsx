@@ -26,6 +26,10 @@ export default function RootLayout() {
             name="anmelden/tagespflegeperson"
             options={{ headerShown: false, title: 'Kindertagespflegeperson' }}
           />
+          <Stack.Screen
+            name="anmelden/tagespflegeperson/profil"
+            options={{ headerShown: false, title: 'Kindertagespflegeperson' }}
+          />
           <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
         </Stack>
         <StatusBar style="auto" />
