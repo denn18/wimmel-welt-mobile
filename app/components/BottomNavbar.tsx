@@ -21,12 +21,16 @@ const items = [
   },
 ];
 
-export function BottomNavbar({ state, navigation }: BottomTabBarProps) {
-  const activeRouteName = state.routes[state.index]?.name;
-  const profileRouteName = 'profile/index';
+export function BottomNavbar({ state, navigation }: Partial<BottomTabBarProps> = {}) {
+  const insets = useSafeAreaInsets();
   const router = useRouter();
   const { role, loading } = useAuthStatus();
-  const insets = useSafeAreaInsets();
+
+  const routes = state?.routes ?? [];
+  const activeIndex = state?.index ?? -1;
+  const isStandalone = !state || !navigation;
+  const activeRouteName = routes[activeIndex]?.name;
+  const profileRouteName = 'profile/index';
 
   const handleProfilePress = () => {
     if (loading) return;
@@ -59,16 +63,20 @@ export function BottomNavbar({ state, navigation }: BottomTabBarProps) {
   return (
     <SafeAreaView
       edges={['bottom']}
-      style={[styles.wrapper, { paddingBottom: insets.bottom }]}
+      style={[
+        styles.wrapper,
+        { paddingBottom: insets.bottom },
+        isStandalone && styles.wrapperStandalone,
+      ]}
       pointerEvents="box-none"
     >
       <View style={styles.bottomNav}>
         {items.map((item) => {
-          const routeIndex = state.routes.findIndex((route) => route.name === item.routeName);
-          const isFocused = routeIndex === state.index;
+          const routeIndex = routes.findIndex((route) => route.name === item.routeName);
+          const isFocused = activeIndex !== -1 && routeIndex === activeIndex;
 
           const handlePress = () => {
-            if (routeIndex !== -1) {
+            if (navigation && routeIndex !== -1) {
               navigation.navigate(item.routeName as never);
               return;
             }
@@ -117,6 +125,12 @@ const styles = StyleSheet.create({
   wrapper: {
     paddingHorizontal: 0,
     backgroundColor: 'transparent',
+  },
+  wrapperStandalone: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
   },
   bottomNav: {
     height: 64,
