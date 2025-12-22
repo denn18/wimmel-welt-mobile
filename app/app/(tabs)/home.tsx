@@ -129,7 +129,7 @@ export default function HomeScreen() {
               </Pressable>
 
               <Pressable style={styles.secondaryBtn} onPress={() => router.push('/login')}>
-                <Text style={styles.secondaryBtnText}>Als Tagesmutter anmelden</Text>
+                <Text style={styles.secondaryBtnText}>Anmelden</Text>
               </Pressable>
             </View>
           </View>

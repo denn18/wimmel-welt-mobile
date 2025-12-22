@@ -103,7 +103,7 @@ export default function LoginScreen() {
 
           <View style={styles.footerLinks}>
             <Text style={styles.footerText}>Neu hier?</Text>
-            <Link href="/(tabs)/home" style={styles.linkText}>
+            <Link href="/anmelden" style={styles.linkText}>
               Jetzt registrieren
             </Link>
           </View>
