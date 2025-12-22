@@ -3,6 +3,8 @@ import { useMemo } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { BottomNavbar } from '../../components/BottomNavbar';
+
 const threads = [
   {
     name: 'Familie Schröder',
@@ -53,6 +55,7 @@ export default function MessagesScreen() {
         <MessageSection title="Neu" threads={groupedThreads.neu} />
         <MessageSection title="Alle" threads={groupedThreads.alle} />
       </ScrollView>
+      <BottomNavbar />
     </SafeAreaView>
   );
 }
@@ -107,7 +110,7 @@ const styles = StyleSheet.create({
   content: {
     padding: 18,
     gap: 16,
-    paddingBottom: 42,
+    paddingBottom: 140,
   },
   header: {
     flexDirection: 'row',

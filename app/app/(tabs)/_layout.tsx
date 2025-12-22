@@ -11,6 +11,7 @@ export default function TabsLayout() {
         tabBarActiveTintColor: BRAND,
         tabBarInactiveTintColor: '#94A3B8',
       }}
+      tabBar={() => null}
     >
       <Tabs.Screen
         name="index"
