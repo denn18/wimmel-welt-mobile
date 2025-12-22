@@ -1,4 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
+import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { Link, useRouter } from 'expo-router';
 import { Alert, Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -8,12 +9,21 @@ import { useAuthStatus } from '../hooks/use-auth-status';
 const BRAND = 'rgb(49,66,154)';
 
 const items = [
-  { key: 'home', label: 'Home', icon: 'home', href: '/(tabs)/home' },
-  { key: 'dashboard', label: 'Dashboard', icon: 'grid', href: '/(tabs)/dashboard' },
-  { key: 'messages', label: 'Nachrichten', icon: 'chatbubbles', href: '/(tabs)/messages', aliases: ['/nachrichten'] },
+  { key: 'home', label: 'Home', icon: 'home', routeName: 'home', href: '/(tabs)/home' },
+  { key: 'dashboard', label: 'Dashboard', icon: 'grid', routeName: 'dashboard/index', href: '/(tabs)/dashboard' },
+  {
+    key: 'messages',
+    label: 'Nachrichten',
+    icon: 'chatbubbles',
+    routeName: 'messages/index',
+    href: '/(tabs)/messages',
+    aliases: ['/nachrichten'],
+  },
 ];
 
-export function BottomNavbar() {
+export function BottomNavbar({ state, navigation }: BottomTabBarProps) {
+  const activeRouteName = state.routes[state.index]?.name;
+  const profileRouteName = 'profile/index';
   const router = useRouter();
   const { role, loading } = useAuthStatus();
   const insets = useSafeAreaInsets();
@@ -38,7 +48,7 @@ export function BottomNavbar() {
             } else if (role === 'caregiver' || role === 'tagespflegeperson') {
               router.push('/anmelden/tagespflegeperson/profil');
             } else {
-              router.push('/(tabs)/profile');
+              navigation.navigate(profileRouteName as never);
             }
           },
         },
@@ -53,34 +63,50 @@ export function BottomNavbar() {
       pointerEvents="box-none"
     >
       <View style={styles.bottomNav}>
-        {items.map((item) => (
-          <Link key={item.key} href={item.href} asChild>
-            <Pressable style={styles.navItem}>
-              {({ pressed }) => (
-                <>
-                  <Ionicons
-                    name={item.icon as never}
-                    size={22}
-                    color={BRAND}
-                    style={{ opacity: pressed ? 0.7 : 1 }}
-                  />
-                  <Text style={styles.navLabel}>
-                    {item.label}
-                  </Text>
-                </>
-              )}
-            </Pressable>
-          </Link>
-        ))}
+        {items.map((item) => {
+          const routeIndex = state.routes.findIndex((route) => route.name === item.routeName);
+          const isFocused = routeIndex === state.index;
+
+          const handlePress = () => {
+            if (routeIndex !== -1) {
+              navigation.navigate(item.routeName as never);
+              return;
+            }
+
+            router.push(item.href);
+          };
+
+          return (
+            <Link key={item.key} href={item.href} asChild>
+              <Pressable style={styles.navItem} onPress={handlePress}>
+                {({ pressed }) => (
+                  <>
+                    <Ionicons
+                      name={item.icon as never}
+                      size={22}
+                      color={isFocused ? BRAND : '#94A3B8'}
+                      style={{ opacity: pressed ? 0.7 : 1 }}
+                    />
+                    <Text style={[styles.navLabel, !isFocused && styles.navLabelInactive]}>
+                      {item.label}
+                    </Text>
+                  </>
+                )}
+              </Pressable>
+            </Link>
+          );
+        })}
 
         <Pressable style={styles.navItem} onPress={handleProfilePress} disabled={loading}>
           <Ionicons
             name="person-circle"
             size={24}
-            color={BRAND}
+            color={activeRouteName === profileRouteName ? BRAND : '#94A3B8'}
             style={{ opacity: loading ? 0.6 : 1 }}
           />
-          <Text style={styles.navLabel}>Profil</Text>
+          <Text style={[styles.navLabel, activeRouteName !== profileRouteName && styles.navLabelInactive]}>
+            Profil
+          </Text>
         </Pressable>
       </View>
     </SafeAreaView>
@@ -89,10 +115,6 @@ export function BottomNavbar() {
 
 const styles = StyleSheet.create({
   wrapper: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    bottom: 0,
     paddingHorizontal: 0,
     backgroundColor: 'transparent',
   },
@@ -124,5 +146,8 @@ const styles = StyleSheet.create({
     fontSize: 11.5,
     fontWeight: '800',
     color: BRAND,
+  },
+  navLabelInactive: {
+    color: '#94A3B8',
   },
 });

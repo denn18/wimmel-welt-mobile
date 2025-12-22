@@ -2,7 +2,6 @@ import { Ionicons } from '@expo/vector-icons';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { BottomNavbar } from '../../../components/BottomNavbar';
 
 const profileFields = [
   { label: 'Name', value: 'Mara Bergmann' },
@@ -65,7 +64,6 @@ export default function ProfileScreen() {
           </View>
         </View>
       </ScrollView>
-      <BottomNavbar />
     </SafeAreaView>
   );
 }
