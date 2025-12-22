@@ -14,6 +14,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { apiRequest } from '../../../services/api-client';
 import { pickSingleFile } from '../../../utils/file-picker';
+import { BottomNavbar } from '../../../components/BottomNavbar';
 
 type Child = { name: string; age: string; gender: '' | 'female' | 'male' | 'diverse'; notes: string };
 
@@ -166,6 +167,13 @@ export default function ElternProfilScreen() {
             <Text style={styles.subtitle}>
               Nach deiner Registrierung wird automatisch ein Zugang für dich erstellt und du kannst dich mit deinen
               Zugangsdaten anmelden.
+            </Text>
+          </View>
+
+          <View style={styles.infoBox}>
+            <Text style={styles.infoTitle}>Besser am Laptop bearbeiten</Text>
+            <Text style={styles.infoText}>
+              Wir empfehlen die Profilerstellung auf einem Laptop oder Computer durchzuführen.
             </Text>
           </View>
 
@@ -356,6 +364,7 @@ export default function ElternProfilScreen() {
           <View style={{ height: 22 }} />
         </ScrollView>
       </KeyboardAvoidingView>
+      <BottomNavbar />
     </SafeAreaView>
   );
 }
@@ -406,6 +415,7 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     padding: 18,
     gap: 16,
+    paddingBottom: 160,
   },
   header: {
     gap: 6,
@@ -423,6 +433,22 @@ const styles = StyleSheet.create({
   subtitle: {
     color: '#475569',
     lineHeight: 20,
+  },
+  infoBox: {
+    backgroundColor: '#eef2ff',
+    borderRadius: 14,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: '#c7d2fe',
+    gap: 4,
+  },
+  infoTitle: {
+    color: BRAND,
+    fontWeight: '800',
+  },
+  infoText: {
+    color: '#475569',
+    lineHeight: 18,
   },
   card: {
     backgroundColor: 'rgba(255,255,255,0.92)',

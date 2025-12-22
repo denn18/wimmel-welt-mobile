@@ -14,6 +14,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { apiRequest } from '../../../services/api-client';
 import { pickMultipleFiles, pickSingleFile, type PickedFile } from '../../../utils/file-picker';
+import { BottomNavbar } from '../../../components/BottomNavbar';
 
 const BRAND = 'rgb(49,66,154)';
 const WEEKDAY_SUGGESTIONS = ['Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag'];
@@ -267,10 +268,19 @@ export default function TagespflegepersonProfilScreen() {
             </Text>
           </View>
 
+          <View style={styles.infoBox}>
+            <Text style={styles.infoTitle}>Besser am Laptop bearbeiten</Text>
+            <Text style={styles.infoText}>
+              Wir empfehlen die Profilerstellung auf einem Laptop oder Computer durchzuführen.
+            </Text>
+          </View>
+
           <View style={styles.card}>
             <View style={styles.sectionHeader}>
-              <Text style={styles.sectionTitle}>Basisdaten deiner Kindertagespflege</Text>
-              <Text style={styles.sectionHint}>Pflichtfelder sind mit * gekennzeichnet.</Text>
+              <View style={styles.sectionHeaderContent}>
+                <Text style={styles.sectionTitle}>Basisdaten deiner Kindertagespflege</Text>
+                <Text style={styles.sectionHint}>Pflichtfelder sind mit * gekennzeichnet.</Text>
+              </View>
             </View>
 
             <View style={styles.gridTwoCols}>
@@ -417,8 +427,12 @@ export default function TagespflegepersonProfilScreen() {
 
           <View style={styles.card}>
             <View style={styles.sectionHeader}>
-              <Text style={styles.sectionTitle}>Profilbild, Logo & Unterlagen</Text>
-              <Text style={styles.sectionHint}>Wähle Dateien von deinem Gerät, damit sie im Backend gespeichert werden.</Text>
+              <View style={styles.sectionHeaderContent}>
+                <Text style={styles.sectionTitle}>Profilbild, Logo & Unterlagen</Text>
+                <Text style={styles.sectionHint}>
+                  Wähle Dateien von deinem Gerät, damit sie im Backend gespeichert werden.
+                </Text>
+              </View>
             </View>
 
             <UploadRow
@@ -448,8 +462,8 @@ export default function TagespflegepersonProfilScreen() {
           </View>
 
           <View style={styles.card}>
-            <View style={styles.sectionHeader}>
-              <View>
+            <View style={[styles.sectionHeader, styles.sectionHeaderRow]}>
+              <View style={styles.sectionHeaderContent}>
                 <Text style={styles.sectionTitle}>Betreuungsfreie Tage</Text>
                 <Text style={styles.sectionHint}>Lege fest, an welchen Tagen regulär keine Betreuung stattfindet.</Text>
               </View>
@@ -487,8 +501,11 @@ export default function TagespflegepersonProfilScreen() {
           </View>
 
           <View style={styles.card}>
-            <View style={styles.sectionHeader}>
-              <Text style={styles.sectionTitle}>Betreuungszeiten</Text>
+            <View style={[styles.sectionHeader, styles.sectionHeaderRow]}>
+              <View style={styles.sectionHeaderContent}>
+                <Text style={styles.sectionTitle}>Betreuungszeiten</Text>
+                <Text style={styles.sectionHint}>Trage an welchen Tagen Familien ihre Kinder bringen können.</Text>
+              </View>
               <Pressable onPress={() => addScheduleEntry('careTimes')} style={styles.secondaryButton}>
                 <Text style={styles.secondaryButtonText}>Weiteren Zeitplan hinzufügen</Text>
               </Pressable>
@@ -507,8 +524,11 @@ export default function TagespflegepersonProfilScreen() {
           </View>
 
           <View style={styles.card}>
-            <View style={styles.sectionHeader}>
-              <Text style={styles.sectionTitle}>Tagesablauf</Text>
+            <View style={[styles.sectionHeader, styles.sectionHeaderRow]}>
+              <View style={styles.sectionHeaderContent}>
+                <Text style={styles.sectionTitle}>Tagesablauf</Text>
+                <Text style={styles.sectionHint}>Beschreibe, wie der Tag strukturiert ist.</Text>
+              </View>
               <Pressable onPress={() => addScheduleEntry('dailySchedule')} style={styles.secondaryButton}>
                 <Text style={styles.secondaryButtonText}>Weiteren Abschnitt hinzufügen</Text>
               </Pressable>
@@ -527,6 +547,12 @@ export default function TagespflegepersonProfilScreen() {
           </View>
 
           <View style={styles.card}>
+            <View style={styles.sectionHeader}>
+              <View style={styles.sectionHeaderContent}>
+                <Text style={styles.sectionTitle}>Kurzbeschreibung</Text>
+                <Text style={styles.sectionHint}>Fasse dein Angebot kompakt zusammen.</Text>
+              </View>
+            </View>
             <LabeledInput
               label="Kurzbeschreibung"
               placeholder="Was macht deine Tagespflege besonders?"
@@ -541,6 +567,15 @@ export default function TagespflegepersonProfilScreen() {
               value={formState.bio}
               onChangeText={(value) => updateField('bio', value)}
             />
+          </View>
+
+          <View style={styles.card}>
+            <View style={styles.sectionHeader}>
+              <View style={styles.sectionHeaderContent}>
+                <Text style={styles.sectionTitle}>Koch- & Essensplan</Text>
+                <Text style={styles.sectionHint}>Beschreibe, welche Mahlzeiten du anbietest.</Text>
+              </View>
+            </View>
             <LabeledInput
               label="Essensplan"
               placeholder="Beschreibe, welche Mahlzeiten du anbietest."
@@ -566,6 +601,7 @@ export default function TagespflegepersonProfilScreen() {
           <View style={{ height: 22 }} />
         </ScrollView>
       </KeyboardAvoidingView>
+      <BottomNavbar />
     </SafeAreaView>
   );
 }
@@ -669,6 +705,7 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     padding: 18,
     gap: 16,
+    paddingBottom: 180,
   },
   header: {
     gap: 6,
@@ -687,6 +724,22 @@ const styles = StyleSheet.create({
     color: '#475569',
     lineHeight: 20,
   },
+  infoBox: {
+    backgroundColor: '#eef2ff',
+    borderRadius: 14,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: '#c7d2fe',
+    gap: 4,
+  },
+  infoTitle: {
+    color: BRAND,
+    fontWeight: '800',
+  },
+  infoText: {
+    color: '#475569',
+    lineHeight: 18,
+  },
   card: {
     backgroundColor: 'rgba(255,255,255,0.92)',
     borderRadius: 18,
@@ -703,7 +756,12 @@ const styles = StyleSheet.create({
   sectionHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    flexWrap: 'wrap',
     gap: 8,
+  },
+  sectionHeaderRow: {
+    alignItems: 'center',
   },
   sectionTitle: {
     fontSize: 16,
@@ -714,6 +772,12 @@ const styles = StyleSheet.create({
     color: '#64748b',
     fontSize: 12,
     flexShrink: 1,
+    lineHeight: 16,
+  },
+  sectionHeaderContent: {
+    flex: 1,
+    gap: 4,
+    minWidth: '60%',
   },
   gridTwoCols: {
     flexDirection: 'row',

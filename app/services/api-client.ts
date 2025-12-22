@@ -36,6 +36,7 @@ export async function apiRequest<T>(path: string, options: ApiRequestOptions = {
       'Content-Type': 'application/json',
       ...headers,
     },
+    credentials: 'include',
     ...rest,
   });
 
