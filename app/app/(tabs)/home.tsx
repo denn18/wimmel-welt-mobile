@@ -14,6 +14,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { apiRequest } from '../../services/api-client';
+import { BottomNavbar } from '../components/BottomNavbar';
 
 const BRAND_TITLE_COLOR = 'rgb(49,66,154)';
 
@@ -158,12 +159,12 @@ export default function HomeScreen() {
             </View>
           ) : null}
 
-          {/* Spacer damit Bottom-Nav nicht überdeckt */}
-          <View style={{ height: 86 }} />
-        </ScrollView>
+      </ScrollView>
 
-        {/* Bottom Navigation
-        Navbar, die Icons können wir später übernehmen, erstmal bleibt diese auskommentiert sonst habe wir eine doppelte. 
+      <BottomNavbar />
+
+      {/* Bottom Navigation
+      Navbar, die Icons können wir später übernehmen, erstmal bleibt diese auskommentiert sonst habe wir eine doppelte.
         <View style={styles.bottomNav}>
           <Pressable style={styles.navItem} onPress={() => router.push('/(tabs)')}>
             <Ionicons name="home" size={22} color={BRAND_TITLE_COLOR} />
@@ -206,7 +207,7 @@ const styles = StyleSheet.create({
   screen: { flex: 1 },
   content: {
     paddingHorizontal: 18,
-    paddingBottom: 10,
+    paddingBottom: 140,
   },
 
   topHeader: {

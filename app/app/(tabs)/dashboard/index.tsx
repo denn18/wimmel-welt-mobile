@@ -18,6 +18,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { apiRequest } from '../../../services/api-client';
 import { assetUrl, FileReference } from '../../../utils/url';
+import { BottomNavbar } from '../../components/BottomNavbar';
 // OPTIONAL (wenn du es hast): für "Nachricht" wie im Web
 // import { useAuth } from '../../../context/AuthContext';
 
@@ -460,6 +461,7 @@ export default function DashboardScreen() {
         </View> */}
 
       </ScrollView>
+      <BottomNavbar />
     </SafeAreaView>
   );
 }
@@ -470,7 +472,7 @@ const styles = StyleSheet.create({
   content: {
     paddingHorizontal: 18,
     paddingTop: 10,
-    paddingBottom: 20,
+    paddingBottom: 140,
     gap: 14,
   },
 

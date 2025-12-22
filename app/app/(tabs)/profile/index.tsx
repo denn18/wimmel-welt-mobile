@@ -2,6 +2,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { BottomNavbar } from '../../components/BottomNavbar';
+
 const profileFields = [
   { label: 'Name', value: 'Mara Bergmann' },
   { label: 'E-Mail', value: 'mara.bergmann@example.com' },
@@ -63,6 +65,7 @@ export default function ProfileScreen() {
           </View>
         </View>
       </ScrollView>
+      <BottomNavbar />
     </SafeAreaView>
   );
 }
@@ -75,7 +78,7 @@ const styles = StyleSheet.create({
   content: {
     padding: 18,
     gap: 16,
-    paddingBottom: 42,
+    paddingBottom: 140,
   },
   header: {
     flexDirection: 'row',

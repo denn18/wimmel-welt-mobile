@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Link, usePathname, useRouter } from 'expo-router';
 import { Alert, Pressable, StyleSheet, Text, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useAuthStatus } from '../hooks/use-auth-status';
 
@@ -10,13 +10,14 @@ const BRAND = 'rgb(49,66,154)';
 const items = [
   { key: 'home', label: 'Home', icon: 'home', href: '/(tabs)/home' },
   { key: 'dashboard', label: 'Dashboard', icon: 'grid', href: '/(tabs)/dashboard' },
-  { key: 'messages', label: 'Nachrichten', icon: 'chatbubbles', href: '/(tabs)/messages' },
+  { key: 'messages', label: 'Nachrichten', icon: 'chatbubbles', href: '/(tabs)/messages', aliases: ['/nachrichten'] },
 ];
 
 export function BottomNavbar() {
   const router = useRouter();
   const pathname = usePathname() || '';
   const { role, loading } = useAuthStatus();
+  const insets = useSafeAreaInsets();
 
   const handleProfilePress = () => {
     if (loading) return;
@@ -46,32 +47,44 @@ export function BottomNavbar() {
     );
   };
 
-  const isActive = (href: string) => pathname.startsWith(href);
+  const isActive = (href: string, aliases?: string[]) =>
+    [href, ...(aliases ?? [])].some((route) => pathname.startsWith(route));
 
   return (
-    <SafeAreaView edges={['bottom']} style={styles.wrapper}>
-      <View style={styles.container}>
+    <SafeAreaView
+      edges={['bottom']}
+      style={[styles.wrapper, { paddingBottom: Math.max(insets.bottom, 12) }]}
+      pointerEvents="box-none"
+    >
+      <View style={styles.bottomNav}>
         {items.map((item) => (
           <Link key={item.key} href={item.href} asChild>
-            <Pressable style={styles.item}>
+            <Pressable style={styles.navItem}>
               {({ pressed }) => (
                 <>
                   <Ionicons
                     name={item.icon as never}
                     size={22}
-                    color={isActive(item.href) ? BRAND : '#94A3B8'}
+                    color={isActive(item.href, item.aliases) ? BRAND : '#94A3B8'}
                     style={{ opacity: pressed ? 0.7 : 1 }}
                   />
-                  <Text style={[styles.label, isActive(item.href) && styles.labelActive]}>{item.label}</Text>
+                  <Text style={[styles.navLabel, isActive(item.href, item.aliases) && styles.navLabelActive]}>
+                    {item.label}
+                  </Text>
                 </>
               )}
             </Pressable>
           </Link>
         ))}
 
-        <Pressable style={styles.item} onPress={handleProfilePress} disabled={loading}>
-          <Ionicons name="person-circle" size={24} color={role ? BRAND : '#94A3B8'} style={{ opacity: loading ? 0.6 : 1 }} />
-          <Text style={[styles.label, role && styles.labelActive]}>Profil</Text>
+        <Pressable style={styles.navItem} onPress={handleProfilePress} disabled={loading}>
+          <Ionicons
+            name="person-circle"
+            size={24}
+            color={role ? BRAND : '#94A3B8'}
+            style={{ opacity: loading ? 0.6 : 1 }}
+          />
+          <Text style={[styles.navLabel, role && styles.navLabelActive]}>Profil</Text>
         </Pressable>
       </View>
     </SafeAreaView>
@@ -80,34 +93,43 @@ export function BottomNavbar() {
 
 const styles = StyleSheet.create({
   wrapper: {
-    backgroundColor: '#ffffff',
-  },
-  container: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    alignItems: 'center',
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
     paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderTopWidth: 1,
-    borderTopColor: '#e2e8f0',
-    backgroundColor: '#ffffff',
-    shadowColor: '#1f2937',
-    shadowOpacity: 0.08,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: -4 },
-    elevation: 8,
+    backgroundColor: 'transparent',
   },
-  item: {
+  bottomNav: {
+    height: 64,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255,255,255,0.92)',
+    borderWidth: 1,
+    borderColor: 'rgba(191,211,255,0.9)',
+    flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-around',
+    shadowColor: '#9BB9FF',
+    shadowOpacity: 0.22,
+    shadowOffset: { width: 0, height: 14 },
+    shadowRadius: 20,
+    elevation: 10,
+    paddingHorizontal: 8,
+    gap: 8,
+  },
+  navItem: {
+    alignItems: 'center',
+    justifyContent: 'center',
     gap: 4,
+    minWidth: 64,
     flex: 1,
   },
-  label: {
-    fontSize: 12,
+  navLabel: {
+    fontSize: 11.5,
+    fontWeight: '800',
     color: '#94A3B8',
-    fontWeight: '700',
   },
-  labelActive: {
+  navLabelActive: {
     color: BRAND,
   },
 });
