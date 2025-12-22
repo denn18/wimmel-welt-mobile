@@ -14,7 +14,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { apiRequest } from '../../services/api-client';
-import { BottomNavbar } from '../components/BottomNavbar';
+import { BottomNavbar } from '../../components/BottomNavbar';
 
 const BRAND_TITLE_COLOR = 'rgb(49,66,154)';
 
