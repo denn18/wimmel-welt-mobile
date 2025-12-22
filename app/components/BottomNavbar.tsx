@@ -1,5 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
-import { Link, usePathname, useRouter } from 'expo-router';
+import { Link, useRouter } from 'expo-router';
 import { Alert, Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -15,7 +15,6 @@ const items = [
 
 export function BottomNavbar() {
   const router = useRouter();
-  const pathname = usePathname() || '';
   const { role, loading } = useAuthStatus();
   const insets = useSafeAreaInsets();
 
@@ -47,13 +46,10 @@ export function BottomNavbar() {
     );
   };
 
-  const isActive = (href: string, aliases?: string[]) =>
-    [href, ...(aliases ?? [])].some((route) => pathname.startsWith(route));
-
   return (
     <SafeAreaView
       edges={['bottom']}
-      style={[styles.wrapper, { paddingBottom: Math.max(insets.bottom, 12) }]}
+      style={[styles.wrapper, { paddingBottom: insets.bottom }]}
       pointerEvents="box-none"
     >
       <View style={styles.bottomNav}>
@@ -65,10 +61,10 @@ export function BottomNavbar() {
                   <Ionicons
                     name={item.icon as never}
                     size={22}
-                    color={isActive(item.href, item.aliases) ? BRAND : '#94A3B8'}
+                    color={BRAND}
                     style={{ opacity: pressed ? 0.7 : 1 }}
                   />
-                  <Text style={[styles.navLabel, isActive(item.href, item.aliases) && styles.navLabelActive]}>
+                  <Text style={styles.navLabel}>
                     {item.label}
                   </Text>
                 </>
@@ -81,10 +77,10 @@ export function BottomNavbar() {
           <Ionicons
             name="person-circle"
             size={24}
-            color={role ? BRAND : '#94A3B8'}
+            color={BRAND}
             style={{ opacity: loading ? 0.6 : 1 }}
           />
-          <Text style={[styles.navLabel, role && styles.navLabelActive]}>Profil</Text>
+          <Text style={styles.navLabel}>Profil</Text>
         </Pressable>
       </View>
     </SafeAreaView>
@@ -97,12 +93,12 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    paddingHorizontal: 16,
+    paddingHorizontal: 0,
     backgroundColor: 'transparent',
   },
   bottomNav: {
     height: 64,
-    borderRadius: 20,
+    borderRadius: 0,
     backgroundColor: 'rgba(255,255,255,0.92)',
     borderWidth: 1,
     borderColor: 'rgba(191,211,255,0.9)',
@@ -127,9 +123,6 @@ const styles = StyleSheet.create({
   navLabel: {
     fontSize: 11.5,
     fontWeight: '800',
-    color: '#94A3B8',
-  },
-  navLabelActive: {
     color: BRAND,
   },
 });
