@@ -21,6 +21,7 @@ export default function RootLayout() {
           <Stack.Screen name="login" options={{ headerShown: false, title: 'Login' }} />
           <Stack.Screen name="anmelden/index" options={{ headerShown: false, title: 'Registrieren' }} />
           <Stack.Screen name="anmelden/eltern" options={{ headerShown: false, title: 'Elternprofil' }} />
+          <Stack.Screen name="anmelden/eltern/profil" options={{ headerShown: false, title: 'Elternprofil' }} />
           <Stack.Screen
             name="anmelden/tagespflegeperson"
             options={{ headerShown: false, title: 'Kindertagespflegeperson' }}
