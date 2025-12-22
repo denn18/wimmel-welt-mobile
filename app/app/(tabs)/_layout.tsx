@@ -1,5 +1,6 @@
 import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { BottomNavbar } from '../../components/BottomNavbar';
 
 const BRAND = 'rgb(49,66,154)';
 
@@ -11,10 +12,10 @@ export default function TabsLayout() {
         tabBarActiveTintColor: BRAND,
         tabBarInactiveTintColor: '#94A3B8',
       }}
-      tabBar={() => null}
+      tabBar={(props) => <BottomNavbar {...props} />}
     >
       <Tabs.Screen
-        name="index"
+        name="home"
         options={{
           title: 'Home',
           tabBarIcon: ({ color, size }) => (
