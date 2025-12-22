@@ -13,6 +13,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { apiRequest } from '../../../services/api-client';
+import { pickSingleFile } from '../../../utils/file-picker';
 
 type Child = { name: string; age: string; gender: '' | 'female' | 'male' | 'diverse'; notes: string };
 
@@ -84,6 +85,12 @@ export default function ElternProfilScreen() {
       return current.filter((_, childIndex) => childIndex !== index);
     });
   }
+
+  const handlePickProfileImage = async () => {
+    const file = await pickSingleFile({ type: ['image/*'] });
+    if (!file) return;
+    setProfileImage({ dataUrl: file.dataUrl, fileName: file.fileName });
+  };
 
   const handleSubmit = async () => {
     setSubmitting(true);
@@ -307,6 +314,14 @@ export default function ElternProfilScreen() {
               <Text style={styles.sectionTitle}>Foto von dir (optional)</Text>
               <Text style={styles.sectionHint}>Du kannst später auch über die Webansicht ein Foto ergänzen.</Text>
             </View>
+            <Pressable onPress={handlePickProfileImage} style={styles.uploadButton}>
+              <Text style={styles.uploadButtonText}>Foto auswählen</Text>
+            </Pressable>
+            <Text style={styles.sectionHint}>
+              {profileImage.fileName
+                ? `Ausgewählt: ${profileImage.fileName}`
+                : 'Wähle ein Bild von deinem iPhone oder Gerät aus.'}
+            </Text>
             <LabeledInput
               label="Bild-Notiz"
               placeholder="Optionaler Hinweis oder Dateiname"
@@ -335,7 +350,7 @@ export default function ElternProfilScreen() {
           ) : null}
 
           <Pressable onPress={handleSubmit} disabled={submitting} style={styles.primaryButton}>
-            <Text style={styles.primaryButtonText}>{submitting ? 'Wird gesendet …' : 'Anfrage senden'}</Text>
+            <Text style={styles.primaryButtonText}>{submitting ? 'Wird gesendet …' : 'Account erstellen'}</Text>
           </Pressable>
 
           <View style={{ height: 22 }} />
@@ -522,6 +537,17 @@ const styles = StyleSheet.create({
   secondaryButtonText: {
     color: '#3353c5',
     fontWeight: '700',
+  },
+  uploadButton: {
+    alignSelf: 'flex-start',
+    backgroundColor: 'rgba(51,83,197,0.1)',
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+  },
+  uploadButtonText: {
+    color: '#1d4ed8',
+    fontWeight: '800',
   },
   counter: {
     color: '#1d4ed8',
