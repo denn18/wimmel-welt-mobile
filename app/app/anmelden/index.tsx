@@ -2,6 +2,8 @@ import { Link } from 'expo-router';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { BottomNavbar } from '../../components/BottomNavbar';
+
 export default function RoleSelectionPage() {
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -45,6 +47,7 @@ export default function RoleSelectionPage() {
           </View>
         </View>
       </ScrollView>
+      <BottomNavbar />
     </SafeAreaView>
   );
 }
@@ -57,6 +60,7 @@ const styles = StyleSheet.create({
   content: {
     flexGrow: 1,
     padding: 18,
+    paddingBottom: 120,
   },
   shell: {
     gap: 22,

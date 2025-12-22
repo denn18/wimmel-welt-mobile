@@ -17,6 +17,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { apiRequest } from '../../services/api-client';
 import { assetUrl, FileReference } from '../../utils/url';
+import { BottomNavbar } from '../../components/BottomNavbar';
 
 const BRAND = 'rgb(49,66,154)';
 
@@ -423,6 +424,8 @@ export default function CaregiverDetailScreen() {
         </ScrollView>
       )}
 
+      <BottomNavbar />
+
       <Modal visible={Boolean(lightboxImage)} transparent animationType="fade" onRequestClose={() => setLightboxImage(null)}>
         <View style={styles.lightboxBackdrop}>
           <Pressable style={styles.lightboxClose} onPress={() => setLightboxImage(null)}>
@@ -467,7 +470,7 @@ const styles = StyleSheet.create({
   content: {
     padding: 16,
     gap: 14,
-    paddingBottom: 36,
+    paddingBottom: 160,
   },
   card: {
     backgroundColor: '#fff',

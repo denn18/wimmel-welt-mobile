@@ -4,6 +4,8 @@ import { useMemo } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { BottomNavbar } from '../../components/BottomNavbar';
+
 const BRAND = 'rgb(49,66,154)';
 
 export default function MessageDetailScreen() {
@@ -36,6 +38,8 @@ export default function MessageDetailScreen() {
           <Text style={styles.sendText}>Senden</Text>
         </Pressable>
       </View>
+
+      <BottomNavbar />
     </SafeAreaView>
   );
 }
@@ -46,6 +50,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#f8fbff',
     padding: 16,
     gap: 16,
+    paddingBottom: 130,
   },
   header: {
     flexDirection: 'row',

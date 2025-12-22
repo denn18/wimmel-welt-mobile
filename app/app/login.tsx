@@ -14,6 +14,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { apiRequest } from '../services/api-client';
+import { BottomNavbar } from '../components/BottomNavbar';
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -109,6 +110,7 @@ export default function LoginScreen() {
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
+      <BottomNavbar />
     </SafeAreaView>
   );
 }
@@ -121,7 +123,7 @@ const styles = StyleSheet.create({
   content: {
     padding: 18,
     gap: 18,
-    paddingBottom: 42,
+    paddingBottom: 140,
   },
   header: {
     gap: 8,

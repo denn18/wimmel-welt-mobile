@@ -2,6 +2,8 @@ import { Link } from 'expo-router';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { BottomNavbar } from '../../components/BottomNavbar';
+
 export default function ElternHinweisScreen() {
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -19,6 +21,7 @@ export default function ElternHinweisScreen() {
           Zurück zur Rollenwahl
         </Link>
       </View>
+      <BottomNavbar />
     </SafeAreaView>
   );
 }
@@ -34,6 +37,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     padding: 24,
     gap: 14,
+    paddingBottom: 140,
   },
   title: {
     fontSize: 24,
