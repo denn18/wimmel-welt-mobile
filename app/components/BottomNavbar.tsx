@@ -19,12 +19,22 @@ const items = [
     href: '/(tabs)/messages',
     aliases: ['/nachrichten'],
   },
+  {
+    key: 'settings',
+    label: 'Einstellungen',
+    icon: 'settings',
+    routeName: 'settings/index',
+    href: '/(tabs)/settings',
+  },
 ];
 
 export function BottomNavbar({ state, navigation }: Partial<BottomTabBarProps> = {}) {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { role, loading } = useAuthStatus();
+
+  const bottomPadding = Math.max(insets.bottom, 10);
+  const navHeight = 64 + bottomPadding;
 
   const routes = state?.routes ?? [];
   const activeIndex = state?.index ?? -1;
@@ -65,12 +75,12 @@ export function BottomNavbar({ state, navigation }: Partial<BottomTabBarProps> =
       edges={['bottom']}
       style={[
         styles.wrapper,
-        { paddingBottom: insets.bottom },
-        isStandalone && styles.wrapperStandalone,
+        isStandalone ? styles.wrapperStandalone : styles.wrapperEmbedded,
+        { height: navHeight },
       ]}
       pointerEvents="box-none"
     >
-      <View style={styles.bottomNav}>
+      <View style={[styles.bottomNav, { paddingBottom: bottomPadding, height: navHeight }]}>
         {items.map((item) => {
           const routeIndex = routes.findIndex((route) => route.name === item.routeName);
           const isFocused = activeIndex !== -1 && routeIndex === activeIndex;
@@ -123,7 +133,6 @@ export function BottomNavbar({ state, navigation }: Partial<BottomTabBarProps> =
 
 const styles = StyleSheet.create({
   wrapper: {
-    paddingHorizontal: 0,
     backgroundColor: 'transparent',
   },
   wrapperStandalone: {
@@ -131,9 +140,12 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
+    zIndex: 20,
+  },
+  wrapperEmbedded: {
+    width: '100%',
   },
   bottomNav: {
-    height: 64,
     borderRadius: 0,
     backgroundColor: 'rgba(255,255,255,0.92)',
     borderWidth: 1,
