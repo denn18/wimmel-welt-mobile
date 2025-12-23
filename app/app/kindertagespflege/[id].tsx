@@ -603,7 +603,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#0f172a',
+    color: BRAND,
   },
   sectionDescription: {
     color: '#64748b',
