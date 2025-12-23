@@ -124,7 +124,9 @@ export default function LoginScreen() {
                 Impressum
               </Link>
               <Text style={styles.footerDivider}>·</Text>
-              <Text style={styles.footerLink}>Kontakt</Text>
+              <Link href="/kontakt" style={styles.footerLink}>
+                Kontakt
+              </Link>
             </View>
           </View>
         </ScrollView>
