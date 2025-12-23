@@ -106,7 +106,7 @@ export default function LoginScreen() {
             </Pressable>
 
             <View style={styles.registerRow}>
-              <Text style={styles.helperText}>Neu bei Kleine Welt?</Text>
+              <Text style={styles.helperText}>Neu bei Wimmel Welt?</Text>
               <Link href="/anmelden" style={styles.highlightText}>
                 Jetzt kostenlos registrieren!
               </Link>
