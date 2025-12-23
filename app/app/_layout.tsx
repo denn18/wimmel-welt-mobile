@@ -21,6 +21,7 @@ export default function RootLayout() {
           <Stack.Screen name="login" options={{ headerShown: false, title: 'Login' }} />
           <Stack.Screen name="datenschutz" options={{ headerShown: false, title: 'Datenschutz' }} />
           <Stack.Screen name="impressum" options={{ headerShown: false, title: 'Impressum' }} />
+          <Stack.Screen name="kontakt" options={{ headerShown: false, title: 'Kontakt' }} />
           <Stack.Screen name="anmelden/index" options={{ headerShown: false, title: 'Registrieren' }} />
           <Stack.Screen name="anmelden/eltern" options={{ headerShown: false, title: 'Elternprofil' }} />
           <Stack.Screen name="anmelden/eltern/profil" options={{ headerShown: false, title: 'Elternprofil' }} />
