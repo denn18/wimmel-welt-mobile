@@ -1,7 +1,7 @@
-import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+
+import { BottomNavbar } from '../components/BottomNavbar';
 
 const BRAND = 'rgb(49,66,154)';
 
@@ -43,21 +43,9 @@ const sections = [
 ];
 
 export default function ImprintPage() {
-  const router = useRouter();
-
   return (
     <SafeAreaView style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        <View style={styles.topBar}>
-          <Pressable onPress={() => router.back()} style={styles.backButton}>
-            <Ionicons name="arrow-back" size={20} color={BRAND} />
-          </Pressable>
-          <Text style={styles.topBarTitle}>Impressum</Text>
-          <View style={styles.placeholderIcon}>
-            <Ionicons name="ellipsis-horizontal" size={20} color={BRAND} />
-          </View>
-        </View>
-
         <View style={styles.headerCard}>
           <View style={styles.badge}>
             <Text style={styles.badgeText}>Impressum</Text>
@@ -82,16 +70,8 @@ export default function ImprintPage() {
             </View>
           ))}
         </View>
-
-        <View style={styles.actions}>
-          <Pressable style={styles.primaryButton}>
-            <Text style={styles.primaryButtonText}>Profil speichern</Text>
-          </Pressable>
-          <Pressable style={styles.secondaryButton}>
-            <Text style={styles.secondaryButtonText}>Weitere Angaben anzeigen</Text>
-          </Pressable>
-        </View>
       </ScrollView>
+      <BottomNavbar />
     </SafeAreaView>
   );
 }
@@ -104,44 +84,7 @@ const styles = StyleSheet.create({
   content: {
     padding: 16,
     gap: 14,
-    paddingBottom: 36,
-  },
-  topBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 4,
-    marginBottom: 4,
-  },
-  backButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: '#d8e0ef',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#fff',
-    shadowColor: '#9BB9FF',
-    shadowOpacity: 0.18,
-    shadowOffset: { width: 0, height: 8 },
-    shadowRadius: 14,
-    elevation: 2,
-  },
-  topBarTitle: {
-    fontSize: 16,
-    fontWeight: '800',
-    color: BRAND,
-    letterSpacing: 0.2,
-  },
-  placeholderIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: 'transparent',
-    alignItems: 'center',
-    justifyContent: 'center',
+    paddingBottom: 120,
   },
   headerCard: {
     backgroundColor: '#f7f9ff',
@@ -211,39 +154,6 @@ const styles = StyleSheet.create({
   bodyText: {
     color: '#0f172a',
     lineHeight: 19,
-    fontSize: 14,
-  },
-  actions: {
-    marginTop: 6,
-    gap: 10,
-  },
-  primaryButton: {
-    backgroundColor: BRAND,
-    borderRadius: 14,
-    paddingVertical: 14,
-    alignItems: 'center',
-    shadowColor: BRAND,
-    shadowOpacity: 0.18,
-    shadowOffset: { width: 0, height: 10 },
-    shadowRadius: 20,
-    elevation: 3,
-  },
-  primaryButtonText: {
-    color: '#fff',
-    fontWeight: '800',
-    fontSize: 15,
-  },
-  secondaryButton: {
-    backgroundColor: '#eef3ff',
-    borderRadius: 14,
-    paddingVertical: 13,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#d8e0ef',
-  },
-  secondaryButtonText: {
-    color: BRAND,
-    fontWeight: '800',
     fontSize: 14,
   },
 });
