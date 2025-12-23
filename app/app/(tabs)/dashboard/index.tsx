@@ -410,7 +410,7 @@ export default function DashboardScreen() {
                       onPress={() => router.push(`/kindertagespflege/${caregiver.id}`)}
                     >
                       <Ionicons name="chatbubble-ellipses" size={16} color="#fff" />
-                      <Text style={styles.primaryActionText}>Kindertagespflege kennenlernen</Text>
+                      <Text style={styles.primaryActionText}>Kennenlernen</Text>
                     </Pressable>
 
                     <Pressable style={styles.secondaryAction} onPress={() => handleOpenMessenger(caregiver)}>
