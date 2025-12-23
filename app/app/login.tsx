@@ -116,9 +116,13 @@ export default function LoginScreen() {
           <View style={styles.footerLinks}>
             <Text style={styles.footerNote}>© 2025 Wimmel Welt. Alle Rechte vorbehalten.</Text>
             <View style={styles.footerRow}>
-              <Text style={styles.footerLink}>Datenschutz</Text>
+              <Link href="/datenschutz" style={styles.footerLink}>
+                Datenschutz
+              </Link>
               <Text style={styles.footerDivider}>·</Text>
-              <Text style={styles.footerLink}>Impressum</Text>
+              <Link href="/impressum" style={styles.footerLink}>
+                Impressum
+              </Link>
               <Text style={styles.footerDivider}>·</Text>
               <Text style={styles.footerLink}>Kontakt</Text>
             </View>
