@@ -8,7 +8,7 @@ type AuthStatus = {
   user: AuthUser;
   role: string | null;
   loading: boolean;
-  refresh: () => void;
+  refresh: () => Promise<AuthUser>;
 };
 
 async function fetchAuthUser(): Promise<AuthUser> {
@@ -25,12 +25,12 @@ export function useAuthStatus(): AuthStatus {
   const [user, setUser] = useState<AuthUser>(null);
   const [loading, setLoading] = useState(true);
 
-  const refresh = () => {
+  const refresh = async () => {
     setLoading(true);
-    fetchAuthUser().then((currentUser) => {
-      setUser(currentUser);
-      setLoading(false);
-    });
+    const currentUser = await fetchAuthUser();
+    setUser(currentUser);
+    setLoading(false);
+    return currentUser;
   };
 
   useEffect(() => {

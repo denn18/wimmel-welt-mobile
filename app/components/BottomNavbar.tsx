@@ -2,6 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { Link, useRouter } from 'expo-router';
 import { Alert, Pressable, StyleSheet, Text, View } from 'react-native';
+import { useState } from 'react';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useAuthStatus } from '../hooks/use-auth-status';
@@ -31,7 +32,8 @@ const items = [
 export function BottomNavbar({ state, navigation }: Partial<BottomTabBarProps> = {}) {
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { role, loading } = useAuthStatus();
+  const { role, loading, refresh } = useAuthStatus();
+  const [checkingProfile, setCheckingProfile] = useState(false);
 
   const bottomPadding = Math.max(insets.bottom, 10);
   const navHeight = 64 + bottomPadding;
@@ -42,32 +44,44 @@ export function BottomNavbar({ state, navigation }: Partial<BottomTabBarProps> =
   const activeRouteName = routes[activeIndex]?.name;
   const profileRouteName = 'profile/index';
 
-  const handleProfilePress = () => {
-    if (loading) return;
+  const handleProfilePress = async () => {
+    if (loading || checkingProfile) return;
 
-    if (!role) {
-      router.push('/login');
-      return;
-    }
+    setCheckingProfile(true);
+    try {
+      let currentRole = role;
 
-    Alert.alert(
-      'Profilerstellung am Laptop empfohlen',
-      'Wir empfehlen die Profilerstellung auf einem Laptop oder Computer durchzuführen.',
-      [
-        {
-          text: 'Weiter',
-          onPress: () => {
-            if (role === 'parent') {
-              router.push('/anmelden/eltern/profil');
-            } else if (role === 'caregiver' || role === 'tagespflegeperson') {
-              router.push('/anmelden/tagespflegeperson/profil');
-            } else {
-              navigation.navigate(profileRouteName as never);
-            }
+      if (!currentRole) {
+        const currentUser = await refresh();
+        currentRole = currentUser?.role ?? null;
+      }
+
+      if (!currentRole) {
+        router.push('/login');
+        return;
+      }
+
+      Alert.alert(
+        'Profilerstellung am Laptop empfohlen',
+        'Wir empfehlen die Profilerstellung auf einem Laptop oder Computer durchzuführen.',
+        [
+          {
+            text: 'Weiter',
+            onPress: () => {
+              if (currentRole === 'parent') {
+                router.push('/anmelden/eltern/profil');
+              } else if (currentRole === 'caregiver' || currentRole === 'tagespflegeperson') {
+                router.push('/anmelden/tagespflegeperson/profil');
+              } else {
+                navigation.navigate(profileRouteName as never);
+              }
+            },
           },
-        },
-      ],
-    );
+        ],
+      );
+    } finally {
+      setCheckingProfile(false);
+    }
   };
 
   return (
@@ -115,7 +129,7 @@ export function BottomNavbar({ state, navigation }: Partial<BottomTabBarProps> =
           );
         })}
 
-        <Pressable style={styles.navItem} onPress={handleProfilePress} disabled={loading}>
+        <Pressable style={styles.navItem} onPress={handleProfilePress} disabled={loading || checkingProfile}>
           <Ionicons
             name="person-circle"
             size={24}
