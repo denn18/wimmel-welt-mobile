@@ -20,14 +20,14 @@ const BRAND = 'rgb(49,66,154)';
 
 export default function LoginScreen() {
   const router = useRouter();
-  const [email, setEmail] = useState('');
+  const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
 
   const handleLogin = async () => {
-    if (!email || !password) {
-      setMessage('Bitte E-Mail und Passwort eingeben.');
+    if (!identifier || !password) {
+      setMessage('Bitte Benutzername/E-Mail und Passwort eingeben.');
       return;
     }
 
@@ -37,7 +37,7 @@ export default function LoginScreen() {
     try {
       await apiRequest('api/auth/login', {
         method: 'POST',
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ identifier, password }),
       });
       setMessage('Login erfolgreich. Du wirst weitergeleitet …');
       setTimeout(() => router.replace('/(tabs)/dashboard'), 600);
@@ -70,8 +70,8 @@ export default function LoginScreen() {
                 <TextInput
                   placeholder="Dein Nutzername oder E-Mail"
                   placeholderTextColor="#cbd5e1"
-                  value={email}
-                  onChangeText={setEmail}
+                  value={identifier}
+                  onChangeText={setIdentifier}
                   keyboardType="email-address"
                   autoCapitalize="none"
                   style={styles.input}
