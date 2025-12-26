@@ -208,9 +208,10 @@ export default function TagespflegepersonProfilScreen() {
         mealPlan: formState.mealPlan,
         roomImages: roomGallery.map((image) => ({ dataUrl: image.dataUrl, fileName: image.fileName })),
         closedDays: formState.closedDays,
+        role: 'caregiver' as const,
       };
 
-      await apiRequest('api/caregivers', {
+      await apiRequest('api/auth/register', {
         method: 'POST',
         body: JSON.stringify(payload),
       });

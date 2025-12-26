@@ -32,7 +32,7 @@ type FormState = {
 
 type StatusMessage = { type: 'success' | 'error'; message: string } | null;
 
-type CreateParentResponse = { role?: string };
+type RegisterResponse = { role?: string; message?: string };
 
 function createChild(): Child {
   return { name: '', age: '', gender: '', notes: '' };
@@ -112,9 +112,10 @@ export default function ElternProfilScreen() {
         profileImageName: profileImage.fileName,
         childrenAges: cleanedChildren.map((child) => child.age).filter(Boolean).join(', '),
         numberOfChildren: cleanedChildren.filter((child) => child.name).length,
+        role: 'parent' as const,
       };
 
-      const response = await apiRequest<CreateParentResponse>('api/parents', {
+      await apiRequest<RegisterResponse>('api/auth/register', {
         method: 'POST',
         body: JSON.stringify(payload),
       });
