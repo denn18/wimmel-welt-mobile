@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { Link, useRouter } from 'expo-router';
-import { Alert, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useState } from 'react';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -61,24 +61,15 @@ export function BottomNavbar({ state, navigation }: Partial<BottomTabBarProps> =
         return;
       }
 
-      Alert.alert(
-        'Profilerstellung am Laptop empfohlen',
-        'Wir empfehlen die Profilerstellung auf einem Laptop oder Computer durchzuführen.',
-        [
-          {
-            text: 'Weiter',
-            onPress: () => {
-              if (currentRole === 'parent') {
-                router.push('/anmelden/eltern/profil');
-              } else if (currentRole === 'caregiver' || currentRole === 'tagespflegeperson') {
-                router.push('/anmelden/tagespflegeperson/profil');
-              } else {
-                navigation.navigate(profileRouteName as never);
-              }
-            },
-          },
-        ],
-      );
+      if (currentRole === 'parent') {
+        router.push('/anmelden/eltern/profil');
+      } else if (currentRole === 'caregiver' || currentRole === 'tagespflegeperson') {
+        router.push('/anmelden/tagespflegeperson/profil');
+      } else if (navigation) {
+        navigation.navigate(profileRouteName as never);
+      } else {
+        router.push('/(tabs)/profile');
+      }
     } finally {
       setCheckingProfile(false);
     }
