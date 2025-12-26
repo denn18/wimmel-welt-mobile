@@ -32,7 +32,7 @@ const items = [
 export function BottomNavbar({ state, navigation }: Partial<BottomTabBarProps> = {}) {
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { role, loading, refresh } = useAuthStatus();
+  const { user, role, loading, refresh } = useAuthStatus();
   const [checkingProfile, setCheckingProfile] = useState(false);
 
   const bottomPadding = Math.max(insets.bottom, 10);
@@ -49,17 +49,18 @@ export function BottomNavbar({ state, navigation }: Partial<BottomTabBarProps> =
 
     setCheckingProfile(true);
     try {
-      let currentRole = role;
+      let currentUser = user;
 
-      if (!currentRole) {
-        const currentUser = await refresh();
-        currentRole = currentUser?.role ?? null;
+      if (!currentUser) {
+        currentUser = await refresh();
       }
 
-      if (!currentRole) {
+      if (!currentUser) {
         router.push('/login');
         return;
       }
+
+      const currentRole = currentUser.role ?? role;
 
       if (currentRole === 'parent') {
         router.push('/anmelden/eltern/profil');
