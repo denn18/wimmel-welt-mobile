@@ -35,6 +35,9 @@ export function BottomNavbar({ state, navigation }: Partial<BottomTabBarProps> =
   const { user, role, loading, refresh } = useAuthStatus();
   const [checkingProfile, setCheckingProfile] = useState(false);
 
+  const parentProfilePath = '/anmelden/eltern/profil';
+  const caregiverProfilePath = '/anmelden/tagespflegeperson/profil';
+
   const bottomPadding = Math.max(insets.bottom, 10);
   const navHeight = 64 + bottomPadding;
 
@@ -49,8 +52,20 @@ export function BottomNavbar({ state, navigation }: Partial<BottomTabBarProps> =
 
     const normalized = candidate.toLowerCase();
 
-    if (['parent', 'eltern'].includes(normalized)) return 'parent';
-    if (['caregiver', 'tagespflegeperson', 'tagesmutter', 'tagesvater'].includes(normalized)) {
+    if (['parent', 'parents', 'eltern', 'elternteil', 'elternprofil'].includes(normalized)) {
+      return 'parent';
+    }
+
+    if (
+      [
+        'caregiver',
+        'tagespflegeperson',
+        'tagesmutter',
+        'tagesvater',
+        'kindertagespflegeperson',
+        'childminder',
+      ].includes(normalized)
+    ) {
       return 'caregiver';
     }
 
@@ -62,28 +77,29 @@ export function BottomNavbar({ state, navigation }: Partial<BottomTabBarProps> =
 
     setCheckingProfile(true);
     try {
-      let currentUser = user;
-      let currentRole = normalizeRole(role);
+      const authUser = await refresh();
+      const currentRole =
+        normalizeRole(role) ||
+        normalizeRole(authUser?.role) ||
+        normalizeRole((authUser as Record<string, unknown>)?.['userType'] as string) ||
+        normalizeRole((authUser as Record<string, unknown>)?.['profileType'] as string);
 
-      if (!currentRole || !currentUser) {
-        currentUser = await refresh();
-        currentRole = normalizeRole(currentUser?.role);
-      }
-
-      if (!currentUser) {
+      if (!authUser) {
         router.push('/login');
         return;
       }
 
       if (currentRole === 'parent') {
-        router.push('/anmelden/eltern/profil');
-      } else if (currentRole === 'caregiver' || currentRole === 'tagespflegeperson') {
-        router.push('/anmelden/tagespflegeperson/profil');
-      } else if (navigation) {
-        navigation.navigate(profileRouteName as never);
-      } else {
-        router.push('/(tabs)/profile');
+        router.push(parentProfilePath);
+        return;
       }
+
+      if (currentRole === 'caregiver' || currentRole === 'tagespflegeperson') {
+        router.push(caregiverProfilePath);
+        return;
+      }
+
+      router.push(parentProfilePath);
     } finally {
       setCheckingProfile(false);
     }
