@@ -49,8 +49,20 @@ export function BottomNavbar({ state, navigation }: Partial<BottomTabBarProps> =
 
     const normalized = candidate.toLowerCase();
 
-    if (['parent', 'eltern'].includes(normalized)) return 'parent';
-    if (['caregiver', 'tagespflegeperson', 'tagesmutter', 'tagesvater'].includes(normalized)) {
+    if (['parent', 'parents', 'eltern', 'elternteil', 'elternprofil'].includes(normalized)) {
+      return 'parent';
+    }
+
+    if (
+      [
+        'caregiver',
+        'tagespflegeperson',
+        'tagesmutter',
+        'tagesvater',
+        'kindertagespflegeperson',
+        'childminder',
+      ].includes(normalized)
+    ) {
       return 'caregiver';
     }
 
@@ -62,27 +74,23 @@ export function BottomNavbar({ state, navigation }: Partial<BottomTabBarProps> =
 
     setCheckingProfile(true);
     try {
-      let currentUser = user;
-      let currentRole = normalizeRole(role);
-
-      if (!currentRole || !currentUser) {
-        currentUser = await refresh();
-        currentRole = normalizeRole(currentUser?.role);
-      }
-
-      if (!currentUser) {
-        router.push('/login');
-        return;
-      }
+      const authUser = user ?? (await refresh());
+      const currentRole =
+        normalizeRole(role) ||
+        normalizeRole(authUser?.role) ||
+        normalizeRole((authUser as Record<string, unknown>)?.['userType'] as string) ||
+        normalizeRole((authUser as Record<string, unknown>)?.['profileType'] as string);
 
       if (currentRole === 'parent') {
         router.push('/anmelden/eltern/profil');
       } else if (currentRole === 'caregiver' || currentRole === 'tagespflegeperson') {
         router.push('/anmelden/tagespflegeperson/profil');
-      } else if (navigation) {
+      } else if (authUser && navigation) {
         navigation.navigate(profileRouteName as never);
-      } else {
+      } else if (authUser) {
         router.push('/(tabs)/profile');
+      } else {
+        router.push('/login');
       }
     } finally {
       setCheckingProfile(false);
