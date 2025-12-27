@@ -32,7 +32,7 @@ const items = [
 export function BottomNavbar({ state, navigation }: Partial<BottomTabBarProps> = {}) {
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { role, loading, refresh } = useAuthStatus();
+  const { user, role, loading, refresh } = useAuthStatus();
   const [checkingProfile, setCheckingProfile] = useState(false);
 
   const bottomPadding = Math.max(insets.bottom, 10);
@@ -44,19 +44,33 @@ export function BottomNavbar({ state, navigation }: Partial<BottomTabBarProps> =
   const activeRouteName = routes[activeIndex]?.name;
   const profileRouteName = 'profile/index';
 
+  const normalizeRole = (candidate?: string | null) => {
+    if (!candidate) return null;
+
+    const normalized = candidate.toLowerCase();
+
+    if (['parent', 'eltern'].includes(normalized)) return 'parent';
+    if (['caregiver', 'tagespflegeperson', 'tagesmutter', 'tagesvater'].includes(normalized)) {
+      return 'caregiver';
+    }
+
+    return null;
+  };
+
   const handleProfilePress = async () => {
     if (loading || checkingProfile) return;
 
     setCheckingProfile(true);
     try {
-      let currentRole = role;
+      let currentUser = user;
+      let currentRole = normalizeRole(role);
 
-      if (!currentRole) {
-        const currentUser = await refresh();
-        currentRole = currentUser?.role ?? null;
+      if (!currentRole || !currentUser) {
+        currentUser = await refresh();
+        currentRole = normalizeRole(currentUser?.role);
       }
 
-      if (!currentRole) {
+      if (!currentUser) {
         router.push('/login');
         return;
       }
