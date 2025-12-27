@@ -35,7 +35,6 @@ export function BottomNavbar({ state, navigation }: Partial<BottomTabBarProps> =
   const { user, role, loading, refresh } = useAuthStatus();
   const [checkingProfile, setCheckingProfile] = useState(false);
 
-  const loginPath = '/login';
   const parentProfilePath = '/anmelden/eltern/profil';
   const caregiverProfilePath = '/anmelden/tagespflegeperson/profil';
 
@@ -60,8 +59,6 @@ export function BottomNavbar({ state, navigation }: Partial<BottomTabBarProps> =
     if (
       [
         'caregiver',
-        'kindertagespflege',
-        'tagespflege',
         'tagespflegeperson',
         'tagesmutter',
         'tagesvater',
@@ -81,15 +78,14 @@ export function BottomNavbar({ state, navigation }: Partial<BottomTabBarProps> =
     setCheckingProfile(true);
     try {
       const authUser = await refresh();
-      const currentUser = authUser ?? user;
       const currentRole =
         normalizeRole(role) ||
-        normalizeRole(currentUser?.role) ||
-        normalizeRole((currentUser as Record<string, unknown>)?.['userType'] as string) ||
-        normalizeRole((currentUser as Record<string, unknown>)?.['profileType'] as string);
+        normalizeRole(authUser?.role) ||
+        normalizeRole((authUser as Record<string, unknown>)?.['userType'] as string) ||
+        normalizeRole((authUser as Record<string, unknown>)?.['profileType'] as string);
 
-      if (!currentUser) {
-        router.push(loginPath);
+      if (!authUser) {
+        router.push('/login');
         return;
       }
 
@@ -103,7 +99,7 @@ export function BottomNavbar({ state, navigation }: Partial<BottomTabBarProps> =
         return;
       }
 
-      router.push(loginPath);
+      router.push(parentProfilePath);
     } finally {
       setCheckingProfile(false);
     }
