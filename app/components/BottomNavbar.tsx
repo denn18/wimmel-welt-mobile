@@ -75,17 +75,21 @@ export function BottomNavbar({ state, navigation }: Partial<BottomTabBarProps> =
   const resolveUserRole = (candidate?: unknown) => {
     if (!candidate || typeof candidate !== 'object') return null;
     const maybeUser = candidate as Record<string, unknown>;
+    const nestedUser = (maybeUser['user'] ?? null) as Record<string, unknown> | null;
 
     return (
       normalizeRole(role) ||
       normalizeRole(maybeUser['role'] as string) ||
       normalizeRole(maybeUser['userType'] as string) ||
-      normalizeRole(maybeUser['profileType'] as string)
+      normalizeRole(maybeUser['profileType'] as string) ||
+      normalizeRole(nestedUser?.role as string) ||
+      normalizeRole(nestedUser?.userType as string) ||
+      normalizeRole(nestedUser?.profileType as string)
     );
   };
 
   const handleProfilePress = async () => {
-    if (loading || checkingProfile) return;
+    if (checkingProfile) return;
 
     setCheckingProfile(true);
     try {
