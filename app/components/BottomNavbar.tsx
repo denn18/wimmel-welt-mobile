@@ -35,6 +35,14 @@ export function BottomNavbar({ state, navigation }: Partial<BottomTabBarProps> =
   const { user, role, loading } = useAuthStatus();
   const [checkingProfile, setCheckingProfile] = useState(false);
 
+<<<<<<< Updated upstream
+=======
+  // ✅ Genau deine Zielseiten:
+  const loginPath = '/login';
+  const parentProfilePath = '/anmelden/eltern/profil';
+  const caregiverProfilePath = '/anmelden/tagespflegeperson/profil';
+
+>>>>>>> Stashed changes
   const bottomPadding = Math.max(insets.bottom, 10);
   const navHeight = 64 + bottomPadding;
 
@@ -47,10 +55,10 @@ export function BottomNavbar({ state, navigation }: Partial<BottomTabBarProps> =
   const normalizeRole = (candidate?: string | null) => {
     if (!candidate) return null;
 
-    const normalized = candidate.toLowerCase();
+    const normalized = candidate.trim().toLowerCase();
 
     if (['parent', 'parents', 'eltern', 'elternteil', 'elternprofil'].includes(normalized)) {
-      return 'parent';
+      return 'parent' as const;
     }
 
     if (
@@ -60,10 +68,11 @@ export function BottomNavbar({ state, navigation }: Partial<BottomTabBarProps> =
         'tagesmutter',
         'tagesvater',
         'kindertagespflegeperson',
+        'kindertagespflege',
         'childminder',
       ].includes(normalized)
     ) {
-      return 'caregiver';
+      return 'caregiver' as const;
     }
 
     return null;
@@ -86,6 +95,7 @@ export function BottomNavbar({ state, navigation }: Partial<BottomTabBarProps> =
 
     setCheckingProfile(true);
     try {
+<<<<<<< Updated upstream
       const currentRole = resolveUserRole(user);
 
       if (!user || !currentRole) {
@@ -95,15 +105,55 @@ export function BottomNavbar({ state, navigation }: Partial<BottomTabBarProps> =
 
       if (currentRole === 'parent') {
         router.push('/anmelden/eltern/profil');
+=======
+      /**
+       * ✅ KRITISCHER FIX:
+       * refresh() NICHT als Rückgabewert benutzen.
+       * Bei euch gibt refresh sehr wahrscheinlich void/undefined zurück.
+       * Es soll nur den State aktualisieren – authUser bleibt user.
+       */
+      if (!user) {
+        await refresh();
+      }
+
+      // Nach refresh nochmal auf den aktuellen Hook-State schauen
+      const authUser = user;
+      const currentRole = resolveUserRole(authUser);
+
+      // 1) Nicht eingeloggt -> Login
+      if (!authUser) {
+        router.push(loginPath);
+        return;
+      }
+
+      // 2) Rolle nicht erkannt -> Login (dein Default)
+      if (!currentRole) {
+        router.push(loginPath);
+        return;
+      }
+
+      // 3) Rollenrouting
+      if (currentRole === 'parent') {
+        router.push(parentProfilePath);
+>>>>>>> Stashed changes
         return;
       }
 
       if (currentRole === 'caregiver') {
+<<<<<<< Updated upstream
         router.push('/anmelden/tagespflegeperson/profil');
         return;
       }
 
       router.push('/login');
+=======
+        router.push(caregiverProfilePath);
+        return;
+      }
+
+      // Default: Login
+      router.push(loginPath);
+>>>>>>> Stashed changes
     } finally {
       setCheckingProfile(false);
     }
@@ -129,7 +179,6 @@ export function BottomNavbar({ state, navigation }: Partial<BottomTabBarProps> =
               navigation.navigate(item.routeName as never);
               return;
             }
-
             router.push(item.href);
           };
 
