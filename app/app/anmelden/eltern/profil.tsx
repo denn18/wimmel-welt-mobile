@@ -15,6 +15,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { apiRequest } from '../../../services/api-client';
 import { pickSingleFile } from '../../../utils/file-picker';
 import { BottomNavbar } from '../../../components/BottomNavbar';
+import { useAuthStatus } from '../../../hooks/use-auth-status';
+import type { AuthUser } from '../../../types/auth';
 
 type Child = { name: string; age: string; gender: '' | 'female' | 'male' | 'diverse'; notes: string };
 
@@ -52,6 +54,7 @@ const initialState: FormState = {
 
 export default function ElternProfilScreen() {
   const router = useRouter();
+  const { setSessionUser } = useAuthStatus();
   const [formState, setFormState] = useState<FormState>(initialState);
   const [children, setChildren] = useState<Child[]>([createChild()]);
   const [profileImage, setProfileImage] = useState<{ dataUrl: string | null; fileName: string }>({
@@ -128,10 +131,11 @@ export default function ElternProfilScreen() {
       });
 
       try {
-        await apiRequest('api/auth/login', {
+        const authenticatedUser = await apiRequest<AuthUser>('api/auth/login', {
           method: 'POST',
           body: JSON.stringify({ identifier, password: formState.password }),
         });
+        await setSessionUser(authenticatedUser ?? null);
         setStatus({
           type: 'success',
           message: 'Registrierung erfolgreich! Du wirst jetzt zum Dashboard weitergeleitet.',

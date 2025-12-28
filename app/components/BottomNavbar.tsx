@@ -32,10 +32,8 @@ const items = [
 export function BottomNavbar({ state, navigation }: Partial<BottomTabBarProps> = {}) {
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { user, role, loading, refresh } = useAuthStatus();
+  const { user, role, loading } = useAuthStatus();
   const [checkingProfile, setCheckingProfile] = useState(false);
-
-  const profilePath = '/(tabs)/profile';
 
   const bottomPadding = Math.max(insets.bottom, 10);
   const navHeight = 64 + bottomPadding;
@@ -88,15 +86,24 @@ export function BottomNavbar({ state, navigation }: Partial<BottomTabBarProps> =
 
     setCheckingProfile(true);
     try {
-      const authUser = user ?? (await refresh());
-      const currentRole = resolveUserRole(authUser);
+      const currentRole = resolveUserRole(user);
 
-      if (!authUser || !currentRole) {
+      if (!user || !currentRole) {
         router.push('/login');
         return;
       }
 
-      router.push(profilePath);
+      if (currentRole === 'parent') {
+        router.push('/anmelden/eltern/profil');
+        return;
+      }
+
+      if (currentRole === 'caregiver') {
+        router.push('/anmelden/tagespflegeperson/profil');
+        return;
+      }
+
+      router.push('/login');
     } finally {
       setCheckingProfile(false);
     }

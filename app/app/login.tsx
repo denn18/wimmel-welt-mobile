@@ -15,11 +15,14 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { apiRequest } from '../services/api-client';
 import { BottomNavbar } from '../components/BottomNavbar';
+import { useAuthStatus } from '../hooks/use-auth-status';
+import type { AuthUser } from '../types/auth';
 
 const BRAND = 'rgb(49,66,154)';
 
 export default function LoginScreen() {
   const router = useRouter();
+  const { setSessionUser } = useAuthStatus();
   const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -35,10 +38,11 @@ export default function LoginScreen() {
     setMessage(null);
 
     try {
-      await apiRequest('api/auth/login', {
+      const loggedInUser = await apiRequest<AuthUser>('api/auth/login', {
         method: 'POST',
         body: JSON.stringify({ identifier, password }),
       });
+      await setSessionUser(loggedInUser ?? null);
       setMessage('Login erfolgreich. Du wirst weitergeleitet …');
       setTimeout(() => router.replace('/(tabs)/dashboard'), 600);
     } catch (err) {
