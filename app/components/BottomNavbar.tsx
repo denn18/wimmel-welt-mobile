@@ -72,19 +72,27 @@ export function BottomNavbar({ state, navigation }: Partial<BottomTabBarProps> =
     return null;
   };
 
+  const resolveUserRole = (candidate?: unknown) => {
+    if (!candidate || typeof candidate !== 'object') return null;
+    const maybeUser = candidate as Record<string, unknown>;
+
+    return (
+      normalizeRole(role) ||
+      normalizeRole(maybeUser['role'] as string) ||
+      normalizeRole(maybeUser['userType'] as string) ||
+      normalizeRole(maybeUser['profileType'] as string)
+    );
+  };
+
   const handleProfilePress = async () => {
     if (loading || checkingProfile) return;
 
     setCheckingProfile(true);
     try {
-      const authUser = await refresh();
-      const currentRole =
-        normalizeRole(role) ||
-        normalizeRole(authUser?.role) ||
-        normalizeRole((authUser as Record<string, unknown>)?.['userType'] as string) ||
-        normalizeRole((authUser as Record<string, unknown>)?.['profileType'] as string);
+      const authUser = user ?? (await refresh());
+      const currentRole = resolveUserRole(authUser);
 
-      if (!authUser) {
+      if (!authUser || !currentRole) {
         router.push('/login');
         return;
       }
@@ -99,7 +107,7 @@ export function BottomNavbar({ state, navigation }: Partial<BottomTabBarProps> =
         return;
       }
 
-      router.push(parentProfilePath);
+      router.push('/login');
     } finally {
       setCheckingProfile(false);
     }
