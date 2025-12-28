@@ -15,6 +15,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { apiRequest } from '../../../services/api-client';
 import { pickMultipleFiles, pickSingleFile, type PickedFile } from '../../../utils/file-picker';
 import { BottomNavbar } from '../../../components/BottomNavbar';
+import { useAuthStatus } from '../../../hooks/use-auth-status';
+import type { AuthUser } from '../../../types/auth';
 
 const BRAND = 'rgb(49,66,154)';
 const WEEKDAY_SUGGESTIONS = ['Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag'];
@@ -108,6 +110,7 @@ function calculateYearsSince(value: string) {
 
 export default function TagespflegepersonProfilScreen() {
   const router = useRouter();
+  const { setSessionUser } = useAuthStatus();
   const [formState, setFormState] = useState<FormState>(initialState);
   const [profileImage, setProfileImage] = useState<PickedFile | null>(null);
   const [logoImage, setLogoImage] = useState<PickedFile | null>(null);
@@ -224,10 +227,11 @@ export default function TagespflegepersonProfilScreen() {
       });
 
       try {
-        await apiRequest('api/auth/login', {
+        const authenticatedUser = await apiRequest<AuthUser>('api/auth/login', {
           method: 'POST',
           body: JSON.stringify({ identifier, password: formState.password }),
         });
+        await setSessionUser(authenticatedUser ?? null);
         setStatus({
           type: 'success',
           message: 'Profil erstellt! Du wirst jetzt zum Dashboard weitergeleitet.',
