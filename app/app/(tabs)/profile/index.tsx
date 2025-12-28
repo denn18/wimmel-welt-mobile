@@ -133,7 +133,7 @@ function useProfileData(user: { id?: string | number | null; role?: string | nul
       setLoading(true);
       setError(null);
       try {
-        const endpoint = user.role === 'caregiver' ? `api/caregivers/${user.id}` : `api/parents/${user.id}`;
+        const endpoint = user.role === 'caregiver' ? `/api/caregivers/${user.id}` : `/api/parents/${user.id}`;
         const data = await apiRequest<Profile>(endpoint, { method: 'GET' });
         if (!cancelled) {
           setProfile(data);
@@ -855,7 +855,7 @@ export default function ProfileScreen() {
     if (!user?.id) return;
     setSaving(true);
     try {
-      const endpoint = user.role === 'caregiver' ? `api/caregivers/${user.id}` : `api/parents/${user.id}`;
+      const endpoint = user.role === 'caregiver' ? `/api/caregivers/${user.id}` : `/api/parents/${user.id}`;
       const updated = await apiRequest<Profile>(endpoint, { method: 'PATCH', body: JSON.stringify(payload) });
       setProfile(updated);
       await refresh();
