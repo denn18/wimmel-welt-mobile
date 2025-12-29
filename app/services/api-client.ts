@@ -8,17 +8,22 @@ type ApiRequestOptions = RequestInit & {
 };
 
 async function handleResponse<T>(response: Response): Promise<T> {
+  const contentType = response.headers.get('content-type') ?? '';
+  const hasContent = response.status !== 204 && response.headers.get('content-length') !== '0';
+
   if (!response.ok) {
-    const errorBody = await response.text();
+    const errorBody = hasContent
+      ? contentType.includes('application/json')
+        ? JSON.stringify(await response.json())
+        : await response.text()
+      : '';
     throw new Error(`Request failed with ${response.status}: ${errorBody}`);
   }
 
-  const hasContent = response.status !== 204 && response.headers.get('content-length') !== '0';
   if (!hasContent) {
     return undefined as T;
   }
 
-  const contentType = response.headers.get('content-type') ?? '';
   if (contentType.includes('application/json')) {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return (await response.json()) as T;
@@ -28,17 +33,29 @@ async function handleResponse<T>(response: Response): Promise<T> {
 }
 
 export async function apiRequest<T>(path: string, options: ApiRequestOptions = {}) {
-  const { headers, ...rest } = options;
+  const { headers = {}, body, method = 'GET', ...rest } = options;
   const url = buildApiUrl(path);
 
+  const finalHeaders: Record<string, string> = {
+    Accept: 'application/json',
+    ...headers,
+  };
+
+  if (body && !finalHeaders['Content-Type']) {
+    finalHeaders['Content-Type'] = 'application/json';
+  }
+
+  console.log('[API] ->', method, url, { hasBody: Boolean(body) }); // [LOG]
+
   const response = await fetch(url, {
-    headers: {
-      'Content-Type': 'application/json',
-      ...headers,
-    },
+    method,
+    headers: finalHeaders,
+    body,
     credentials: 'include',
     ...rest,
   });
+
+  console.log('[API] <-', response.status, url); // [LOG]
 
   return handleResponse<T>(response);
 }

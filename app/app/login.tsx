@@ -28,7 +28,11 @@ export default function LoginScreen() {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
 
+  console.log('[LOGIN] render', { identifier }); // [LOG]
+
   const handleLogin = async () => {
+    console.log('[LOGIN] handleLogin start', { identifier }); // [LOG]
+
     if (!identifier || !password) {
       setMessage('Bitte Benutzername/E-Mail und Passwort eingeben.');
       return;
@@ -42,11 +46,12 @@ export default function LoginScreen() {
         method: 'POST',
         body: JSON.stringify({ identifier, password }),
       });
+      console.log('[LOGIN] loggedInUser', loggedInUser); // [LOG]
       await setSessionUser(loggedInUser ?? null);
       setMessage('Login erfolgreich. Du wirst weitergeleitet …');
-      setTimeout(() => router.replace('/(tabs)/dashboard'), 600);
+      router.replace('/(tabs)/dashboard');
     } catch (err) {
-      console.error('Login failed', err);
+      console.error('[LOGIN] Login failed', err); // [LOG]
       setMessage('Login nicht möglich. Bitte Zugangsdaten prüfen.');
     } finally {
       setLoading(false);
