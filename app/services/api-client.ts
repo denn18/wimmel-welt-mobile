@@ -4,7 +4,7 @@ type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
 
 type ApiRequestOptions = RequestInit & {
   method?: HttpMethod;
-  headers?: Record<string, string>;
+  headers?: HeadersInit;
 };
 
 async function handleResponse<T>(response: Response): Promise<T> {
@@ -38,7 +38,11 @@ export async function apiRequest<T>(path: string, options: ApiRequestOptions = {
 
   const finalHeaders: Record<string, string> = {
     Accept: 'application/json',
-    ...headers,
+    ...(headers instanceof Headers
+      ? Object.fromEntries(headers.entries())
+      : Array.isArray(headers)
+        ? Object.fromEntries(headers)
+        : headers),
   };
 
   if (body && !finalHeaders['Content-Type']) {

@@ -1,5 +1,5 @@
 import * as DocumentPicker from 'expo-document-picker';
-import * as FileSystem from 'expo-file-system';
+import * as FileSystem from 'expo-file-system/legacy';
 
 export type PickedFile = {
   dataUrl: string;
@@ -9,7 +9,7 @@ export type PickedFile = {
 
 async function buildDataUrlFromAsset(asset: DocumentPicker.DocumentPickerAsset) {
   const mimeType = asset.mimeType || 'application/octet-stream';
-  const base64 = await FileSystem.readAsStringAsync(asset.uri, { encoding: FileSystem.EncodingType.Base64 });
+  const base64 = await FileSystem.readAsStringAsync(asset.uri, { encoding: 'base64' });
   return {
     dataUrl: `data:${mimeType};base64,${base64}`,
     fileName: asset.name ?? 'upload',
@@ -19,9 +19,9 @@ async function buildDataUrlFromAsset(asset: DocumentPicker.DocumentPickerAsset) 
 
 export async function pickSingleFile({ type }: { type: string | string[] }) {
   const result = await DocumentPicker.getDocumentAsync({ type });
-  if (result.type === 'cancel') return null;
+  if (result.canceled) return null;
 
-  const asset = (result.assets && result.assets[0]) || ('name' in result ? result : null);
+  const asset = result.assets?.[0];
   if (!asset) return null;
 
   return buildDataUrlFromAsset(asset);
@@ -29,7 +29,7 @@ export async function pickSingleFile({ type }: { type: string | string[] }) {
 
 export async function pickMultipleFiles({ type }: { type: string | string[] }) {
   const result = await DocumentPicker.getDocumentAsync({ type, multiple: true });
-  if (result.type === 'cancel') return [] as PickedFile[];
+  if (result.canceled) return [] as PickedFile[];
 
   const assets = result.assets ?? [];
   if (!assets.length) return [] as PickedFile[];
