@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
-import { Link, useRouter } from 'expo-router';
+import { Link, useRouter, type Href } from 'expo-router';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useState } from 'react';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -9,7 +9,16 @@ import { useAuthStatus } from '../hooks/use-auth-status';
 
 const BRAND = 'rgb(49,66,154)';
 
-const items = [
+type NavItem = {
+  key: string;
+  label: string;
+  icon: string;
+  routeName: string;
+  href: Href;
+  aliases?: Href[];
+};
+
+const items: NavItem[] = [
   { key: 'home', label: 'Home', icon: 'home', routeName: 'home', href: '/(tabs)/home' },
   { key: 'dashboard', label: 'Dashboard', icon: 'grid', routeName: 'dashboard/index', href: '/(tabs)/dashboard' },
   {
@@ -32,13 +41,11 @@ const items = [
 export function BottomNavbar({ state, navigation }: Partial<BottomTabBarProps> = {}) {
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { user, role, loading } = useAuthStatus();
+  const { user, role, loading, refresh } = useAuthStatus();
   const [checkingProfile, setCheckingProfile] = useState(false);
 
-  // ✅ Genau deine Zielseiten:
-  const loginPath = '/login';
-  const parentProfilePath = '/anmelden/eltern/profil';
-  const caregiverProfilePath = '/anmelden/tagespflegeperson/profil';
+  const loginPath: Href = '/login';
+  const profilePath: Href = '/(tabs)/profile';
 
   const bottomPadding = Math.max(insets.bottom, 10);
   const navHeight = 64 + bottomPadding;
@@ -92,18 +99,8 @@ export function BottomNavbar({ state, navigation }: Partial<BottomTabBarProps> =
 
     setCheckingProfile(true);
     try {
-      /**
-       * ✅ KRITISCHER FIX:
-       * refresh() NICHT als Rückgabewert benutzen.
-       * Bei euch gibt refresh sehr wahrscheinlich void/undefined zurück.
-       * Es soll nur den State aktualisieren – authUser bleibt user.
-       */
-      if (!user) {
-        await refresh();
-      }
-
-      // Nach refresh nochmal auf den aktuellen Hook-State schauen
-      const authUser = user;
+      const latestUser = await refresh();
+      const authUser = latestUser ?? user;
       const currentRole = resolveUserRole(authUser);
 
       // 1) Nicht eingeloggt -> Login
@@ -119,18 +116,7 @@ export function BottomNavbar({ state, navigation }: Partial<BottomTabBarProps> =
       }
 
       // 3) Rollenrouting
-      if (currentRole === 'parent') {
-        router.push(parentProfilePath);
-        return;
-      }
-
-      if (currentRole === 'caregiver') {
-        router.push(caregiverProfilePath);
-        return;
-      }
-
-      // Default: Login
-      router.push(loginPath);
+      router.push(profilePath);
     } finally {
       setCheckingProfile(false);
     }
