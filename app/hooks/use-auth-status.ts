@@ -1,5 +1,12 @@
-import { useAuth } from '../context/AuthContext';
+import { normalizeAuthUser, useAuth } from '../context/AuthContext';
 
 export function useAuthStatus() {
-  return useAuth();
+  const auth = useAuth();
+  const normalizedUser = normalizeAuthUser(auth.user);
+
+  return {
+    ...auth,
+    user: normalizedUser,
+    role: typeof normalizedUser?.role === 'string' ? (normalizedUser.role as string) : auth.role,
+  };
 }
