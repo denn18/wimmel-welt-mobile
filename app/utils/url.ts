@@ -33,12 +33,13 @@ export function getApiBaseUrl(): string {
 
 function ensureLeadingSlash(path: string): string {
   if (!path) return '/';
-  return path.startsWith('/') ? path : `/${path}`;
+  const normalized = path.replace(/^\/+/, '');
+  return `/${normalized}`;
 }
 
 export function buildApiUrl(path: string): string {
-  const base = getApiBaseUrl();
-  const cleanPath = ensureLeadingSlash(path);
+  const base = getApiBaseUrl().replace(/\/+$/, ''); // [FIX]
+  const cleanPath = ensureLeadingSlash(path); // [FIX]
   return `${base}${cleanPath}`;
 }
 

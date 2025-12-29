@@ -19,8 +19,12 @@ async function safeReadText(response: Response) {
 function normalizeHeaders(headers?: HeadersInit, body?: BodyInit | null) {
   const normalized = new Headers(headers ?? {});
 
+  if (!normalized.has('Accept')) {
+    normalized.set('Accept', 'application/json'); // [FIX]
+  }
+
   if (body && !normalized.has('Content-Type')) {
-    normalized.set('Content-Type', 'application/json');
+    normalized.set('Content-Type', 'application/json'); // [FIX]
   }
 
   return normalized;
@@ -33,6 +37,7 @@ export async function apiRequest<T>(path: string, options: ApiRequestOptions = {
   const normalizedHeaders = normalizeHeaders(headers, body);
 
   console.log('[API] ->', method, url); // [LOG]
+  console.log('[API] stack', new Error().stack); // [LOG]
 
   const response = await fetch(url, {
     method,
@@ -44,7 +49,7 @@ export async function apiRequest<T>(path: string, options: ApiRequestOptions = {
 
   const textPreview = await safeReadText(response);
 
-  console.log('[API] <-', response.status, url, textPreview.slice(0, 500)); // [LOG]
+  console.log('[API] <-', response.status, url, textPreview.slice(0, 300)); // [LOG]
 
   if (!response.ok) {
     const contentType = response.headers.get('content-type') ?? '';
