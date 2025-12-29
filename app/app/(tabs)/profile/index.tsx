@@ -18,6 +18,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { BottomNavbar } from '../../../components/BottomNavbar';
 import { useAuthStatus } from '../../../hooks/use-auth-status';
 import { fetchProfile, profileEndpoint, updateProfile } from '../../../services/profile';
+import { pickMultipleFiles, pickSingleFile, PickedFile } from '../../../utils/file-picker';
+import { assetUrl } from '../../../utils/url';
 
 const BRAND = '#31429a';
 
@@ -1015,6 +1017,17 @@ const styles = StyleSheet.create({
   errorText: { color: '#b91c1c', fontWeight: '700' },
   centered: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 12 },
   buttonDisabled: { opacity: 0.6 },
+  statusRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  statusText: { color: '#0f172a', fontWeight: '700' },
+  label: { fontWeight: '700', color: '#1e293b' },
+  debugBox: {
+    backgroundColor: '#0f172a',
+    padding: 12,
+    borderRadius: 12,
+  },
+  codeText: { color: '#e2e8f0', fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace' },
+  spacingTop: { marginTop: 8 },
+  endpointText: { color: '#475569', fontWeight: '700' },
 });
 
 
