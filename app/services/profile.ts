@@ -1,16 +1,31 @@
 // services/profile.ts
 import { apiRequest } from './api-client';
 
-export type ProfileUser = { id?: string | number | null; role?: string | null };
+export type ProfileUser = { id?: string | number | null; role?: string | null } & Record<string, unknown>;
+
+function resolveRole(user: ProfileUser): string | null {
+  if (typeof user.role === 'string' && user.role) return user.role;
+  if (user.daycareName || user.hasAvailability) return 'caregiver';
+  return 'parent';
+}
 
 export function profileEndpoint(user: ProfileUser) {
-  const { id, role } = user;
-  if (!id || !role) {
-    throw new Error('User id and role are required to resolve profile endpoint.');
+  const id = user?.id;
+  const role = resolveRole(user);
+
+  if (!id) {
+    throw new Error('User id is required to resolve profile endpoint.');
   }
 
-  // ✅ WICHTIG: Das ist das Fix. Immer :id benutzen.
-  return role === 'caregiver' ? `api/caregivers/${id}` : `api/parents/${id}`;
+  if (!role) {
+    throw new Error('User role is required to resolve profile endpoint.');
+  }
+
+  const endpoint = role === 'caregiver' ? `api/caregivers/${id}` : `api/parents/${id}`;
+
+  console.log('[PROFILE] endpoint resolved:', endpoint, user); // [LOG]
+
+  return endpoint;
 }
 
 export async function fetchProfile<T = unknown>(user: ProfileUser) {
@@ -26,27 +41,3 @@ export async function updateProfile<T = unknown>(user: ProfileUser, payload: unk
 
 
 
-
-
-
-
-// import { apiRequest } from './api-client';
-
-// export type ProfileUser = { id?: string | number | null; role?: string | null };
-
-// export function profileEndpoint(user: ProfileUser) {
-//   const { id, role } = user;
-//   if (!id || !role) {
-//     throw new Error('User id and role are required to resolve profile endpoint.');
-//   }
-
-//   return role === 'caregiver' ? `api/caregivers/${id}` : `api/parents/${id}`;
-// }
-
-// export async function fetchProfile<T = unknown>(user: ProfileUser) {
-//   return apiRequest<T>(profileEndpoint(user));
-// }
-
-// export async function updateProfile<T = unknown>(user: ProfileUser, payload: unknown) {
-//   return apiRequest<T>(profileEndpoint(user), { method: 'PATCH', body: JSON.stringify(payload) });
-// }

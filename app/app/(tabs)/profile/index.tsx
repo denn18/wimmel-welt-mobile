@@ -17,7 +17,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { BottomNavbar } from '../../../components/BottomNavbar';
 import { useAuthStatus } from '../../../hooks/use-auth-status';
-import { apiRequest } from '../../../services/api-client';
+import { fetchProfile, profileEndpoint, updateProfile } from '../../../services/profile';
 
 const BRAND = '#31429a';
 
@@ -125,19 +125,21 @@ function useProfileData(user: { id?: string | number | null; role?: string | nul
   const [profile, setProfile] = useState<Profile>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
-  const endpoint = useMemo(() => {
-    if (!user?.id || !user?.role) return null;
-    return user.role === 'caregiver' ? `api/caregivers/${user.id}` : `api/parents/${user.id}`;
-  }, [user?.id, user?.role]);
+  const [endpoint, setEndpoint] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
 
     async function load() {
-      if (!user?.id || !user?.role) {
+      console.log('[PROFILE] user:', user); // [LOG]
+
+      if (!user?.id) {
+        const message = 'Kein Benutzer angemeldet.';
+        console.log('[PROFILE] error:', message); // [LOG]
         if (!cancelled) {
+          setError(message);
           setProfile(null);
+          setEndpoint(null);
           setLoading(false);
         }
         return;
@@ -147,34 +149,36 @@ function useProfileData(user: { id?: string | number | null; role?: string | nul
       setError(null);
 
       try {
-        // ✅ DEBUG-LOG (optional)
-        // eslint-disable-next-line no-console
-        console.log('[PROFILE] loading for user:', { id: user.id, role: user.role }); // <-- Kommentar: Debug-Log für user.id/role
+        const resolvedEndpoint = profileEndpoint(user);
+        console.log('[PROFILE] resolved endpoint:', resolvedEndpoint); // [LOG]
+        if (!cancelled) setEndpoint(resolvedEndpoint);
 
         const data = await fetchProfile<any>(user);
+        console.log('[PROFILE] loaded profile:', data); // [LOG]
 
-        // Robust gegen falsches Backend-Format:
         const normalized = Array.isArray(data) ? (data[0] ?? null) : data;
 
         if (!cancelled) setProfile(normalized);
-      } catch (e: any) {
-        // eslint-disable-next-line no-console
-        console.log('[PROFILE] load failed:', e?.message ?? e); // <-- Kommentar: Debug-Log bei Fehler
-        if (!cancelled) setError(e?.message ? String(e.message) : 'Profil konnte nicht geladen werden.');
+      } catch (err: any) {
+        console.log('[PROFILE] error:', err); // [LOG]
+        if (!cancelled) {
+          setError(err?.message ? String(err.message) : 'Profil konnte nicht geladen werden.');
+          setProfile(null);
+        }
       } finally {
         if (!cancelled) {
           setLoading(false);
         }
       }
-    };
+    }
 
-    load();
+    void load();
     return () => {
       cancelled = true;
     };
-  }, [endpoint, user]);
+  }, [user?.id, user?.role]);
 
-  return { profile, loading, error, setProfile } as const;
+  return { profile, loading, error, setProfile, endpoint } as const;
 }
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
@@ -841,7 +845,7 @@ function CaregiverProfileEditor({
 
 export default function ProfileIndex() {
   const { user, loading: authLoading, refresh } = useAuthStatus();
-  const { profile, loading, error, setProfile } = useProfileData(user ?? null);
+  const { profile, loading, error, setProfile, endpoint } = useProfileData(user ?? null);
   const [saving, setSaving] = useState(false);
 
   const title = useMemo(() => {
@@ -849,14 +853,15 @@ export default function ProfileIndex() {
     return 'Profil für Eltern bearbeiten';
   }, [user?.role]);
 
+  const debugUser = JSON.stringify(user, null, 2);
+  const debugProfile = JSON.stringify(profile, null, 2);
+
   const handleSave = async (payload: unknown) => {
     if (!user?.id || !user?.role) return;
 
     setSaving(true);
     try {
-      // ✅ DEBUG-LOG (optional)
-      // eslint-disable-next-line no-console
-      console.log('[PROFILE] saving for user:', { id: user.id, role: user.role }); // <-- Kommentar: Debug-Log vor PATCH
+      console.log('[PROFILE] saving for user:', { id: user.id, role: user.role }); // [LOG]
 
       const updated = await updateProfile<any>(user, payload);
       const normalized = Array.isArray(updated) ? (updated[0] ?? null) : updated;
@@ -921,7 +926,12 @@ export default function ProfileIndex() {
             </Text>
           </View>
 
-          {endpoint ? <Text style={styles.endpointText}>Endpoint: {endpoint}</Text> : null}
+          <Text style={[styles.label, styles.spacingTop]}>Fehler</Text>
+          <View style={styles.debugBox}>
+            <Text selectable style={styles.codeText}>{error ? String(error) : '—'}</Text>
+          </View>
+
+          <Text style={styles.endpointText}>Endpoint: {endpoint ?? '—'}</Text>
         </View>
       </ScrollView>
       <BottomNavbar />

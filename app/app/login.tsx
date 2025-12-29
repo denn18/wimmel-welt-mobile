@@ -17,6 +17,7 @@ import { apiRequest } from '../services/api-client';
 import { BottomNavbar } from '../components/BottomNavbar';
 import { useAuthStatus } from '../hooks/use-auth-status';
 import type { AuthUser } from '../types/auth';
+import { normalizeAuthUser } from '../context/AuthContext';
 
 const BRAND = 'rgb(49,66,154)';
 
@@ -46,8 +47,12 @@ export default function LoginScreen() {
         method: 'POST',
         body: JSON.stringify({ identifier, password }),
       });
-      console.log('[LOGIN] loggedInUser', loggedInUser); // [LOG]
-      await setSessionUser(loggedInUser ?? null);
+      console.log('[LOGIN] loggedInUser:', loggedInUser); // [LOG]
+
+      const sessionUser = normalizeAuthUser(loggedInUser);
+      console.log('[LOGIN] sessionUser normalized:', sessionUser); // [LOG]
+
+      await setSessionUser(sessionUser ?? null);
       setMessage('Login erfolgreich. Du wirst weitergeleitet …');
       router.replace('/(tabs)/dashboard');
     } catch (err) {

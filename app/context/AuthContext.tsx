@@ -16,6 +16,21 @@ type AuthContextValue = {
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
+function resolveRole(user: AuthUser | null): string | null {
+  if (!user) return null;
+  if (typeof user.role === 'string' && user.role) return user.role;
+  if (user.daycareName || user.hasAvailability) return 'caregiver';
+  return 'parent';
+}
+
+export function normalizeAuthUser(user: AuthUser | null): AuthUser | null {
+  if (!user) return null;
+  const role = resolveRole(user);
+  const id = user.id ?? null;
+
+  return { ...user, id, role };
+}
+
 async function readStoredUser(): Promise<AuthUser | null> {
   try {
     const raw = await AsyncStorage.getItem(STORAGE_KEY);
@@ -24,8 +39,9 @@ async function readStoredUser(): Promise<AuthUser | null> {
       return null;
     }
     const parsed = JSON.parse(raw) as AuthUser;
-    console.log('[AUTH] hydrated from storage', parsed); // [LOG]
-    return parsed ?? null;
+    const normalized = normalizeAuthUser(parsed);
+    console.log('[AUTH] hydrated from storage', normalized); // [LOG]
+    return normalized ?? null;
   } catch (error) {
     console.log('[AUTH] failed to read storage', error); // [LOG]
     return null;
@@ -35,8 +51,9 @@ async function readStoredUser(): Promise<AuthUser | null> {
 async function writeStoredUser(nextUser: AuthUser | null) {
   try {
     if (nextUser) {
-      await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(nextUser));
-      console.log('[AUTH] stored session user', nextUser); // [LOG]
+      const normalized = normalizeAuthUser(nextUser);
+      await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(normalized));
+      console.log('[AUTH] stored session user', normalized); // [LOG]
     } else {
       await AsyncStorage.removeItem(STORAGE_KEY);
       console.log('[AUTH] cleared stored session'); // [LOG]
@@ -59,9 +76,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const setSessionUser = useCallback(async (nextUser: AuthUser | null) => {
-    await writeStoredUser(nextUser);
-    setUser(nextUser);
-    console.log('[AUTH] setSessionUser', nextUser); // [LOG]
+    const normalized = normalizeAuthUser(nextUser);
+    await writeStoredUser(normalized);
+    setUser(normalized);
+    console.log('[AUTH] setSessionUser', normalized); // [LOG]
   }, []);
 
   const refresh = useCallback(async () => {
