@@ -1,5 +1,5 @@
 // app/(tabs)/profile/index.tsx
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -14,12 +14,13 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useFocusEffect } from '@react-navigation/native';
 
 import { BottomNavbar } from '../../../components/BottomNavbar';
 import { useAuthStatus } from '../../../hooks/use-auth-status';
 import { fetchProfile, profileEndpoint, updateProfile } from '../../../services/profile';
 import { pickMultipleFiles, pickSingleFile, PickedFile } from '../../../utils/file-picker';
-import { assetUrl } from '../../../utils/url';
+import { assetUrl, getApiBaseUrl } from '../../../utils/url';
 
 const BRAND = '#31429a';
 
@@ -129,56 +130,62 @@ function useProfileData(user: { id?: string | number | null; role?: string | nul
   const [error, setError] = useState<string | null>(null);
   const [endpoint, setEndpoint] = useState<string | null>(null);
 
-  useEffect(() => {
-    let cancelled = false;
+  useFocusEffect(
+    useCallback(() => {
+      console.log('[PROFILE] focus'); // [LOG]
+      console.log('[PROFILE] user', user); // [LOG]
 
-    async function load() {
-      console.log('[PROFILE] user:', user); // [LOG]
+      let cancelled = false;
 
-      if (!user?.id) {
-        const message = 'Kein Benutzer angemeldet.';
-        console.log('[PROFILE] error:', message); // [LOG]
-        if (!cancelled) {
-          setError(message);
-          setProfile(null);
-          setEndpoint(null);
-          setLoading(false);
+      const load = async () => {
+        if (!user?.id || !user?.role) {
+          const message = 'Kein Benutzer angemeldet.';
+          console.log('[PROFILE] error', message); // [LOG]
+          if (!cancelled) {
+            setError(message);
+            setProfile(null);
+            setEndpoint(null);
+            setLoading(false);
+          }
+          return;
         }
-        return;
-      }
 
-      setLoading(true);
-      setError(null);
+        setLoading(true);
+        setError(null);
 
-      try {
-        const resolvedEndpoint = profileEndpoint(user);
-        console.log('[PROFILE] resolved endpoint:', resolvedEndpoint); // [LOG]
-        if (!cancelled) setEndpoint(resolvedEndpoint);
+        try {
+          const resolvedEndpoint = profileEndpoint(user);
+          setEndpoint(resolvedEndpoint);
 
-        const data = await fetchProfile<any>(user);
-        console.log('[PROFILE] loaded profile:', data); // [LOG]
+          console.log('[PROFILE] load start'); // [LOG]
+          const data = await fetchProfile<any>(user);
+          if (cancelled) return;
 
-        const normalized = Array.isArray(data) ? (data[0] ?? null) : data;
+          console.log('[PROFILE] loaded', data); // [LOG]
 
-        if (!cancelled) setProfile(normalized);
-      } catch (err: any) {
-        console.log('[PROFILE] error:', err); // [LOG]
-        if (!cancelled) {
-          setError(err?.message ? String(err.message) : 'Profil konnte nicht geladen werden.');
-          setProfile(null);
+          const normalized = Array.isArray(data) ? (data[0] ?? null) : data;
+
+          setProfile(normalized);
+        } catch (err: any) {
+          console.log('[PROFILE] error', err); // [LOG]
+          if (!cancelled) {
+            setError(err?.message ? String(err.message) : 'Profil konnte nicht geladen werden.');
+            setProfile(null);
+          }
+        } finally {
+          if (!cancelled) {
+            setLoading(false);
+          }
         }
-      } finally {
-        if (!cancelled) {
-          setLoading(false);
-        }
-      }
-    }
+      };
 
-    void load();
-    return () => {
-      cancelled = true;
-    };
-  }, [user?.id, user?.role]);
+      void load();
+
+      return () => {
+        cancelled = true; // [FIX]
+      };
+    }, [user?.id, user?.role]), // [FIX] sicherer Reload bei Tab-Fokus
+  );
 
   return { profile, loading, error, setProfile, endpoint } as const;
 }
@@ -850,13 +857,13 @@ export default function ProfileIndex() {
   const { profile, loading, error, setProfile, endpoint } = useProfileData(user ?? null);
   const [saving, setSaving] = useState(false);
 
+  const apiBaseUrl = useMemo(() => getApiBaseUrl(), []);
+  const hasProfile = Boolean(profile);
+
   const title = useMemo(() => {
     if (user?.role === 'caregiver') return 'Profil für Kindertagespflegepersonen bearbeiten';
     return 'Profil für Eltern bearbeiten';
   }, [user?.role]);
-
-  const debugUser = JSON.stringify(user, null, 2);
-  const debugProfile = JSON.stringify(profile, null, 2);
 
   const handleSave = async (payload: unknown) => {
     if (!user?.id || !user?.role) return;
@@ -900,42 +907,47 @@ export default function ProfileIndex() {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <ScrollView contentContainerStyle={styles.content}>
-        <Text style={styles.title}>Profil</Text>
+      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
+        <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+          {__DEV__ ? (
+            <View style={styles.devDebugContainer}>
+              <Text style={styles.devDebugTitle}>Profil Debug</Text>
+              <Text style={styles.devDebugRow}>apiBaseUrl: {apiBaseUrl}</Text>
+              <Text style={styles.devDebugRow}>user.id: {user?.id ?? '—'}</Text>
+              <Text style={styles.devDebugRow}>user.role: {user?.role ?? '—'}</Text>
+              <Text style={styles.devDebugRow}>endpoint: {endpoint ?? '—'}</Text>
+              <Text style={styles.devDebugRow}>loading: {loading ? 'true' : 'false'}</Text>
+              <Text style={styles.devDebugRow}>profile vorhanden?: {hasProfile ? 'ja' : 'nein'}</Text>
+              <Text style={styles.devDebugRow}>error: {error ?? '—'}</Text>
+            </View>
+          ) : null}
 
-        {authLoading || loading ? (
-          <View style={styles.statusRow}>
-            <ActivityIndicator color={BRAND} />
-            <Text style={styles.statusText}>Profil wird geladen …</Text>
-          </View>
-        ) : null}
-
-        {error ? <Text style={styles.errorText}>{error}</Text> : null}
-
-        <View style={styles.card}>
-          <Text style={styles.sectionTitle}>Debug Info</Text>
-          <Text style={styles.label}>Aktueller User (Context)</Text>
-          <View style={styles.debugBox}>
-            <Text selectable style={styles.codeText}>
-              {debugUser}
+          <View style={styles.header}>
+            <Text style={styles.kicker}>Profil & Einstellungen</Text>
+            <Text style={styles.title}>{title}</Text>
+            <Text style={styles.hint}>
+              Aktualisiere dein Profil, um Familien und Tagespflegepersonen stets mit den neuesten Informationen zu versorgen.
             </Text>
           </View>
 
-          <Text style={[styles.label, styles.spacingTop]}>Geladenes Profil</Text>
-          <View style={styles.debugBox}>
-            <Text selectable style={styles.codeText}>
-              {debugProfile}
-            </Text>
-          </View>
+          {loading ? (
+            <View style={styles.statusRow}>
+              <ActivityIndicator color={BRAND} />
+              <Text style={styles.statusText}>Profil wird geladen …</Text>
+            </View>
+          ) : null}
 
-          <Text style={[styles.label, styles.spacingTop]}>Fehler</Text>
-          <View style={styles.debugBox}>
-            <Text selectable style={styles.codeText}>{error ? String(error) : '—'}</Text>
-          </View>
+          {error ? <Text style={styles.errorText}>{error}</Text> : null}
 
-          <Text style={styles.endpointText}>Endpoint: {endpoint ?? '—'}</Text>
-        </View>
-      </ScrollView>
+          {!loading && profile ? (
+            user.role === 'caregiver' ? (
+              <CaregiverProfileEditor profile={profile as CaregiverProfile} onSave={handleSave} saving={saving} />
+            ) : (
+              <ParentProfileEditor profile={profile as ParentProfile} onSave={handleSave} saving={saving} />
+            )
+          ) : null}
+        </ScrollView>
+      </KeyboardAvoidingView>
       <BottomNavbar />
     </SafeAreaView>
   );
@@ -1019,6 +1031,14 @@ const styles = StyleSheet.create({
   buttonDisabled: { opacity: 0.6 },
   statusRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   statusText: { color: '#0f172a', fontWeight: '700' },
+  devDebugContainer: {
+    backgroundColor: '#0f172a',
+    borderRadius: 12,
+    padding: 12,
+    gap: 4,
+  },
+  devDebugTitle: { color: '#e2e8f0', fontWeight: '800' },
+  devDebugRow: { color: '#cbd5e1', fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace' },
   label: { fontWeight: '700', color: '#1e293b' },
   debugBox: {
     backgroundColor: '#0f172a',
