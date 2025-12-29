@@ -16,7 +16,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { BottomNavbar } from '../../../components/BottomNavbar';
 import { useAuthStatus } from '../../../hooks/use-auth-status';
-import { apiRequest } from '../../../services/api-client';
+import { fetchProfile, updateProfile } from '../../../services/profile';
 import { pickMultipleFiles, pickSingleFile, PickedFile } from '../../../utils/file-picker';
 import { assetUrl } from '../../../utils/url';
 
@@ -133,8 +133,8 @@ function useProfileData(user: { id?: string | number | null; role?: string | nul
       setLoading(true);
       setError(null);
       try {
-        const endpoint = user.role === 'caregiver' ? `/api/caregivers/${user.id}` : `/api/parents/${user.id}`;
-        const data = await apiRequest<Profile>(endpoint, { method: 'GET' });
+        const data = await fetchProfile<Profile>(user);
+        console.log('[Profile] fetched profile response', data);
         if (!cancelled) {
           setProfile(data);
         }
@@ -855,8 +855,7 @@ export default function ProfileScreen() {
     if (!user?.id) return;
     setSaving(true);
     try {
-      const endpoint = user.role === 'caregiver' ? `/api/caregivers/${user.id}` : `/api/parents/${user.id}`;
-      const updated = await apiRequest<Profile>(endpoint, { method: 'PATCH', body: JSON.stringify(payload) });
+      const updated = await updateProfile<Profile>(user, payload);
       setProfile(updated);
       await refresh();
     } finally {
