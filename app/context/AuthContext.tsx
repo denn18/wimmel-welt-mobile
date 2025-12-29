@@ -1,7 +1,7 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 
 import type { AuthUser } from '../types/auth';
+import AsyncStorage from '../utils/async-storage';
 
 const STORAGE_KEY = 'wimmelwelt.sessionUser';
 
