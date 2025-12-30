@@ -41,8 +41,6 @@ export function BottomNavbar({ state, navigation }: Partial<BottomTabBarProps> =
   const caregiverProfilePath = '/anmelden/tagespflegeperson/profil';
 
   const bottomPadding = Math.max(insets.bottom, 10);
-  const navHeight = 64 + bottomPadding;
-
   const routes = state?.routes ?? [];
   const activeIndex = state?.index ?? -1;
   const isStandalone = !state || !navigation;
@@ -142,11 +140,11 @@ export function BottomNavbar({ state, navigation }: Partial<BottomTabBarProps> =
       style={[
         styles.wrapper,
         isStandalone ? styles.wrapperStandalone : styles.wrapperEmbedded,
-        { height: navHeight },
+        { paddingBottom: bottomPadding * 0.4 },
       ]}
       pointerEvents="box-none"
     >
-      <View style={[styles.bottomNav, { paddingBottom: bottomPadding, height: navHeight }]}>
+      <View style={[styles.bottomNav, { paddingBottom: bottomPadding + 6, paddingTop: 10 }]}>
         {items.map((item) => {
           const routeIndex = routes.findIndex((route) => route.name === item.routeName);
           const isFocused = activeIndex !== -1 && routeIndex === activeIndex;
@@ -223,20 +221,24 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 14 },
     shadowRadius: 20,
     elevation: 10,
-    paddingHorizontal: 8,
-    gap: 8,
+    paddingHorizontal: 12,
+    gap: 10,
   },
   navItem: {
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 4,
-    minWidth: 64,
+    gap: 2,
+    minWidth: 72,
     flex: 1,
+    paddingHorizontal: 4,
   },
   navLabel: {
-    fontSize: 11.5,
+    fontSize: 12,
+    lineHeight: 16,
     fontWeight: '800',
     color: BRAND,
+    textAlign: 'center',
+    paddingHorizontal: 2,
   },
   navLabelInactive: {
     color: '#94A3B8',

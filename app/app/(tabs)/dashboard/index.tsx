@@ -465,12 +465,12 @@ export default function DashboardScreen() {
 }
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: '#EEF3FF' },
+  safeArea: { flex: 1, backgroundColor: BRAND },
 
   content: {
     paddingHorizontal: 18,
     paddingTop: 10,
-    paddingBottom: 140,
+    paddingBottom: 110,
     gap: 14,
   },
 
@@ -480,9 +480,14 @@ const styles = StyleSheet.create({
   },
 
   topHeader: { alignItems: 'center', paddingTop: 2, paddingBottom: 4 },
-  topTitle: { fontSize: 28, fontWeight: '900', color: BRAND, letterSpacing: 0.2 },
+  topTitle: { fontSize: 28, fontWeight: '900', color: '#fff', letterSpacing: 0.2 },
 
-  headerBlock: { gap: 6 },
+  headerBlock: {
+    gap: 6,
+    backgroundColor: 'rgba(255,255,255,0.92)',
+    borderRadius: 18,
+    padding: 14,
+  },
   pageTitle: { fontSize: 28, fontWeight: '900', color: BRAND },
   pageSubtitle: { fontSize: 14, color: '#475569', lineHeight: 20 },
 
