@@ -14,8 +14,6 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-
-import { BottomNavbar } from '../../components/BottomNavbar';
 import { useAuthStatus } from '../../hooks/use-auth-status';
 import { apiRequest } from '../../services/api-client';
 import {
@@ -182,7 +180,6 @@ export default function MessageDetailScreen() {
           <ActivityIndicator size="large" color={BRAND} />
           <Text style={styles.hint}>Lade Anmeldestatus…</Text>
         </View>
-        <BottomNavbar />
       </SafeAreaView>
     );
   }
@@ -198,7 +195,6 @@ export default function MessageDetailScreen() {
             <Text style={styles.buttonPrimaryText}>Anmelden</Text>
           </Pressable>
         </View>
-        <BottomNavbar />
       </SafeAreaView>
     );
   }
@@ -287,7 +283,6 @@ export default function MessageDetailScreen() {
           </Pressable>
         </View>
       </KeyboardAvoidingView>
-      <BottomNavbar />
     </SafeAreaView>
   );
 }

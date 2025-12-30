@@ -40,4 +40,3 @@ export async function updateProfile<T = unknown>(user: ProfileUser, payload: unk
 }
 
 
-

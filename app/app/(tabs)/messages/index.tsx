@@ -3,8 +3,6 @@ import { useEffect, useState } from 'react';
 import { ActivityIndicator, Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-
-import { BottomNavbar } from '../../../components/BottomNavbar';
 import { useAuthStatus } from '../../../hooks/use-auth-status';
 import { apiRequest } from '../../../services/api-client';
 import { fetchConversations, type Message } from '../../../services/messages';
@@ -154,7 +152,6 @@ export default function MessagesScreen() {
           <ActivityIndicator size="large" color={BRAND} />
           <Text style={styles.hint}>Lade Anmeldestatus…</Text>
         </View>
-        <BottomNavbar />
       </SafeAreaView>
     );
   }
@@ -175,7 +172,6 @@ export default function MessagesScreen() {
             </Pressable>
           </View>
         </View>
-        <BottomNavbar />
       </SafeAreaView>
     );
   }
@@ -225,7 +221,6 @@ export default function MessagesScreen() {
           );
         })}
       </ScrollView>
-      <BottomNavbar />
     </SafeAreaView>
   );
 }

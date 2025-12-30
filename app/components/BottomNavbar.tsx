@@ -32,13 +32,14 @@ const items = [
 export function BottomNavbar({ state, navigation }: Partial<BottomTabBarProps> = {}) {
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { user, role, loading, refresh } = useAuthStatus();
+  const { user, loading, refresh } = useAuthStatus();
   const [checkingProfile, setCheckingProfile] = useState(false);
 
-  // ✅ Genau deine Zielseiten:
   const loginPath = '/login';
-  const parentProfilePath = '/anmelden/eltern/profil';
-  const caregiverProfilePath = '/anmelden/tagespflegeperson/profil';
+
+  // ✅ Profil muss in den Tab gehen (damit app/(tabs)/profile/index.tsx fokusiert wird)
+  const profileTabRouteName = 'profile/index';
+  const profileTabHref = '/(tabs)/profile';
 
   const bottomPadding = Math.max(insets.bottom, 10);
   const navHeight = 64 + bottomPadding;
@@ -47,90 +48,35 @@ export function BottomNavbar({ state, navigation }: Partial<BottomTabBarProps> =
   const activeIndex = state?.index ?? -1;
   const isStandalone = !state || !navigation;
   const activeRouteName = routes[activeIndex]?.name;
-  const profileRouteName = 'profile/index';
-
-  const normalizeRole = (candidate?: string | null) => {
-    if (!candidate) return null;
-
-    const normalized = candidate.trim().toLowerCase();
-
-    if (['parent', 'parents', 'eltern', 'elternteil', 'elternprofil'].includes(normalized)) {
-      return 'parent' as const;
-    }
-
-    if (
-      [
-        'caregiver',
-        'tagespflegeperson',
-        'tagesmutter',
-        'tagesvater',
-        'kindertagespflegeperson',
-        'kindertagespflege',
-        'childminder',
-      ].includes(normalized)
-    ) {
-      return 'caregiver' as const;
-    }
-
-    return null;
-  };
-
-  const resolveUserRole = (candidate?: unknown) => {
-    if (!candidate || typeof candidate !== 'object') return null;
-    const maybeUser = candidate as Record<string, unknown>;
-
-    return (
-      normalizeRole(role) ||
-      normalizeRole(maybeUser['role'] as string) ||
-      normalizeRole(maybeUser['userType'] as string) ||
-      normalizeRole(maybeUser['profileType'] as string)
-    );
-  };
 
   const handleProfilePress = async () => {
     if (loading || checkingProfile) return;
 
     setCheckingProfile(true);
     try {
-      /**
-       * ✅ KRITISCHER FIX:
-       * refresh() NICHT als Rückgabewert benutzen.
-       * Bei euch gibt refresh sehr wahrscheinlich void/undefined zurück.
-       * Es soll nur den State aktualisieren – authUser bleibt user.
-       */
-      if (!user) {
-        await refresh();
-      }
+      console.log('[NAV] profile pressed', { hasUser: Boolean(user), loading }); // [LOG]
 
-      // Nach refresh nochmal auf den aktuellen Hook-State schauen
-      const authUser = user;
-      const currentRole = resolveUserRole(authUser);
+      // ✅ wichtig: refresh liefert User zurück (siehe use-auth-status.ts)
+      const authUser = user ?? (await refresh());
 
-      // 1) Nicht eingeloggt -> Login
       if (!authUser) {
+        console.log('[NAV] no user -> go login'); // [LOG]
         router.push(loginPath);
         return;
       }
 
-      // 2) Rolle nicht erkannt -> Login (dein Default)
-      if (!currentRole) {
-        router.push(loginPath);
+      // ✅ Tab-route öffnen (damit useFocusEffect im Profil feuert)
+      const routeIndex = routes.findIndex((r) => r.name === profileTabRouteName);
+
+      if (navigation && routeIndex !== -1) {
+        console.log('[NAV] navigate tab route', profileTabRouteName); // [LOG]
+        navigation.navigate(profileTabRouteName as never);
         return;
       }
 
-      // 3) Rollenrouting
-      if (currentRole === 'parent') {
-        router.push(parentProfilePath);
-        return;
-      }
-
-      if (currentRole === 'caregiver') {
-        router.push(caregiverProfilePath);
-        return;
-      }
-
-      // Default: Login
-      router.push(loginPath);
+      // Fallback wenn navbar standalone gerendert wird
+      console.log('[NAV] router.push fallback', profileTabHref); // [LOG]
+      router.push(profileTabHref);
     } finally {
       setCheckingProfile(false);
     }
@@ -152,6 +98,7 @@ export function BottomNavbar({ state, navigation }: Partial<BottomTabBarProps> =
           const isFocused = activeIndex !== -1 && routeIndex === activeIndex;
 
           const handlePress = () => {
+            console.log('[NAV] tab press', item.href); // [LOG]
             if (navigation && routeIndex !== -1) {
               navigation.navigate(item.routeName as never);
               return;
@@ -170,9 +117,7 @@ export function BottomNavbar({ state, navigation }: Partial<BottomTabBarProps> =
                       color={isFocused ? BRAND : '#94A3B8'}
                       style={{ opacity: pressed ? 0.7 : 1 }}
                     />
-                    <Text style={[styles.navLabel, !isFocused && styles.navLabelInactive]}>
-                      {item.label}
-                    </Text>
+                    <Text style={[styles.navLabel, !isFocused && styles.navLabelInactive]}>{item.label}</Text>
                   </>
                 )}
               </Pressable>
@@ -184,10 +129,10 @@ export function BottomNavbar({ state, navigation }: Partial<BottomTabBarProps> =
           <Ionicons
             name="person-circle"
             size={24}
-            color={activeRouteName === profileRouteName ? BRAND : '#94A3B8'}
+            color={activeRouteName === profileTabRouteName ? BRAND : '#94A3B8'}
             style={{ opacity: loading ? 0.6 : 1 }}
           />
-          <Text style={[styles.navLabel, activeRouteName !== profileRouteName && styles.navLabelInactive]}>
+          <Text style={[styles.navLabel, activeRouteName !== profileTabRouteName && styles.navLabelInactive]}>
             Profil
           </Text>
         </Pressable>
@@ -242,3 +187,4 @@ const styles = StyleSheet.create({
     color: '#94A3B8',
   },
 });
+
