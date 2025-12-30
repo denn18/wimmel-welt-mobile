@@ -29,8 +29,6 @@ export default function LoginScreen() {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
 
-  console.log('[LOGIN] render', { identifier }); // [LOG]
-
   const handleLogin = async () => {
     console.log('[LOGIN] handleLogin start', { identifier }); // [LOG]
 

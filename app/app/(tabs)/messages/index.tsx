@@ -183,47 +183,47 @@ export default function MessagesScreen() {
   return (
     <SafeAreaView style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.content}>
-        <View style={styles.header}> 
-          <View>
-            <Text style={styles.subtitle}>Alle Chats auf einen Blick</Text>
-            <Text style={styles.title}>Nachrichten</Text>
+        <View style={styles.surface}>
+          <View style={styles.header}>
+            <View>
+              <Text style={styles.subtitle}>Alle Chats auf einen Blick</Text>
+              <Text style={styles.title}>Nachrichten</Text>
+            </View>
           </View>
-          <View style={styles.badge}>
-            <Ionicons name="notifications" size={16} color={BRAND} />
-            <Text style={styles.badgeText}>Benachrichtigungen aktiv</Text>
-          </View>
+
+          {loading ? (
+            <View style={styles.loadingRow}>
+              <ActivityIndicator color={BRAND} />
+              <Text style={styles.hint}>Nachrichten werden geladen…</Text>
+            </View>
+          ) : null}
+
+          {error ? <Text style={styles.error}>{error}</Text> : null}
+
+          {!loading && conversations.length === 0 ? (
+            <View style={styles.emptyState}>
+              <Ionicons name="chatbubble-ellipses" size={32} color={BRAND} />
+              <Text style={styles.emptyText}>
+                Noch keine Nachrichten vorhanden. Besuche das Familienzentrum, um Gespräche zu starten.
+              </Text>
+            </View>
+          ) : null}
+
+          {conversations.map((conversation) => {
+            const partnerId =
+              conversation.participants?.find((participant) => participant !== String(user.id)) || conversation.senderId;
+            const partnerProfile = profiles[partnerId] ?? null;
+
+            return (
+              <ConversationCard
+                key={conversation.id}
+                conversation={conversation}
+                partner={partnerProfile}
+                onPress={() => handleOpenConversation(partnerId)}
+              />
+            );
+          })}
         </View>
-
-        {loading ? (
-          <View style={styles.loadingRow}> 
-            <ActivityIndicator color={BRAND} />
-            <Text style={styles.hint}>Nachrichten werden geladen…</Text>
-          </View>
-        ) : null}
-
-        {error ? <Text style={styles.error}>{error}</Text> : null}
-
-        {!loading && conversations.length === 0 ? (
-          <View style={styles.emptyState}>
-            <Ionicons name="chatbubble-ellipses" size={32} color={BRAND} />
-            <Text style={styles.emptyText}>Noch keine Nachrichten vorhanden. Besuche das Familienzentrum, um Gespräche zu starten.</Text>
-          </View>
-        ) : null}
-
-        {conversations.map((conversation) => {
-          const partnerId =
-            conversation.participants?.find((participant) => participant !== String(user.id)) || conversation.senderId;
-          const partnerProfile = profiles[partnerId] ?? null;
-
-          return (
-            <ConversationCard
-              key={conversation.id}
-              conversation={conversation}
-              partner={partnerProfile}
-              onPress={() => handleOpenConversation(partnerId)}
-            />
-          );
-        })}
       </ScrollView>
       <BottomNavbar />
     </SafeAreaView>
@@ -233,12 +233,18 @@ export default function MessagesScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#f8fbff',
+    backgroundColor: BRAND,
   },
   content: {
     padding: 18,
     gap: 16,
-    paddingBottom: 140,
+    paddingBottom: 110,
+  },
+  surface: {
+    backgroundColor: '#f9fbff',
+    borderRadius: 18,
+    padding: 16,
+    gap: 16,
   },
   header: {
     flexDirection: 'row',
@@ -249,25 +255,12 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: '800',
-    color: '#0f172a',
+    color: BRAND,
   },
   subtitle: {
-    color: '#475569',
+    color: '#1e293b',
     fontWeight: '600',
     marginBottom: 4,
-  },
-  badge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    backgroundColor: '#e8f0ff',
-    borderRadius: 999,
-  },
-  badgeText: {
-    color: BRAND,
-    fontWeight: '700',
   },
   loadingRow: {
     flexDirection: 'row',

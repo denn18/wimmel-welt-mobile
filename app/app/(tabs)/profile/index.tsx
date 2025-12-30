@@ -18,9 +18,9 @@ import { useFocusEffect } from '@react-navigation/native';
 
 import { BottomNavbar } from '../../../components/BottomNavbar';
 import { useAuthStatus } from '../../../hooks/use-auth-status';
-import { fetchProfile, profileEndpoint, updateProfile } from '../../../services/profile';
+import { fetchProfile, updateProfile } from '../../../services/profile';
 import { pickMultipleFiles, pickSingleFile, PickedFile } from '../../../utils/file-picker';
-import { assetUrl, getApiBaseUrl } from '../../../utils/url';
+import { assetUrl } from '../../../utils/url';
 
 const BRAND = '#31429a';
 
@@ -128,7 +128,6 @@ function useProfileData(user: { id?: string | number | null; role?: string | nul
   const [profile, setProfile] = useState<Profile>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [endpoint, setEndpoint] = useState<string | null>(null);
 
   useFocusEffect(
     useCallback(() => {
@@ -154,9 +153,6 @@ function useProfileData(user: { id?: string | number | null; role?: string | nul
         setError(null);
 
         try {
-          const resolvedEndpoint = profileEndpoint(user);
-          setEndpoint(resolvedEndpoint);
-
           console.log('[PROFILE] load start'); // [LOG]
           const data = await fetchProfile<any>(user);
           if (cancelled) return;
@@ -187,7 +183,7 @@ function useProfileData(user: { id?: string | number | null; role?: string | nul
     }, [user?.id, user?.role]), // [FIX] sicherer Reload bei Tab-Fokus
   );
 
-  return { profile, loading, error, setProfile, endpoint } as const;
+  return { profile, loading, error, setProfile } as const;
 }
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
@@ -854,11 +850,8 @@ function CaregiverProfileEditor({
 
 export default function ProfileIndex() {
   const { user, loading: authLoading, refresh } = useAuthStatus();
-  const { profile, loading, error, setProfile, endpoint } = useProfileData(user ?? null);
+  const { profile, loading, error, setProfile } = useProfileData(user ?? null);
   const [saving, setSaving] = useState(false);
-
-  const apiBaseUrl = useMemo(() => getApiBaseUrl(), []);
-  const hasProfile = Boolean(profile);
 
   const title = useMemo(() => {
     if (user?.role === 'caregiver') return 'Profil für Kindertagespflegepersonen bearbeiten';
@@ -909,19 +902,6 @@ export default function ProfileIndex() {
     <SafeAreaView style={styles.safeArea}>
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
         <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-          {__DEV__ ? (
-            <View style={styles.devDebugContainer}>
-              <Text style={styles.devDebugTitle}>Profil Debug</Text>
-              <Text style={styles.devDebugRow}>apiBaseUrl: {apiBaseUrl}</Text>
-              <Text style={styles.devDebugRow}>user.id: {user?.id ?? '—'}</Text>
-              <Text style={styles.devDebugRow}>user.role: {user?.role ?? '—'}</Text>
-              <Text style={styles.devDebugRow}>endpoint: {endpoint ?? '—'}</Text>
-              <Text style={styles.devDebugRow}>loading: {loading ? 'true' : 'false'}</Text>
-              <Text style={styles.devDebugRow}>profile vorhanden?: {hasProfile ? 'ja' : 'nein'}</Text>
-              <Text style={styles.devDebugRow}>error: {error ?? '—'}</Text>
-            </View>
-          ) : null}
-
           <View style={styles.header}>
             <Text style={styles.kicker}>Profil & Einstellungen</Text>
             <Text style={styles.title}>{title}</Text>
@@ -954,9 +934,14 @@ export default function ProfileIndex() {
 }
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: '#f7f9fc' },
-  content: { padding: 16, gap: 18, paddingBottom: 160 },
-  header: { gap: 6 },
+  safeArea: { flex: 1, backgroundColor: BRAND },
+  content: { padding: 16, gap: 18, paddingBottom: 120 },
+  header: {
+    gap: 6,
+    backgroundColor: 'rgba(255,255,255,0.94)',
+    padding: 14,
+    borderRadius: 16,
+  },
   title: { fontSize: 24, fontWeight: '800', color: '#0f172a' },
   kicker: { color: BRAND, fontWeight: '700' },
   section: {
@@ -1031,23 +1016,7 @@ const styles = StyleSheet.create({
   buttonDisabled: { opacity: 0.6 },
   statusRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   statusText: { color: '#0f172a', fontWeight: '700' },
-  devDebugContainer: {
-    backgroundColor: '#0f172a',
-    borderRadius: 12,
-    padding: 12,
-    gap: 4,
-  },
-  devDebugTitle: { color: '#e2e8f0', fontWeight: '800' },
-  devDebugRow: { color: '#cbd5e1', fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace' },
   label: { fontWeight: '700', color: '#1e293b' },
-  debugBox: {
-    backgroundColor: '#0f172a',
-    padding: 12,
-    borderRadius: 12,
-  },
-  codeText: { color: '#e2e8f0', fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace' },
-  spacingTop: { marginTop: 8 },
-  endpointText: { color: '#475569', fontWeight: '700' },
 });
 
 
