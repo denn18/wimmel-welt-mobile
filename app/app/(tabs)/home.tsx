@@ -14,7 +14,6 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { apiRequest } from '../../services/api-client';
-import { useAuthStatus } from '../../hooks/use-auth-status';
 
 const BRAND_TITLE_COLOR = 'rgb(49,66,154)';
 
@@ -56,7 +55,6 @@ const initialStats: OverviewStats = { caregivers: 0, parents: 0, matches: 0 };
 
 export default function HomeScreen() {
   const router = useRouter();
-  const { user, logout } = useAuthStatus();
   const [stats, setStats] = useState<OverviewStats>(initialStats);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -90,16 +88,6 @@ export default function HomeScreen() {
       void loadStats();
     }, [loadStats])
   );
-
-  const handleAuthPress = useCallback(async () => {
-    if (user) {
-      await logout();
-      router.push('/login');
-      return;
-    }
-
-    router.push('/login');
-  }, [logout, router, user]);
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -140,8 +128,8 @@ export default function HomeScreen() {
                 <Text style={styles.primaryBtnText}>Betreuungsplatz finden</Text>
               </Pressable>
 
-              <Pressable style={styles.secondaryBtn} onPress={handleAuthPress}>
-                <Text style={styles.secondaryBtnText}>{user ? 'Abmelden' : 'Anmelden'}</Text>
+              <Pressable style={styles.secondaryBtn} onPress={() => router.push('/login')}>
+                <Text style={styles.secondaryBtnText}>Anmelden</Text>
               </Pressable>
             </View>
           </View>
@@ -203,12 +191,11 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: BRAND_TITLE_COLOR,
+    backgroundColor: '#EAF2FF',
   },
 
   bg: {
     flex: 1,
-    backgroundColor: BRAND_TITLE_COLOR,
   },
   bgImage: {
     resizeMode: 'cover',
@@ -217,7 +204,7 @@ const styles = StyleSheet.create({
   screen: { flex: 1 },
   content: {
     paddingHorizontal: 18,
-    paddingBottom: 96,
+    paddingBottom: 140,
   },
 
   topHeader: {
@@ -228,7 +215,7 @@ const styles = StyleSheet.create({
   topTitle: {
     fontSize: 22,
     fontWeight: '800',
-    color: '#fff',
+    color: 'rgb(49,66,154)',
     letterSpacing: 0.2,
   },
 

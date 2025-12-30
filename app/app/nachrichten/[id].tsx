@@ -1,10 +1,9 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   FlatList,
-  Keyboard,
   KeyboardAvoidingView,
   Linking,
   Platform,
@@ -12,7 +11,6 @@ import {
   StyleSheet,
   Text,
   TextInput,
-  TouchableWithoutFeedback,
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -88,7 +86,6 @@ export default function MessageDetailScreen() {
   const params = useLocalSearchParams<{ id?: string | string[] }>();
   const targetId = useMemo(() => (Array.isArray(params.id) ? params.id[0] : params.id || ''), [params.id]);
   const { user, loading: authLoading } = useAuthStatus();
-  const listRef = useRef<FlatList<Message>>(null);
 
   const conversationId = useMemo(() => {
     if (!user?.id || !targetId) return '';
@@ -159,16 +156,12 @@ export default function MessageDetailScreen() {
         attachments: pendingAttachments.map((file) => ({
           name: file.fileName,
           data: file.dataUrl,
-        mimeType: file.mimeType,
+          mimeType: file.mimeType,
         })),
       });
-      setMessages((current) => {
-        const next = [...current, sent];
-        return next;
-      });
+      setMessages((current) => [...current, sent]);
       setMessageBody('');
       setPendingAttachments([]);
-      scrollToBottom();
     } catch (error) {
       console.error('Konnte Nachricht nicht senden', error);
     } finally {
@@ -181,21 +174,6 @@ export default function MessageDetailScreen() {
   };
 
   const partnerName = partner?.daycareName || partner?.name || 'Kontakt';
-
-  const scrollToBottom = useCallback(
-    (animated = true) => {
-      requestAnimationFrame(() => {
-        listRef.current?.scrollToEnd({ animated });
-      });
-    },
-    []
-  );
-
-  useEffect(() => {
-    if (!loadingMessages && messages.length > 0) {
-      scrollToBottom(false);
-    }
-  }, [loadingMessages, messages.length, scrollToBottom]);
 
   if (authLoading) {
     return (
@@ -227,93 +205,87 @@ export default function MessageDetailScreen() {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 60 : 0}
-        style={{ flex: 1 }}
-      >
-        <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
-          <View style={styles.container}>
-            <View style={styles.header}>
-              <Text style={styles.partnerLabel}>Gesprächspartner :</Text>
-              <Text style={styles.threadTitle}>{partnerName}</Text>
-            </View>
-
-            <View style={styles.body}>
-              {loadingMessages ? (
-                <View style={styles.centered}>
-                  <ActivityIndicator color={BRAND} />
-                  <Text style={styles.hint}>Nachrichten werden geladen…</Text>
-                </View>
-              ) : (
-                <FlatList
-                  ref={listRef}
-                  data={messages}
-                  keyExtractor={(item) => item.id}
-                  contentContainerStyle={{ gap: 12, paddingVertical: 4 }}
-                  ListEmptyComponent={
-                    <Text style={styles.hint}>Noch keine Nachrichten vorhanden. Schreibe die erste Nachricht.</Text>
-                  }
-                  onContentSizeChange={() => scrollToBottom()}
-                  renderItem={({ item }) => {
-                    const isOwn = item.senderId === String(user.id);
-                    const bubbleStyles = isOwn ? styles.bubbleOwn : styles.bubblePartner;
-                    const metaStyles = isOwn ? styles.metaOwn : styles.metaPartner;
-
-                    return (
-                      <View style={{ alignItems: isOwn ? 'flex-end' : 'flex-start', gap: 4 }}>
-                        <Text style={styles.senderLabel}>{isOwn ? 'Du' : partnerName}</Text>
-                        <View style={[styles.messageBubble, bubbleStyles]}>
-                          {item.body ? (
-                            <Text style={[styles.messageText, isOwn ? styles.messageTextOwn : null]}>{item.body}</Text>
-                          ) : null}
-                          <AttachmentList attachments={item.attachments} />
-                          <Text style={[styles.metaText, metaStyles]}>{formatTime(item.createdAt)}</Text>
-                        </View>
-                      </View>
-                    );
-                  }}
-                />
-              )}
-            </View>
-
-            {pendingAttachments.length ? (
-              <View style={styles.pendingAttachments}>
-                {pendingAttachments.map((attachment, index) => (
-                  <View key={`${attachment.fileName}-${index}`} style={styles.pendingPill}>
-                    <Ionicons name="document" size={14} color={BRAND} />
-                    <Text style={styles.pendingLabel}>{attachment.fileName}</Text>
-                    <Pressable onPress={() => removePendingAttachment(index)}>
-                      <Ionicons name="close" size={14} color="#475569" />
-                    </Pressable>
-                  </View>
-                ))}
-              </View>
-            ) : null}
-
-            <View style={styles.composer}>
-              <Pressable style={styles.attachButton} onPress={handlePickAttachments} disabled={sending}>
-                <Ionicons name="attach" size={18} color={BRAND} />
-              </Pressable>
-              <TextInput
-                style={styles.input}
-                placeholder="Nachricht schreiben…"
-                placeholderTextColor="#94A3B8"
-                value={messageBody}
-                onChangeText={setMessageBody}
-                multiline
-              />
-              <Pressable
-                style={[styles.sendBtn, sending || (!messageBody.trim() && pendingAttachments.length === 0) ? styles.sendBtnDisabled : null]}
-                disabled={sending || (!messageBody.trim() && pendingAttachments.length === 0)}
-                onPress={handleSendMessage}
-              >
-                <Ionicons name="send" size={18} color="#fff" />
-                <Text style={styles.sendText}>{sending ? 'Senden…' : 'Senden'}</Text>
-              </Pressable>
-            </View>
+      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
+        <View style={styles.header}>
+          <Pressable onPress={() => router.back()} style={styles.backBtn}>
+            <Ionicons name="arrow-back" size={20} color={BRAND} />
+            <Text style={styles.backText}>Zurück</Text>
+          </Pressable>
+          <View style={styles.threadMeta}>
+            <Ionicons name="chatbubbles" size={18} color={BRAND} />
+            <Text style={styles.threadTitle}>{partnerName}</Text>
           </View>
-        </TouchableWithoutFeedback>
+        </View>
+
+        <View style={styles.body}>
+          {loadingMessages ? (
+            <View style={styles.centered}>
+              <ActivityIndicator color={BRAND} />
+              <Text style={styles.hint}>Nachrichten werden geladen…</Text>
+            </View>
+          ) : (
+            <FlatList
+              data={messages}
+              keyExtractor={(item) => item.id}
+              contentContainerStyle={{ gap: 12, paddingVertical: 4 }}
+              ListEmptyComponent={<Text style={styles.hint}>Noch keine Nachrichten vorhanden. Schreibe die erste Nachricht.</Text>}
+              renderItem={({ item }) => {
+                const isOwn = item.senderId === String(user.id);
+                const bubbleStyles = isOwn ? styles.bubbleOwn : styles.bubblePartner;
+                const metaStyles = isOwn ? styles.metaOwn : styles.metaPartner;
+
+                return (
+                  <View style={{ alignItems: isOwn ? 'flex-end' : 'flex-start', gap: 4 }}>
+                    <Text style={styles.senderLabel}>{isOwn ? 'Du' : partnerName}</Text>
+                    <View style={[styles.messageBubble, bubbleStyles]}>
+                      {item.body ? (
+                        <Text style={[styles.messageText, isOwn ? styles.messageTextOwn : null]}>{item.body}</Text>
+                      ) : null}
+                      <AttachmentList attachments={item.attachments} />
+                      <Text style={[styles.metaText, metaStyles]}>{formatTime(item.createdAt)}</Text>
+                    </View>
+                  </View>
+                );
+              }}
+            />
+          )}
+        </View>
+
+        {pendingAttachments.length ? (
+          <View style={styles.pendingAttachments}>
+            {pendingAttachments.map((attachment, index) => (
+              <View key={`${attachment.fileName}-${index}`} style={styles.pendingPill}>
+                <Ionicons name="document" size={14} color={BRAND} />
+                <Text style={styles.pendingLabel}>{attachment.fileName}</Text>
+                <Pressable onPress={() => removePendingAttachment(index)}>
+                  <Ionicons name="close" size={14} color="#475569" />
+                </Pressable>
+              </View>
+            ))}
+          </View>
+        ) : null}
+
+        <View style={styles.composer}>
+          <Pressable style={styles.attachButton} onPress={handlePickAttachments} disabled={sending}>
+            <Ionicons name="attach" size={18} color={BRAND} />
+          </Pressable>
+          <TextInput
+            style={styles.input}
+            placeholder="Nachricht schreiben…"
+            placeholderTextColor="#94A3B8"
+            value={messageBody}
+            onChangeText={setMessageBody}
+            multiline
+          />
+          <Pressable
+            style={[styles.sendBtn, sending || (!messageBody.trim() && pendingAttachments.length === 0) ? styles.sendBtnDisabled : null]}
+            disabled={sending || (!messageBody.trim() && pendingAttachments.length === 0)}
+            onPress={handleSendMessage}
+          >
+            <Ionicons name="send" size={18} color="#fff" />
+            <Text style={styles.sendText}>{sending ? 'Senden…' : 'Senden'}</Text>
+          </Pressable>
+        </View>
       </KeyboardAvoidingView>
       <BottomNavbar />
     </SafeAreaView>
@@ -323,22 +295,26 @@ export default function MessageDetailScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: BRAND,
-    padding: 12,
-    gap: 12,
-    paddingBottom: 90,
+    backgroundColor: '#f8fbff',
+    padding: 16,
+    gap: 16,
+    paddingBottom: 130,
   },
-  container: { flex: 1, gap: 12 },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-    backgroundColor: '#fff',
-    borderRadius: 14,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
+    justifyContent: 'space-between',
   },
-  partnerLabel: { color: BRAND, fontWeight: '800', fontSize: 14 },
+  backBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  backText: {
+    color: BRAND,
+    fontWeight: '600',
+    fontSize: 14,
+  },
   threadMeta: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -362,7 +338,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
-    marginTop: 8,
+    marginTop: 10,
   },
   input: {
     flex: 1,
