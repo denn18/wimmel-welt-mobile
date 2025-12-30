@@ -15,16 +15,12 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
+
+import { BottomNavbar } from '../../../components/BottomNavbar';
 import { useAuthStatus } from '../../../hooks/use-auth-status';
-<<<<<<< Updated upstream
 import { fetchProfile, updateProfile } from '../../../services/profile';
 import { pickMultipleFiles, pickSingleFile, PickedFile } from '../../../utils/file-picker';
 import { assetUrl } from '../../../utils/url';
-=======
-import { fetchProfile, profileEndpoint, updateProfile } from '../../../services/profile';
-import { PickedFile, pickSingleFile, pickMultipleFiles } from '../../../utils/file-picker';
-import { assetUrl, getApiBaseUrl } from '../../../utils/url';
->>>>>>> Stashed changes
 
 const BRAND = '#31429a';
 
@@ -886,6 +882,7 @@ export default function ProfileIndex() {
           <ActivityIndicator size="large" color={BRAND} />
           <Text style={styles.hint}>Profil wird geladen…</Text>
         </View>
+        <BottomNavbar />
       </SafeAreaView>
     );
   }
@@ -896,6 +893,7 @@ export default function ProfileIndex() {
         <View style={styles.centered}>
           <Text style={styles.title}>Bitte melde dich an.</Text>
         </View>
+        <BottomNavbar />
       </SafeAreaView>
     );
   }
@@ -930,6 +928,7 @@ export default function ProfileIndex() {
           ) : null}
         </ScrollView>
       </KeyboardAvoidingView>
+      <BottomNavbar />
     </SafeAreaView>
   );
 }
