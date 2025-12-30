@@ -43,13 +43,14 @@ export async function apiRequest<T>(path: string, options: ApiRequestOptions = {
     method,
     headers: normalizedHeaders,
     body,
-    credentials: 'include',
     ...rest,
+    credentials: 'include', // [FIX]
   });
 
   const textPreview = await safeReadText(response);
+  const previewBody = textPreview.slice(0, 300);
 
-  console.log('[API] <-', response.status, url, textPreview.slice(0, 300)); // [LOG]
+  console.log('[API] <-', response.status, url, previewBody); // [LOG]
 
   if (!response.ok) {
     const contentType = response.headers.get('content-type') ?? '';
