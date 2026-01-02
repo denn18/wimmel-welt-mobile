@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 import { MaterialIcons } from '@expo/vector-icons';
-import { StyleSheet, Text, View, ActivityIndicator, Pressable } from 'react-native';
+import { StyleSheet, Text, View, ActivityIndicator, Pressable, Image } from 'react-native';
 
 import { useStartupConnectionCheck } from '../hooks/use-startup-connection-check';
 
@@ -35,10 +35,33 @@ function StatusRow({ label, status, message }: StatusRowProps) {
 
 export function StartupDebugOverlay({ children }: { children: React.ReactNode }) {
   const [isDismissed, setIsDismissed] = useState(false);
+  const [showSplash, setShowSplash] = useState(false);
   const { statuses, isReady, isRunning, retry } = useStartupConnectionCheck();
 
-  if (isReady || isDismissed) {
+  useEffect(() => {
+    if (!isReady) return;
+
+    setShowSplash(true);
+    const timeout = setTimeout(() => setShowSplash(false), 1200);
+
+    return () => clearTimeout(timeout);
+  }, [isReady]);
+
+  if ((isReady && !showSplash) || isDismissed) {
     return <>{children}</>;
+  }
+
+  if (showSplash) {
+    return (
+      <View style={styles.splashContainer}>
+        <View style={styles.splashCard}>
+          <Image source={require('../assets/images/splash-icon.png')} style={styles.splashLogo} />
+          <Text style={styles.splashTitle}>Wimmel Welt</Text>
+          <Text style={styles.splashSubtitle}>App wird geladen…</Text>
+          <ActivityIndicator color="#fff" style={{ marginTop: 10 }} />
+        </View>
+      </View>
+    );
   }
 
   return (
@@ -177,5 +200,33 @@ const styles = StyleSheet.create({
   retryText: {
     color: '#0f172a',
     fontWeight: '700',
+  },
+  splashContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#0b1224',
+  },
+  splashCard: {
+    alignItems: 'center',
+    gap: 10,
+    padding: 24,
+    borderRadius: 20,
+    backgroundColor: 'rgba(15, 23, 42, 0.9)',
+    borderColor: 'rgba(255,255,255,0.08)',
+    borderWidth: 1,
+  },
+  splashLogo: {
+    width: 120,
+    height: 120,
+    resizeMode: 'contain',
+  },
+  splashTitle: {
+    fontSize: 20,
+    fontWeight: '800',
+    color: '#e2e8f0',
+  },
+  splashSubtitle: {
+    color: '#cbd5e1',
   },
 });
