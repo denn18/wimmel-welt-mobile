@@ -58,7 +58,12 @@ function ConversationCard({
   partner: UserProfile | null;
   onPress: () => void;
 }) {
-  const partnerName = partner?.daycareName || partner?.name || 'Unbekannter Kontakt';
+  const partnerName =
+    partner?.role === 'caregiver'
+      ? [partner?.name || 'Unbekannter Kontakt', partner?.daycareName]
+          .filter(Boolean)
+          .join(' – ')
+      : partner?.name || partner?.daycareName || 'Unbekannter Kontakt';
   const partnerRole = partner?.role === 'caregiver' ? 'Kindertagespflegeperson' : 'Elternteil';
   const profileUrl = partner?.profileImageUrl ? assetUrl(partner.profileImageUrl) : '';
   const logoUrl = partner?.logoImageUrl ? assetUrl(partner.logoImageUrl) : '';

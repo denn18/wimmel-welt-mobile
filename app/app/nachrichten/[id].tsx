@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useEffect, useMemo, useState } from 'react';
+import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
+import { useEffect, useMemo, useRef, useState, useCallback } from 'react';
 import {
   ActivityIndicator,
   FlatList,
@@ -13,7 +13,7 @@ import {
   TextInput,
   View,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuthStatus } from '../../hooks/use-auth-status';
 import { apiRequest } from '../../services/api-client';
 import {
@@ -84,6 +84,9 @@ export default function MessageDetailScreen() {
   const params = useLocalSearchParams<{ id?: string | string[] }>();
   const targetId = useMemo(() => (Array.isArray(params.id) ? params.id[0] : params.id || ''), [params.id]);
   const { user, loading: authLoading } = useAuthStatus();
+  const insets = useSafeAreaInsets();
+
+  const listRef = useRef<FlatList<Message>>(null);
 
   const conversationId = useMemo(() => {
     if (!user?.id || !targetId) return '';
@@ -96,6 +99,10 @@ export default function MessageDetailScreen() {
   const [pendingAttachments, setPendingAttachments] = useState<PickedFile[]>([]);
   const [loadingMessages, setLoadingMessages] = useState(true);
   const [sending, setSending] = useState(false);
+
+  const scrollToLatest = useCallback(() => {
+    listRef.current?.scrollToEnd({ animated: true });
+  }, []);
 
   useEffect(() => {
     async function loadPartner() {
@@ -127,6 +134,15 @@ export default function MessageDetailScreen() {
 
     void loadMessages();
   }, [conversationId]);
+
+  useEffect(() => {
+    if (messages.length === 0) return;
+    const timer = setTimeout(() => {
+      scrollToLatest();
+    }, 50);
+
+    return () => clearTimeout(timer);
+  }, [messages.length, scrollToLatest]);
 
   const handlePickAttachments = async () => {
     try {
@@ -160,6 +176,7 @@ export default function MessageDetailScreen() {
       setMessages((current) => [...current, sent]);
       setMessageBody('');
       setPendingAttachments([]);
+      requestAnimationFrame(scrollToLatest);
     } catch (error) {
       console.error('Konnte Nachricht nicht senden', error);
     } finally {
@@ -171,7 +188,16 @@ export default function MessageDetailScreen() {
     setPendingAttachments((current) => current.filter((_, i) => i !== index));
   };
 
-  const partnerName = partner?.daycareName || partner?.name || 'Kontakt';
+  const partnerName = useMemo(() => {
+    if (!partner) return 'Kontakt';
+    if (partner.role === 'caregiver') {
+      const primary = partner.name || 'Kontakt';
+      const daycareLabel = partner.daycareName ? ` – ${partner.daycareName}` : '';
+      return `${primary}${daycareLabel}`;
+    }
+
+    return partner.name || partner.daycareName || 'Kontakt';
+  }, [partner]);
 
   if (authLoading) {
     return (
@@ -200,8 +226,13 @@ export default function MessageDetailScreen() {
   }
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
+    <SafeAreaView style={[styles.safeArea, { paddingBottom: insets.bottom + 16 }]}>
+      <Stack.Screen options={{ headerShown: false }} />
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? insets.top + 12 : 0}
+        style={{ flex: 1 }}
+      >
         <View style={styles.header}>
           <Pressable onPress={() => router.back()} style={styles.backBtn}>
             <Ionicons name="arrow-back" size={20} color={BRAND} />
@@ -209,7 +240,7 @@ export default function MessageDetailScreen() {
           </Pressable>
           <View style={styles.threadMeta}>
             <Ionicons name="chatbubbles" size={18} color={BRAND} />
-            <Text style={styles.threadTitle}>{partnerName}</Text>
+            <Text style={styles.threadTitle}>Gesprächspartner : {partnerName}</Text>
           </View>
         </View>
 
@@ -221,10 +252,15 @@ export default function MessageDetailScreen() {
             </View>
           ) : (
             <FlatList
+              ref={listRef}
               data={messages}
               keyExtractor={(item) => item.id}
-              contentContainerStyle={{ gap: 12, paddingVertical: 4 }}
-              ListEmptyComponent={<Text style={styles.hint}>Noch keine Nachrichten vorhanden. Schreibe die erste Nachricht.</Text>}
+              keyboardShouldPersistTaps="handled"
+              onContentSizeChange={scrollToLatest}
+              contentContainerStyle={{ gap: 12, paddingVertical: 4, paddingBottom: insets.bottom + 110 }}
+              ListEmptyComponent={
+                <Text style={styles.hint}>Noch keine Nachrichten vorhanden. Schreibe die erste Nachricht.</Text>
+              }
               renderItem={({ item }) => {
                 const isOwn = item.senderId === String(user.id);
                 const bubbleStyles = isOwn ? styles.bubbleOwn : styles.bubblePartner;
@@ -261,7 +297,7 @@ export default function MessageDetailScreen() {
           </View>
         ) : null}
 
-        <View style={styles.composer}>
+        <View style={[styles.composer, { paddingBottom: Math.max(insets.bottom - 8, 0) }]}>
           <Pressable style={styles.attachButton} onPress={handlePickAttachments} disabled={sending}>
             <Ionicons name="attach" size={18} color={BRAND} />
           </Pressable>
@@ -293,7 +329,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#f8fbff',
     padding: 16,
     gap: 16,
-    paddingBottom: 130,
   },
   header: {
     flexDirection: 'row',
@@ -328,6 +363,7 @@ const styles = StyleSheet.create({
     gap: 8,
     borderColor: '#e2e8f0',
     borderWidth: 1,
+    paddingBottom: 12,
   },
   composer: {
     flexDirection: 'row',
