@@ -37,7 +37,6 @@ export async function apiRequest<T>(path: string, options: ApiRequestOptions = {
   const normalizedHeaders = normalizeHeaders(headers, body);
 
   console.log('[API] ->', method, url); // [LOG]
-  console.log('[API] stack', new Error().stack); // [LOG]
 
   const response = await fetch(url, {
     method,

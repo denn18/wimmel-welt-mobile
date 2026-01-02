@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   FlatList,
@@ -13,7 +13,7 @@ import {
   TextInput,
   View,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuthStatus } from '../../hooks/use-auth-status';
 import { apiRequest } from '../../services/api-client';
 import {
@@ -26,6 +26,10 @@ import { pickMultipleFiles, type PickedFile } from '../../utils/file-picker';
 import { assetUrl } from '../../utils/url';
 
 const BRAND = 'rgb(49,66,154)';
+
+export const options = {
+  headerShown: false,
+};
 
 function formatTime(value?: string) {
   if (!value) return '';
@@ -81,6 +85,7 @@ function AttachmentList({ attachments }: { attachments?: MessageAttachment[] }) 
 
 export default function MessageDetailScreen() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const params = useLocalSearchParams<{ id?: string | string[] }>();
   const targetId = useMemo(() => (Array.isArray(params.id) ? params.id[0] : params.id || ''), [params.id]);
   const { user, loading: authLoading } = useAuthStatus();
@@ -96,6 +101,16 @@ export default function MessageDetailScreen() {
   const [pendingAttachments, setPendingAttachments] = useState<PickedFile[]>([]);
   const [loadingMessages, setLoadingMessages] = useState(true);
   const [sending, setSending] = useState(false);
+  const listRef = useRef<FlatList<Message>>(null);
+
+  const scrollToLatest = useCallback(
+    (animated = true) => {
+      requestAnimationFrame(() => {
+        listRef.current?.scrollToEnd({ animated });
+      });
+    },
+    [],
+  );
 
   useEffect(() => {
     async function loadPartner() {
@@ -127,6 +142,11 @@ export default function MessageDetailScreen() {
 
     void loadMessages();
   }, [conversationId]);
+
+  useEffect(() => {
+    if (!messages.length) return;
+    scrollToLatest(false);
+  }, [messages.length, scrollToLatest]);
 
   const handlePickAttachments = async () => {
     try {
@@ -160,6 +180,7 @@ export default function MessageDetailScreen() {
       setMessages((current) => [...current, sent]);
       setMessageBody('');
       setPendingAttachments([]);
+      scrollToLatest();
     } catch (error) {
       console.error('Konnte Nachricht nicht senden', error);
     } finally {
@@ -171,7 +192,10 @@ export default function MessageDetailScreen() {
     setPendingAttachments((current) => current.filter((_, i) => i !== index));
   };
 
-  const partnerName = partner?.daycareName || partner?.name || 'Kontakt';
+  const partnerName =
+    partner?.name && partner?.daycareName
+      ? `${partner.name} · ${partner.daycareName}`
+      : partner?.daycareName || partner?.name || 'Kontakt';
 
   if (authLoading) {
     return (
@@ -187,7 +211,7 @@ export default function MessageDetailScreen() {
   if (!user) {
     return (
       <SafeAreaView style={styles.safeArea}>
-        <View style={styles.centered}> 
+        <View style={styles.centered}>
           <Ionicons name="chatbubbles" size={48} color={BRAND} />
           <Text style={styles.title}>Nachrichten</Text>
           <Text style={styles.hint}>Erstelle einen Account und melde dich an, um die Chatfunktion zu nutzen.</Text>
@@ -200,17 +224,22 @@ export default function MessageDetailScreen() {
   }
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
+    <SafeAreaView style={styles.safeArea} edges={['bottom']}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? insets.top + 10 : 0}
+        style={[styles.layout, { paddingBottom: Math.max(insets.bottom, 16) }]}
+      >
         <View style={styles.header}>
           <Pressable onPress={() => router.back()} style={styles.backBtn}>
             <Ionicons name="arrow-back" size={20} color={BRAND} />
             <Text style={styles.backText}>Zurück</Text>
           </Pressable>
-          <View style={styles.threadMeta}>
-            <Ionicons name="chatbubbles" size={18} color={BRAND} />
-            <Text style={styles.threadTitle}>{partnerName}</Text>
-          </View>
+        </View>
+
+        <View style={styles.partnerHeading}>
+          <Ionicons name="chatbubbles" size={18} color={BRAND} />
+          <Text style={styles.partnerHeadingText}>{`Gesprächspartner : ${partnerName}`}</Text>
         </View>
 
         <View style={styles.body}>
@@ -221,9 +250,12 @@ export default function MessageDetailScreen() {
             </View>
           ) : (
             <FlatList
+              ref={listRef}
               data={messages}
               keyExtractor={(item) => item.id}
-              contentContainerStyle={{ gap: 12, paddingVertical: 4 }}
+              contentContainerStyle={styles.messageList}
+              keyboardShouldPersistTaps="handled"
+              onContentSizeChange={() => scrollToLatest(false)}
               ListEmptyComponent={<Text style={styles.hint}>Noch keine Nachrichten vorhanden. Schreibe die erste Nachricht.</Text>}
               renderItem={({ item }) => {
                 const isOwn = item.senderId === String(user.id);
@@ -291,14 +323,18 @@ const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
     backgroundColor: '#f8fbff',
-    padding: 16,
-    gap: 16,
-    paddingBottom: 130,
+  },
+  layout: {
+    flex: 1,
+    paddingHorizontal: 16,
+    paddingTop: 16,
+    gap: 12,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    marginBottom: 4,
   },
   backBtn: {
     flexDirection: 'row',
@@ -310,14 +346,20 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     fontSize: 14,
   },
-  threadMeta: {
+  partnerHeading: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    borderRadius: 12,
+    backgroundColor: '#e8f0ff',
+    borderColor: '#cbd5e1',
+    borderWidth: 1,
   },
-  threadTitle: {
-    fontSize: 16,
-    fontWeight: '700',
+  partnerHeadingText: {
+    fontSize: 14,
+    fontWeight: '800',
     color: BRAND,
   },
   body: {
@@ -328,6 +370,11 @@ const styles = StyleSheet.create({
     gap: 8,
     borderColor: '#e2e8f0',
     borderWidth: 1,
+  },
+  messageList: {
+    gap: 12,
+    paddingVertical: 4,
+    paddingBottom: 12,
   },
   composer: {
     flexDirection: 'row',
