@@ -58,16 +58,11 @@ function ConversationCard({
   partner: UserProfile | null;
   onPress: () => void;
 }) {
-  const primaryName = partner?.name?.trim();
-  const daycareName = partner?.daycareName?.trim();
-  const partnerName =
-    partner?.role === 'caregiver' && primaryName && daycareName
-      ? `${primaryName} · ${daycareName}`
-      : primaryName || daycareName || 'Unbekannter Kontakt';
+  const partnerName = partner?.daycareName || partner?.name || 'Unbekannter Kontakt';
   const partnerRole = partner?.role === 'caregiver' ? 'Kindertagespflegeperson' : 'Elternteil';
   const profileUrl = partner?.profileImageUrl ? assetUrl(partner.profileImageUrl) : '';
   const logoUrl = partner?.logoImageUrl ? assetUrl(partner.logoImageUrl) : '';
-  const initials = (primaryName || daycareName || partnerName).trim().charAt(0).toUpperCase();
+  const initials = partnerName.trim().charAt(0).toUpperCase();
 
   const hasAttachments = Array.isArray(conversation.attachments) && conversation.attachments.length > 0;
   const previewText = conversation.body?.trim();

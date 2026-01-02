@@ -42,6 +42,7 @@ export function BottomNavbar({ state, navigation }: Partial<BottomTabBarProps> =
   const profileTabHref = '/(tabs)/profile';
 
   const bottomPadding = Math.max(insets.bottom, 10);
+  const navHeight = 64 + bottomPadding;
 
   const routes = state?.routes ?? [];
   const activeIndex = state?.index ?? -1;
@@ -84,10 +85,14 @@ export function BottomNavbar({ state, navigation }: Partial<BottomTabBarProps> =
   return (
     <SafeAreaView
       edges={['bottom']}
-      style={[styles.wrapper, isStandalone ? styles.wrapperStandalone : styles.wrapperEmbedded]}
+      style={[
+        styles.wrapper,
+        isStandalone ? styles.wrapperStandalone : styles.wrapperEmbedded,
+        { height: navHeight },
+      ]}
       pointerEvents="box-none"
     >
-      <View style={[styles.bottomNav, { paddingBottom: bottomPadding }]}>
+      <View style={[styles.bottomNav, { paddingBottom: bottomPadding, height: navHeight }]}>
         {items.map((item) => {
           const routeIndex = routes.findIndex((route) => route.name === item.routeName);
           const isFocused = activeIndex !== -1 && routeIndex === activeIndex;
@@ -158,7 +163,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-around',
-    paddingVertical: 12,
     shadowColor: '#9BB9FF',
     shadowOpacity: 0.22,
     shadowOffset: { width: 0, height: 14 },
