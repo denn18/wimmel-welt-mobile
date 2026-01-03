@@ -4,12 +4,13 @@
     "slug": "app",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
+    "icon": "./assets/images/wimmel-welt-icon.png",
     "scheme": "app",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.anonymous.app"
     },
     "android": {
       "adaptiveIcon": {
@@ -19,10 +20,11 @@
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
       "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "package": "com.anonymous.app"
     },
     "splash": {
-      "image": "./assets/images/icon.png",
+      "image": "./assets/images/wimmel-welt-icon.png",
       "resizeMode": "contain",
       "backgroundColor": "#EEF2FF"
     },
@@ -35,7 +37,7 @@
       [
         "expo-splash-screen",
         {
-          "image": "./assets/images/icon.png",
+          "image": "./assets/images/wimmel-welt-icon.png.",
           "imageWidth": 200,
           "resizeMode": "contain",
           "backgroundColor": "#EEF2FF",
