@@ -118,10 +118,17 @@ export default function ElternProfilScreen() {
         role: 'parent' as const,
       };
 
-      await apiRequest<RegisterResponse>('api/auth/register', {
+      const endpoint = 'api/parents';
+      console.log('[REGISTER] start', { type: 'parent' }); // [LOG]
+      console.log('[REGISTER] endpoint', endpoint); // [LOG]
+      console.log('[REGISTER] payload keys', Object.keys(payload)); // [LOG]
+
+      const response = await apiRequest<RegisterResponse>(endpoint, {
         method: 'POST',
         body: JSON.stringify(payload),
       });
+
+      console.log('[REGISTER] success', response?.id ?? null); // [LOG]
 
       const identifier = formState.username || formState.email;
 
@@ -153,6 +160,7 @@ export default function ElternProfilScreen() {
       setChildren([createChild()]);
       setProfileImage({ dataUrl: null, fileName: '' });
     } catch (error) {
+      console.log('[REGISTER] error', error); // [LOG]
       console.error('Elternregistrierung fehlgeschlagen', error);
       const fallbackMessage = 'Etwas ist schiefgelaufen. Bitte versuche es später erneut.';
       const message = error instanceof Error && error.message ? error.message : fallbackMessage;

@@ -214,10 +214,17 @@ export default function TagespflegepersonProfilScreen() {
         role: 'caregiver' as const,
       };
 
-      await apiRequest('api/auth/register', {
+      const endpoint = 'api/caregivers';
+      console.log('[REGISTER] start', { type: 'caregiver' }); // [LOG]
+      console.log('[REGISTER] endpoint', endpoint); // [LOG]
+      console.log('[REGISTER] payload keys', Object.keys(payload)); // [LOG]
+
+      const response = await apiRequest(endpoint, {
         method: 'POST',
         body: JSON.stringify(payload),
       });
+
+      console.log('[REGISTER] success', response?.id ?? null); // [LOG]
 
       const identifier = formState.username || formState.email;
 
@@ -252,6 +259,7 @@ export default function TagespflegepersonProfilScreen() {
       setRoomGallery([]);
       setClosedDayInput('');
     } catch (error) {
+      console.log('[REGISTER] error', error); // [LOG]
       console.error('Registrierung der Tagespflegeperson fehlgeschlagen', error);
       const fallbackMessage = 'Etwas ist schiefgelaufen. Bitte versuche es später erneut.';
       const message = error instanceof Error && error.message ? error.message : fallbackMessage;
