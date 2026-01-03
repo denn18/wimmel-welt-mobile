@@ -1,6 +1,3 @@
-
-
-
 // app/(tabs)/profile/index.tsx
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
@@ -298,7 +295,12 @@ function ChildrenEditor({ childrenList, onChange }: { childrenList: Child[]; onC
             onChangeText={(t) => updateChild(index, 'gender', t as Child['gender'])}
             placeholder="female/male/diverse"
           />
-          <LabeledInput label="Alltag & Besonderheiten" value={child.notes} onChangeText={(t) => updateChild(index, 'notes', t)} multiline />
+          <LabeledInput
+            label="Alltag & Besonderheiten"
+            value={child.notes}
+            onChangeText={(t) => updateChild(index, 'notes', t)}
+            multiline
+          />
           <Pressable style={styles.removeButton} onPress={() => removeChild(index)}>
             <Text style={styles.removeButtonText}>Eintrag entfernen</Text>
           </Pressable>
@@ -465,12 +467,26 @@ function ParentProfileEditor({
         <View style={styles.gridTwoCols}>
           <LabeledInput label="Vorname" value={formState.firstName} onChangeText={(t) => updateField('firstName', t)} />
           <LabeledInput label="Nachname" value={formState.lastName} onChangeText={(t) => updateField('lastName', t)} />
-          <LabeledInput label="E-Mail" value={formState.email} onChangeText={(t) => updateField('email', t)} keyboardType="email-address" />
+          <LabeledInput
+            label="E-Mail"
+            value={formState.email}
+            onChangeText={(t) => updateField('email', t)}
+            keyboardType="email-address"
+          />
           <LabeledInput label="Telefonnummer" value={formState.phone} onChangeText={(t) => updateField('phone', t)} />
           <LabeledInput label="Adresse" value={formState.address || ''} onChangeText={(t) => updateField('address', t)} />
-          <LabeledInput label="Postleitzahl" value={formState.postalCode || ''} onChangeText={(t) => updateField('postalCode', t)} />
+          <LabeledInput
+            label="Postleitzahl"
+            value={formState.postalCode || ''}
+            onChangeText={(t) => updateField('postalCode', t)}
+          />
           <LabeledInput label="Benutzername" value={formState.username || ''} onChangeText={(t) => updateField('username', t)} />
-          <LabeledInput label="Neues Passwort (optional)" value={formState.newPassword} onChangeText={(t) => updateField('newPassword', t)} secureTextEntry />
+          <LabeledInput
+            label="Neues Passwort (optional)"
+            value={formState.newPassword}
+            onChangeText={(t) => updateField('newPassword', t)}
+            secureTextEntry
+          />
         </View>
       </Section>
 
@@ -489,7 +505,12 @@ function ParentProfileEditor({
       </Section>
 
       <Section title="Notizen für Tagespflegepersonen">
-        <LabeledInput label="Wunschliste & Besonderheiten" value={formState.notes} onChangeText={(t) => updateField('notes', t)} multiline />
+        <LabeledInput
+          label="Wunschliste & Besonderheiten"
+          value={formState.notes}
+          onChangeText={(t) => updateField('notes', t)}
+          multiline
+        />
       </Section>
 
       <View style={{ gap: 10 }}>
@@ -539,7 +560,9 @@ function CaregiverProfileEditor({
   const [dailySchedule, setDailySchedule] = useState<ScheduleEntry[]>(() =>
     profile.dailySchedule?.length ? profile.dailySchedule.map((e) => createScheduleEntry(e)) : [createScheduleEntry()],
   );
-  const [closedDays, setClosedDays] = useState<string[]>(() => (Array.isArray(profile.closedDays) ? [...profile.closedDays] : []));
+  const [closedDays, setClosedDays] = useState<string[]>(() =>
+    Array.isArray(profile.closedDays) ? [...profile.closedDays] : [],
+  );
   const [closedDayInput, setClosedDayInput] = useState('');
 
   const [roomGallery, setRoomGallery] = useState<RoomGalleryItem[]>(() =>
@@ -579,7 +602,9 @@ function CaregiverProfileEditor({
     });
 
     setCareTimes(profile.careTimes?.length ? profile.careTimes.map((e) => createScheduleEntry(e)) : [createScheduleEntry()]);
-    setDailySchedule(profile.dailySchedule?.length ? profile.dailySchedule.map((e) => createScheduleEntry(e)) : [createScheduleEntry()]);
+    setDailySchedule(
+      profile.dailySchedule?.length ? profile.dailySchedule.map((e) => createScheduleEntry(e)) : [createScheduleEntry()],
+    );
     setClosedDays(Array.isArray(profile.closedDays) ? [...profile.closedDays] : []);
     setClosedDayInput('');
 
@@ -659,9 +684,7 @@ function CaregiverProfileEditor({
       careTimes,
       dailySchedule,
       closedDays,
-      roomImages: roomGallery
-        .map((img) => (img.fileData ? { dataUrl: img.fileData, fileName: img.fileName } : img.source))
-        .filter(Boolean),
+      roomImages: roomGallery.map((img) => (img.fileData ? { dataUrl: img.fileData, fileName: img.fileName } : img.source)).filter(Boolean),
     };
 
     if (formState.newPassword.trim()) payload.password = formState.newPassword.trim();
@@ -850,12 +873,10 @@ function CaregiverProfileEditor({
 
 export default function ProfileIndex() {
   const { user, loading: authLoading, refresh } = useAuthStatus();
-  const { profile, loading, error, setProfile, endpoint } = useProfileData(user ?? null);
+  const { profile, loading, error, setProfile } = useProfileData(user ?? null);
   const [saving, setSaving] = useState(false);
 
-  const apiBaseUrl = useMemo(() => getApiBaseUrl(), []);
-  const hasProfile = Boolean(profile);
-
+  useMemo(() => getApiBaseUrl(), []);
   const title = useMemo(() => {
     if (user?.role === 'caregiver') return 'Profil für Kindertagespflegepersonen bearbeiten';
     return 'Profil für Eltern bearbeiten';
@@ -902,19 +923,6 @@ export default function ProfileIndex() {
     <SafeAreaView style={styles.safeArea}>
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
         <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-          {__DEV__ ? (
-            <View style={styles.devDebugContainer}>
-              <Text style={styles.devDebugTitle}>Profil Debug</Text>
-              <Text style={styles.devDebugRow}>apiBaseUrl: {apiBaseUrl}</Text>
-              <Text style={styles.devDebugRow}>user.id: {user?.id ?? '—'}</Text>
-              <Text style={styles.devDebugRow}>user.role: {user?.role ?? '—'}</Text>
-              <Text style={styles.devDebugRow}>endpoint: {endpoint ?? '—'}</Text>
-              <Text style={styles.devDebugRow}>loading: {loading ? 'true' : 'false'}</Text>
-              <Text style={styles.devDebugRow}>profile vorhanden?: {hasProfile ? 'ja' : 'nein'}</Text>
-              <Text style={styles.devDebugRow}>error: {error ?? '—'}</Text>
-            </View>
-          ) : null}
-
           <View style={styles.header}>
             <Text style={styles.kicker}>Profil & Einstellungen</Text>
             <Text style={styles.title}>{title}</Text>
@@ -946,11 +954,18 @@ export default function ProfileIndex() {
 }
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: '#f7f9fc' },
+  safeArea: { flex: 1, backgroundColor: '#EAF2FF' },
   content: { padding: 16, gap: 18, paddingBottom: 160 },
   header: { gap: 6 },
-  title: { fontSize: 24, fontWeight: '800', color: '#0f172a' },
+
+  // ✅ ÄNDERUNG: schwarze Überschrift zurück auf Brand-Farbe rgb(49,66,154)
+  title: { fontSize: 24, fontWeight: '800', color: BRAND },
+
   kicker: { color: BRAND, fontWeight: '700' },
+
+  // ✅ ÄNDERUNG: schwarze Section-Überschrift zurück auf Brand-Farbe rgb(49,66,154)
+  sectionTitle: { fontSize: 16, fontWeight: '800', color: BRAND },
+
   section: {
     backgroundColor: '#ffffff',
     borderRadius: 16,
@@ -962,9 +977,8 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 8 },
     elevation: 3,
   },
-  sectionTitle: { fontSize: 16, fontWeight: '800', color: '#0f172a' },
   inputGroup: { gap: 6 },
-  inputLabel: { fontWeight: '700', color: '#1e293b' },
+  inputLabel: { fontWeight: '700', color: BRAND },
   input: {
     borderWidth: 1,
     borderColor: '#d5ddf4',
@@ -1013,9 +1027,24 @@ const styles = StyleSheet.create({
   },
   badgeText: { color: BRAND, fontWeight: '700' },
   galleryGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
-  galleryItem: { width: '48%', aspectRatio: 1, borderRadius: 16, overflow: 'hidden', position: 'relative', backgroundColor: '#f1f5f9' },
+  galleryItem: {
+    width: '48%',
+    aspectRatio: 1,
+    borderRadius: 16,
+    overflow: 'hidden',
+    position: 'relative',
+    backgroundColor: '#f1f5f9',
+  },
   galleryImage: { width: '100%', height: '100%' },
-  removeBadge: { position: 'absolute', right: 8, top: 8, backgroundColor: 'rgba(255,255,255,0.86)', borderRadius: 12, paddingHorizontal: 10, paddingVertical: 6 },
+  removeBadge: {
+    position: 'absolute',
+    right: 8,
+    top: 8,
+    backgroundColor: 'rgba(255,255,255,0.86)',
+    borderRadius: 12,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+  },
   hint: { color: '#475569' },
   successText: { color: '#0f9d58', fontWeight: '700' },
   errorText: { color: '#b91c1c', fontWeight: '700' },
@@ -1023,13 +1052,4 @@ const styles = StyleSheet.create({
   buttonDisabled: { opacity: 0.6 },
   statusRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   statusText: { color: '#0f172a', fontWeight: '700' },
-  devDebugContainer: {
-    backgroundColor: '#0f172a',
-    borderRadius: 12,
-    padding: 12,
-    gap: 4,
-  },
-  devDebugTitle: { color: '#e2e8f0', fontWeight: '800' },
-  devDebugRow: { color: '#cbd5e1', fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace' },
 });
-

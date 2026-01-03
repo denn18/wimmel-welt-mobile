@@ -17,6 +17,7 @@ import { apiRequest } from '../../services/api-client';
 import { useAuthStatus } from '../../hooks/use-auth-status';
 
 const BRAND_TITLE_COLOR = 'rgb(49,66,154)';
+const BRAND = 'rgb(49,66,154)';
 
 const featureCards = [
   {
@@ -270,7 +271,7 @@ const styles = StyleSheet.create({
   headline: {
     fontSize: 24,
     fontWeight: '900',
-    color: '#0F172A',
+    color: BRAND,
     lineHeight: 32,
   },
 

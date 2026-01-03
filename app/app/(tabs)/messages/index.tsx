@@ -189,10 +189,12 @@ export default function MessagesScreen() {
             <Text style={styles.subtitle}>Alle Chats auf einen Blick</Text>
             <Text style={styles.title}>Nachrichten</Text>
           </View>
+          {/* 
+          Button um Benachrichtigungen ein/ausschalten, wird erstmal nicht gebraucht
           <View style={styles.badge}>
             <Ionicons name="notifications" size={16} color={BRAND} />
             <Text style={styles.badgeText}>Benachrichtigungen aktiv</Text>
-          </View>
+          </View> */}
         </View>
 
         {loading ? (
@@ -233,7 +235,7 @@ export default function MessagesScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#f8fbff',
+    backgroundColor: '#EAF2FF',
   },
   content: {
     padding: 18,
@@ -249,7 +251,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: '800',
-    color: '#0f172a',
+    color: BRAND,
   },
   subtitle: {
     color: '#475569',

@@ -20,13 +20,14 @@ const items = [
     href: '/(tabs)/messages',
     aliases: ['/nachrichten'],
   },
-  {
-    key: 'settings',
-    label: 'Einstellungen',
-    icon: 'settings',
-    routeName: 'settings/index',
-    href: '/(tabs)/settings',
-  },
+  // {
+  //.  Erstmal brauchen wir Settings Icon nichts
+  //   key: 'settings',
+  //   label: 'Einstellungen',
+  //   icon: 'settings',
+  //   routeName: 'settings/index',
+  //   href: '/(tabs)/settings',
+  // },
 ];
 
 export function BottomNavbar({ state, navigation }: Partial<BottomTabBarProps> = {}) {
@@ -179,7 +180,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   navLabel: {
-    fontSize: 11.5,
+    fontSize: 13,
     fontWeight: '800',
     color: BRAND,
   },

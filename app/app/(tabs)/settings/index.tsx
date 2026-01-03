@@ -34,7 +34,7 @@ export default function SettingsScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#f5f7fb',
+    backgroundColor: '#EAF2FF',
   },
   content: {
     padding: 20,
