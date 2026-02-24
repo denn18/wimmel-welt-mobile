@@ -955,7 +955,7 @@ export default function ProfileIndex() {
 
 const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: '#f5f7fb' },
-  content: { padding: 16, gap: 18, paddingBottom: 160 },
+  content: { padding: 16, gap: 18, paddingBottom: 28 },
   header: { gap: 6 },
 
   // ✅ ÄNDERUNG: schwarze Überschrift zurück auf Brand-Farbe rgb(49,66,154)
