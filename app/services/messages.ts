@@ -21,8 +21,8 @@ export type Message = {
   updatedAt?: string;
 };
 
-export async function fetchConversations(participantId: string) {
-  return apiRequest<Message[]>(`api/messages?participantId=${encodeURIComponent(participantId)}`);
+export async function fetchConversations() {
+  return apiRequest<Message[]>('api/messages');
 }
 
 export async function fetchMessages(conversationId: string) {
@@ -31,7 +31,6 @@ export async function fetchMessages(conversationId: string) {
 
 export type SendMessagePayload = {
   conversationId: string;
-  senderId: string | number;
   recipientId: string | number;
   body?: string;
   attachments?: Array<{
@@ -48,7 +47,6 @@ export async function sendMessage(payload: SendMessagePayload) {
     method: 'POST',
     body: JSON.stringify({
       ...body,
-      senderId: payload.senderId,
       recipientId: payload.recipientId,
       body: payload.body,
       attachments: payload.attachments ?? [],
