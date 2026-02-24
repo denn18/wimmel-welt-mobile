@@ -15,7 +15,7 @@ import {
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuthStatus } from '../../hooks/use-auth-status';
-import { apiRequest } from '../../services/api-client';
+import { ApiUnauthorizedError, apiRequest } from '../../services/api-client';
 import {
   fetchMessages,
   sendMessage as sendMessageRequest,
@@ -83,7 +83,7 @@ export default function MessageDetailScreen() {
   const router = useRouter();
   const params = useLocalSearchParams<{ id?: string | string[] }>();
   const targetId = useMemo(() => (Array.isArray(params.id) ? params.id[0] : params.id || ''), [params.id]);
-  const { user, loading: authLoading } = useAuthStatus();
+  const { user, loading: authLoading, logout } = useAuthStatus();
   const insets = useSafeAreaInsets();
 
   const listRef = useRef<FlatList<Message>>(null);
@@ -112,11 +112,15 @@ export default function MessageDetailScreen() {
         setPartner(response);
       } catch (error) {
         console.error('Konnte Gesprächspartner nicht laden', error);
+        if (error instanceof ApiUnauthorizedError) {
+          await logout();
+          router.replace('/login');
+        }
       }
     }
 
     void loadPartner();
-  }, [targetId]);
+  }, [logout, router, targetId]);
 
   useEffect(() => {
     async function loadMessages() {
@@ -127,13 +131,18 @@ export default function MessageDetailScreen() {
         setMessages(data);
       } catch (error) {
         console.error('Konnte Nachrichten nicht laden', error);
+        if (error instanceof ApiUnauthorizedError) {
+          await logout();
+          router.replace('/login');
+          return;
+        }
       } finally {
         setLoadingMessages(false);
       }
     }
 
     void loadMessages();
-  }, [conversationId]);
+  }, [conversationId, logout, router]);
 
   useEffect(() => {
     if (messages.length === 0) return;
@@ -164,7 +173,6 @@ export default function MessageDetailScreen() {
     try {
       const sent = await sendMessageRequest({
         conversationId,
-        senderId: String(user.id),
         recipientId: String(targetId),
         body: trimmedBody,
         attachments: pendingAttachments.map((file) => ({
@@ -179,6 +187,10 @@ export default function MessageDetailScreen() {
       requestAnimationFrame(scrollToLatest);
     } catch (error) {
       console.error('Konnte Nachricht nicht senden', error);
+      if (error instanceof ApiUnauthorizedError) {
+        await logout();
+        router.replace('/login');
+      }
     } finally {
       setSending(false);
     }

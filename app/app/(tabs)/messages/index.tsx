@@ -4,7 +4,7 @@ import { ActivityIndicator, Image, Pressable, ScrollView, StyleSheet, Text, View
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useAuthStatus } from '../../../hooks/use-auth-status';
-import { apiRequest } from '../../../services/api-client';
+import { ApiUnauthorizedError, apiRequest } from '../../../services/api-client';
 import { fetchConversations, type Message } from '../../../services/messages';
 import { assetUrl } from '../../../utils/url';
 
@@ -110,7 +110,7 @@ function ConversationCard({
 
 export default function MessagesScreen() {
   const router = useRouter();
-  const { user, loading: authLoading } = useAuthStatus();
+  const { user, loading: authLoading, logout } = useAuthStatus();
   const [conversations, setConversations] = useState<Message[]>([]);
   const [profiles, setProfiles] = useState<Record<string, UserProfile | null>>({});
   const [loading, setLoading] = useState(false);
@@ -127,7 +127,7 @@ export default function MessagesScreen() {
       setLoading(true);
       setError(null);
       try {
-        const data = await fetchConversations(String(user.id));
+        const data = await fetchConversations();
         setConversations(data);
         const loadedProfiles = await fetchUserProfiles(
           data
@@ -137,6 +137,11 @@ export default function MessagesScreen() {
         setProfiles(loadedProfiles);
       } catch (requestError) {
         console.error('Konnte Nachrichten nicht laden', requestError);
+        if (requestError instanceof ApiUnauthorizedError) {
+          await logout();
+          router.replace('/login');
+          return;
+        }
         setError('Nachrichten konnten nicht geladen werden.');
       } finally {
         setLoading(false);
@@ -144,7 +149,7 @@ export default function MessagesScreen() {
     }
 
     void loadConversations();
-  }, [user?.id]);
+  }, [logout, router, user?.id]);
 
   const handleOpenConversation = (partnerId: string) => {
     router.push({ pathname: '/nachrichten/[id]', params: { id: partnerId } });
