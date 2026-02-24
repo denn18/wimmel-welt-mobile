@@ -1,4 +1,3 @@
-import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import { useCallback, useState } from 'react';
@@ -7,7 +6,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useAuthStatus } from '../../hooks/use-auth-status';
 
-const BRAND = 'rgb(49,66,154)';
+const BRAND = '#3B57C4';
 
 const features = [
   {
@@ -15,21 +14,18 @@ const features = [
     title: 'Persönliche Kindertagespflege',
     description:
       'Finde liebevolle Kindertagespflegepersonen in deiner Nähe, die genau zu den Bedürfnissen deiner Familie passen.',
-    icon: 'heart-circle',
   },
   {
     key: 'transparent',
     title: 'Transparente Kindertagespflege',
     description:
       'Vergleiche pädagogische Konzepte, freie Kindertagespflegeplätze und Altersgrenzen auf einen Blick.',
-    icon: 'layers',
   },
   {
     key: 'chat',
     title: 'Direkte Kommunikation',
     description:
       'Nutze unseren Messenger für schnelle Absprachen, Kennenlerntermine und individuelle Fragen rund um deine Betreuung.',
-    icon: 'chatbubble-ellipses',
   },
 ];
 
@@ -57,7 +53,7 @@ export default function HomeScreen() {
   }, [logout, router, user]);
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView style={styles.safeArea} edges={['left', 'right']}>
       <ScrollView style={styles.screen} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <View style={styles.heroCard}>
           <Text style={styles.welcomeText}>Willkommen bei Wimmel Welt</Text>
@@ -93,14 +89,8 @@ export default function HomeScreen() {
         <View style={styles.featureList}>
           {features.map((feature) => (
             <View key={feature.key} style={styles.featureCard}>
-              <View style={styles.featureIconWrap}>
-                <Ionicons name={feature.icon as never} size={20} color="#2F5FE8" />
-              </View>
-
-              <View style={styles.featureTextWrap}>
-                <Text style={styles.featureTitle}>{feature.title}</Text>
-                <Text style={styles.featureDescription}>{feature.description}</Text>
-              </View>
+              <Text style={styles.featureTitle}>{feature.title}</Text>
+              <Text style={styles.featureDescription}>{feature.description}</Text>
             </View>
           ))}
         </View>
@@ -112,136 +102,124 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#EAF2FF',
+    backgroundColor: '#ECF1F7',
   },
   screen: {
     flex: 1,
   },
   content: {
     paddingHorizontal: 18,
-    paddingTop: 8,
-    paddingBottom: 28,
-    gap: 16,
+    paddingTop: 18,
+    paddingBottom: 40,
+    gap: 24,
   },
   heroCard: {
     borderRadius: 24,
-    backgroundColor: 'rgba(255,255,255,0.78)',
-    padding: 16,
-    shadowColor: '#9BB9FF',
-    shadowOpacity: 0.16,
-    shadowOffset: { width: 0, height: 10 },
-    shadowRadius: 18,
-    elevation: 3,
+    backgroundColor: '#F8FAFC',
+    padding: 18,
+    borderWidth: 1,
+    borderColor: '#E5ECF6',
   },
   welcomeText: {
-    fontSize: 11,
+    fontSize: 12,
     fontWeight: '700',
-    letterSpacing: 1.2,
+    letterSpacing: 2,
     textTransform: 'uppercase',
     color: '#2F5FE8',
   },
   headline: {
-    marginTop: 8,
-    fontSize: 30,
+    marginTop: 10,
+    fontSize: 58,
     fontWeight: '900',
-    color: '#0f172a',
-    lineHeight: 36,
+    color: '#0f1b3d',
+    lineHeight: 68,
   },
   heroImageShell: {
-    marginTop: 14,
-    borderRadius: 16,
+    marginTop: 20,
+    borderRadius: 20,
     overflow: 'hidden',
-    backgroundColor: '#DCEBFF',
-    height: 224,
+    backgroundColor: '#DEE5EF',
+    height: 280,
+    padding: 10,
   },
   heroImage: {
     width: '100%',
     height: '100%',
   },
   descriptionText: {
-    marginTop: 14,
-    fontSize: 16,
-    lineHeight: 24,
-    color: '#475569',
+    marginTop: 20,
+    fontSize: 17,
+    lineHeight: 36,
+    color: '#4B5E7B',
   },
   ctaWrap: {
-    marginTop: 16,
-    gap: 10,
+    marginTop: 20,
+    gap: 12,
   },
   primaryBtn: {
     borderRadius: 999,
     backgroundColor: '#2F5FE8',
-    minHeight: 46,
+    minHeight: 58,
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: 16,
-    shadowColor: '#2F5FE8',
-    shadowOpacity: 0.25,
-    shadowOffset: { width: 0, height: 10 },
-    shadowRadius: 16,
-    elevation: 3,
+    shadowColor: '#3654D4',
+    shadowOpacity: 0.2,
+    shadowOffset: { width: 0, height: 6 },
+    shadowRadius: 10,
+    elevation: 2,
   },
   primaryBtnText: {
-    fontSize: 14,
+    fontSize: 20,
     color: '#fff',
-    fontWeight: '700',
+    fontWeight: '800',
   },
   secondaryBtn: {
     borderRadius: 999,
     borderWidth: 1,
-    borderColor: '#BFD3FF',
-    backgroundColor: '#fff',
-    minHeight: 46,
+    borderColor: '#BAD0FF',
+    backgroundColor: '#F8FAFC',
+    minHeight: 58,
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: 16,
   },
   secondaryBtnText: {
-    fontSize: 14,
+    fontSize: 20,
     color: BRAND,
-    fontWeight: '700',
+    fontWeight: '800',
   },
   footerText: {
-    marginTop: 12,
-    fontSize: 14,
-    lineHeight: 20,
-    color: '#64748b',
+    marginTop: 14,
+    fontSize: 16,
+    lineHeight: 30,
+    color: '#61718D',
   },
   featureList: {
-    gap: 12,
+    gap: 18,
   },
   featureCard: {
-    flexDirection: 'row',
-    gap: 12,
-    backgroundColor: 'rgba(255,255,255,0.86)',
-    borderRadius: 16,
-    padding: 14,
-    shadowColor: '#A7C2FF',
-    shadowOpacity: 0.18,
-    shadowOffset: { width: 0, height: 8 },
-    shadowRadius: 14,
-    elevation: 2,
-  },
-  featureIconWrap: {
-    width: 38,
-    height: 38,
-    borderRadius: 12,
-    backgroundColor: '#EAF2FF',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  featureTextWrap: {
-    flex: 1,
-    gap: 4,
+    backgroundColor: '#F3F5F8',
+    borderRadius: 22,
+    paddingHorizontal: 22,
+    paddingVertical: 24,
+    borderWidth: 1,
+    borderColor: '#E2E7EF',
+    gap: 14,
+    shadowColor: '#000',
+    shadowOpacity: 0.06,
+    shadowOffset: { width: 0, height: 3 },
+    shadowRadius: 8,
+    elevation: 1,
   },
   featureTitle: {
-    fontSize: 18,
+    fontSize: 24,
     fontWeight: '700',
-    color: '#1d4ed8',
+    color: BRAND,
   },
   featureDescription: {
-    fontSize: 14,
-    lineHeight: 20,
-    color: '#475569',
+    fontSize: 22,
+    lineHeight: 42,
+    color: '#4B5E7B',
   },
 });
