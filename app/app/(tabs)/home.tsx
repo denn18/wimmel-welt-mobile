@@ -116,6 +116,7 @@ const styles = StyleSheet.create({
   },
   screen: {
     flex: 1,
+    backgroundColor: '#f5f7fb',
   },
   content: {
     paddingHorizontal: 18,
