@@ -37,7 +37,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     padding: 24,
     gap: 14,
-    paddingBottom: 140,
+    paddingBottom: 120,
   },
   title: {
     fontSize: 24,

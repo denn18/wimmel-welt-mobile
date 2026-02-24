@@ -39,7 +39,7 @@ const styles = StyleSheet.create({
   content: {
     padding: 20,
     gap: 16,
-    paddingBottom: 120,
+    paddingBottom: 28,
   },
   heading: {
     fontSize: 26,

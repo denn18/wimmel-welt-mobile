@@ -428,7 +428,7 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     padding: 18,
     gap: 16,
-    paddingBottom: 160,
+    paddingBottom: 120,
   },
   header: {
     gap: 6,

@@ -470,7 +470,7 @@ const styles = StyleSheet.create({
   content: {
     padding: 16,
     gap: 14,
-    paddingBottom: 160,
+    paddingBottom: 120,
   },
   card: {
     backgroundColor: '#fff',

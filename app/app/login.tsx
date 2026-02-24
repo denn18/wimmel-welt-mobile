@@ -156,7 +156,7 @@ const styles = StyleSheet.create({
   content: {
     padding: 20,
     gap: 18,
-    paddingBottom: 170,
+    paddingBottom: 120,
     alignItems: 'center',
   },
   logoWrapper: {
