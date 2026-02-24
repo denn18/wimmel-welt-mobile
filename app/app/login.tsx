@@ -62,9 +62,11 @@ export default function LoginScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.safeArea}>
-        <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+    // ✅ wie bei Home/Dashboard: bottom-edge rausnehmen (weniger "Inset-Luft" / konsistenter)
+    <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
+      {/* ✅ KeyboardAvoidingView nicht nochmal "safeArea" Style geben */}
+      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.flex}>
+        <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
           <View style={styles.logoWrapper}>
             <Text style={styles.logo}>Wimmel Welt</Text>
           </View>
@@ -143,6 +145,8 @@ export default function LoginScreen() {
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
+
+      {/* bleibt wie gehabt */}
       <BottomNavbar />
     </SafeAreaView>
   );
@@ -152,6 +156,9 @@ const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
     backgroundColor: '#f5f7fb',
+  },
+  flex: {
+    flex: 1,
   },
   content: {
     padding: 20,

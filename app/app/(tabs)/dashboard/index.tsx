@@ -15,11 +15,11 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+ //Neuer richtiger Pfad
+import { BottomNavbar } from '../../../components/BottomNavbar';
 
 import { apiRequest } from '../../../services/api-client';
 import { assetUrl, FileReference } from '../../../utils/url';
-// OPTIONAL (wenn du es hast): für "Nachricht" wie im Web
-// import { useAuth } from '../../../context/AuthContext';
 
 const BRAND = 'rgb(49,66,154)';
 
@@ -102,8 +102,6 @@ function buildQuery(path: string, params?: Record<string, string | number | unde
 
 export default function DashboardScreen() {
   const router = useRouter();
-  // OPTIONAL:
-  // const { user } = useAuth();
 
   const [searchTerm, setSearchTerm] = useState('');
   const [filters, setFilters] = useState<Filters>({ postalCode: '', city: '', search: '' });
@@ -151,7 +149,6 @@ export default function DashboardScreen() {
     }, [fetchCaregivers])
   );
 
-  // Suggestions (PLZ/Ort) – Logik wie im Web
   const loadSuggestions = useCallback(async (q: string) => {
     const trimmed = q.trim();
     if (!trimmed || trimmed.length < 2) {
@@ -204,18 +201,14 @@ export default function DashboardScreen() {
 
   const handleOpenMessenger = useCallback(
     (caregiver: Caregiver) => {
-      // wie im Web: wenn nicht eingeloggt -> login
-      // if (!user) {
-      //   router.push('/login');
-      //   return;
-      // }
       router.push(`/nachrichten/${caregiver.id}`);
     },
     [router]
   );
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    // wie bei Home: bottom-edge rausnehmen, damit kein extra "Luft"-Padding entsteht
+    <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
       {/* Overlay zum Schließen der Suggestions */}
       {suggestionsOpen ? (
         <Pressable
@@ -292,9 +285,7 @@ export default function DashboardScreen() {
                         style={styles.suggestionRow}
                       >
                         <Text style={styles.suggestionPrimary}>{label || s.daycareName || ''}</Text>
-                        {s.daycareName ? (
-                          <Text style={styles.suggestionSecondary}>Empfohlen: {s.daycareName}</Text>
-                        ) : null}
+                        {s.daycareName ? <Text style={styles.suggestionSecondary}>Empfohlen: {s.daycareName}</Text> : null}
                       </Pressable>
                     );
                   })}
@@ -320,9 +311,7 @@ export default function DashboardScreen() {
         {/* Result Header */}
         <View style={styles.resultsHeader}>
           <Text style={styles.resultsTitle}>Gefundene Kindertagespflegepersonen</Text>
-          <Text style={styles.resultsSubtitle}>
-            Scroll durch die Kacheln, vergleiche Angebote und öffne Details.
-          </Text>
+          <Text style={styles.resultsSubtitle}>Scroll durch die Kacheln, vergleiche Angebote und öffne Details.</Text>
         </View>
 
         {/* Caregiver Cards */}
@@ -336,8 +325,7 @@ export default function DashboardScreen() {
             const caregiverFullName = [caregiver.firstName, caregiver.lastName].filter(Boolean).join(' ').trim();
             const caregiverAge = caregiver.age ?? calculateAge(caregiver.birthDate) ?? null;
 
-            const yearsOfExperience =
-              caregiver.yearsOfExperience ?? calculateYearsSince(caregiver.caregiverSince) ?? null;
+            const yearsOfExperience = caregiver.yearsOfExperience ?? calculateYearsSince(caregiver.caregiverSince) ?? null;
 
             const experienceText =
               yearsOfExperience !== null
@@ -356,7 +344,6 @@ export default function DashboardScreen() {
 
             return (
               <View key={caregiver.id} style={styles.card}>
-                {/* Left column (Logo + Profilbild) */}
                 <View style={styles.leftCol}>
                   <View style={styles.logoBox}>
                     {logoUrl ? (
@@ -375,7 +362,6 @@ export default function DashboardScreen() {
                   </View>
                 </View>
 
-                {/* Right content */}
                 <View style={styles.rightCol}>
                   <Text style={styles.cardTitle}>{caregiver.daycareName || caregiver.name || '—'}</Text>
 
@@ -405,10 +391,7 @@ export default function DashboardScreen() {
                   </View>
 
                   <View style={styles.btnRow}>
-                    <Pressable
-                      style={styles.primaryAction}
-                      onPress={() => router.push(`/kindertagespflege/${caregiver.id}`)}
-                    >
+                    <Pressable style={styles.primaryAction} onPress={() => router.push(`/kindertagespflege/${caregiver.id}`)}>
                       <Ionicons name="chatbubble-ellipses" size={16} color="#fff" />
                       <Text style={styles.primaryActionText}>Kennenlernen</Text>
                     </Pressable>
@@ -439,27 +422,10 @@ export default function DashboardScreen() {
             </View>
           ) : null}
         </View>
-
-        {/* Footer (Copyright wie Screenshot) */}
-        {/* <View style={styles.footer}>
-          <Text style={styles.footerText}>© 2025 Wimmel Welt. Alle Rechte vorbehalten.</Text>
-
-          <View style={styles.footerLinks}>
-            <Pressable onPress={() => router.push('/datenschutz')}>
-              <Text style={styles.footerLink}>Datenschutz</Text>
-            </Pressable>
-            <Text style={styles.footerDot}>·</Text>
-            <Pressable onPress={() => router.push('/impressum')}>
-              <Text style={styles.footerLink}>Impressum</Text>
-            </Pressable>
-            <Text style={styles.footerDot}>·</Text>
-            <Pressable onPress={() => router.push('/kontakt')}>
-              <Text style={styles.footerLink}>Kontakt</Text>
-            </Pressable>
-          </View>
-        </View> */}
-
       </ScrollView>
+
+      {/* exakt wie bei Home: BottomNavbar als Overlay unter dem ScrollView */}
+    
     </SafeAreaView>
   );
 }
@@ -470,7 +436,7 @@ const styles = StyleSheet.create({
   content: {
     paddingHorizontal: 18,
     paddingTop: 10,
-    paddingBottom: 0,
+    paddingBottom: 0, // kein extra Abstand vor Navbar
     gap: 14,
   },
 
@@ -496,7 +462,7 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 12 },
     shadowRadius: 18,
     elevation: 4,
-    zIndex: 10, // damit suggestions über anderen Elementen liegen
+    zIndex: 10,
   },
 
   label: { fontSize: 14, fontWeight: '800', color: '#0F172A' },
@@ -663,15 +629,4 @@ const styles = StyleSheet.create({
     borderColor: '#FECACA',
   },
   errorText: { color: '#B91C1C', flex: 1, fontSize: 13, lineHeight: 18 },
-
-  footer: {
-    marginTop: 10,
-    alignItems: 'center',
-    gap: 10,
-    paddingVertical: 6,
-  },
-  footerText: { color: '#475569', fontSize: 14, fontWeight: '700' },
-  footerLinks: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  footerLink: { color: '#334155', fontWeight: '700' },
-  footerDot: { color: '#94A3B8', fontWeight: '900' },
 });
