@@ -338,7 +338,7 @@ export default function MessageDetailScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#f8fbff',
+    backgroundColor: '#f5f7fb',
     padding: 16,
     gap: 16,
   },

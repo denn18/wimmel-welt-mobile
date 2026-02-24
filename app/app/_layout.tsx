@@ -8,6 +8,8 @@ import { AuthProvider } from '../context/AuthContext';
 import { StartupDebugOverlay } from '../components/StartupDebugOverlay';
 import { useColorScheme } from '../hooks/use-color-scheme';
 
+const APP_BACKGROUND = '#f5f7fb';
+
 export const unstable_settings = {
   anchor: '(tabs)',
 };
@@ -22,8 +24,16 @@ export default function RootLayout() {
   return (
     <AuthProvider>
       {/* <StartupDebugOverlay> erstmal rausnehmen */}
-        <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-          <Stack>
+        <ThemeProvider
+          value={{
+            ...(colorScheme === 'dark' ? DarkTheme : DefaultTheme),
+            colors: {
+              ...(colorScheme === 'dark' ? DarkTheme : DefaultTheme).colors,
+              background: APP_BACKGROUND,
+            },
+          }}
+        >
+          <Stack screenOptions={{ contentStyle: { backgroundColor: APP_BACKGROUND } }}>
             <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
             <Stack.Screen name="login" options={{ headerShown: false, title: 'Login' }} />
             <Stack.Screen name="datenschutz" options={{ headerShown: false, title: 'Datenschutz' }} />

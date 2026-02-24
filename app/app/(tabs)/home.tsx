@@ -112,7 +112,7 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#EAF2FF',
+    backgroundColor: '#f5f7fb',
   },
   screen: {
     flex: 1,

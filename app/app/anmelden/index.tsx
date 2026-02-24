@@ -55,7 +55,7 @@ export default function RoleSelectionPage() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#eaf2ff',
+    backgroundColor: '#f5f7fb',
   },
   content: {
     flexGrow: 1,

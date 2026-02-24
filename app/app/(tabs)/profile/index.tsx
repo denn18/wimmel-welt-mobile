@@ -954,7 +954,7 @@ export default function ProfileIndex() {
 }
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: '#EAF2FF' },
+  safeArea: { flex: 1, backgroundColor: '#f5f7fb' },
   content: { padding: 16, gap: 18, paddingBottom: 160 },
   header: { gap: 6 },
 
