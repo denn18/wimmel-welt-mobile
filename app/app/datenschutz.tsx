@@ -182,7 +182,7 @@ export default function PrivacyPolicyPage() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#eaf1ff',
+    backgroundColor: '#f5f7fb',
   },
   content: {
     padding: 16,

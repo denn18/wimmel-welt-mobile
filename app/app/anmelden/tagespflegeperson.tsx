@@ -29,7 +29,7 @@ export default function TagespflegepersonHinweisScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#eaf2ff',
+    backgroundColor: '#f5f7fb',
   },
   container: {
     flex: 1,

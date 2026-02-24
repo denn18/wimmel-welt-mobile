@@ -422,7 +422,7 @@ const BRAND = 'rgb(49,66,154)';
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#eaf2ff',
+    backgroundColor: '#f5f7fb',
   },
   content: {
     flexGrow: 1,

@@ -443,7 +443,7 @@ export default function CaregiverDetailScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#f8fbff',
+    backgroundColor: '#f5f7fb',
   },
   header: {
     flexDirection: 'row',

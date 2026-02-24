@@ -240,7 +240,7 @@ export default function MessagesScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#EAF2FF',
+    backgroundColor: '#f5f7fb',
   },
   content: {
     padding: 18,
