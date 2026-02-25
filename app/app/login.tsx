@@ -52,7 +52,7 @@ export default function LoginScreen() {
 
       await setSessionUser(sessionUser ?? null);
       setMessage('Login erfolgreich. Du wirst weitergeleitet …');
-      router.replace('/(tabs)/dashboard');
+      router.replace('/pages/dashboard');
     } catch (err) {
       console.error('[LOGIN] Login failed', err); // [LOG]
       setMessage('Login nicht möglich. Bitte Zugangsdaten prüfen.');
@@ -121,7 +121,7 @@ export default function LoginScreen() {
 
             <View style={styles.registerRow}>
               <Text style={styles.helperText}>Neu bei Wimmel Welt?</Text>
-              <Link href="/anmelden" style={styles.highlightText}>
+              <Link href="/anmelden/auswahl" style={styles.highlightText}>
                 Jetzt kostenlos registrieren!
               </Link>
             </View>

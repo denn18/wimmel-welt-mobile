@@ -3,10 +3,10 @@ import { useEffect, useState } from 'react';
 import { ActivityIndicator, Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { useAuthStatus } from '../../../hooks/use-auth-status';
-import { ApiUnauthorizedError, apiRequest } from '../../../services/api-client';
-import { fetchConversations, type Message } from '../../../services/messages';
-import { assetUrl } from '../../../utils/url';
+import { useAuthStatus } from '../../hooks/use-auth-status';
+import { ApiUnauthorizedError, apiRequest } from '../../services/api-client';
+import { fetchConversations, type Message } from '../../services/messages';
+import { assetUrl } from '../../utils/url';
 
 const BRAND = 'rgb(49,66,154)';
 
@@ -177,7 +177,7 @@ export default function MessagesScreen() {
             <Pressable style={styles.buttonPrimary} onPress={() => router.push('/login')}>
               <Text style={styles.buttonPrimaryText}>Anmelden</Text>
             </Pressable>
-            <Pressable style={styles.buttonGhost} onPress={() => router.push('/anmelden')}>
+            <Pressable style={styles.buttonGhost} onPress={() => router.push('/anmelden/auswahl')}>
               <Text style={styles.buttonGhostText}>Account erstellen</Text>
             </Pressable>
           </View>

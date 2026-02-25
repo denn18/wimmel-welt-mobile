@@ -4,7 +4,7 @@ import { BottomNavbar } from '../../components/BottomNavbar';
 
 const BRAND = 'rgb(49,66,154)';
 
-export default function TabsLayout() {
+export default function PagesLayout() {
   return (
     <Tabs
       screenOptions={{
@@ -25,7 +25,7 @@ export default function TabsLayout() {
       />
 
       <Tabs.Screen
-        name="dashboard/index"
+        name="dashboard"
         options={{
           title: 'Dashboard',
           tabBarIcon: ({ color, size }) => (
@@ -35,7 +35,7 @@ export default function TabsLayout() {
       />
 
       <Tabs.Screen
-        name="messages/index"
+        name="messages"
         options={{
           title: 'Nachrichten',
           tabBarIcon: ({ color, size }) => (
@@ -45,17 +45,7 @@ export default function TabsLayout() {
       />
 
       <Tabs.Screen
-        name="settings/index"
-        options={{
-          title: 'Einstellungen',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="settings" size={size} color={color} />
-          ),
-        }}
-      />
-
-      <Tabs.Screen
-        name="profile/index"
+        name="profile"
         options={{
           title: 'Profil',
           tabBarIcon: ({ color, size }) => (
