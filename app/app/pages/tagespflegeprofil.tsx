@@ -614,7 +614,6 @@ export default function TagespflegepersonProfilScreen() {
           <View style={{ height: 22 }} />
         </ScrollView>
       </KeyboardAvoidingView>
-      <BottomNavbar />
     </SafeAreaView>
   );
 }

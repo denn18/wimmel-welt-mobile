@@ -377,7 +377,6 @@ export default function ElternProfilScreen() {
           <View style={{ height: 22 }} />
         </ScrollView>
       </KeyboardAvoidingView>
-      <BottomNavbar />
     </SafeAreaView>
   );
 }

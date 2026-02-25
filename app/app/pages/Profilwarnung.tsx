@@ -39,7 +39,7 @@ export default function ProfilwarnungScreen() {
           Zurück zur Rollenwahl
         </Link>
       </View>
-      <BottomNavbar />
+  
     </SafeAreaView>
   );
 }

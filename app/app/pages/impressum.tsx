@@ -80,7 +80,6 @@ export default function ImprintPage() {
           ))}
         </View>
       </ScrollView>
-      <BottomNavbar />
     </SafeAreaView>
   );
 }

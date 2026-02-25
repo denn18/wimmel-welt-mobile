@@ -174,7 +174,6 @@ export default function PrivacyPolicyPage() {
           ))}
         </View>
       </ScrollView>
-      <BottomNavbar />
     </SafeAreaView>
   );
 }

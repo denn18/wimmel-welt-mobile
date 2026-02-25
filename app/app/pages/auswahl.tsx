@@ -17,7 +17,7 @@ export default function RoleSelectionPage() {
           </View>
 
           <View style={styles.cardGrid}>
-            <Link href={{ pathname: '/pages/Profilwarnung', params: { rolle: 'eltern' } }} asChild>
+            <Link href={{ pathname: '/pages/profilwarnung', params: { rolle: 'eltern' } }} asChild>
               <Pressable style={styles.roleCard}>
                 <View style={styles.cardHeader}>
                   <Text style={styles.roleTag}>Für Eltern</Text>
@@ -31,7 +31,7 @@ export default function RoleSelectionPage() {
               </Pressable>
             </Link>
 
-            <Link href={{ pathname: '/pages/Profilwarnung', params: { rolle: 'tagespflegeperson' } }} asChild>
+            <Link href={{ pathname: '/pages/profilwarnung', params: { rolle: 'tagespflegeperson' } }} asChild>
               <Pressable style={styles.roleCard}>
                 <View style={styles.cardHeader}>
                   <Text style={styles.roleTag}>Für Kindertagespflegepersonen</Text>

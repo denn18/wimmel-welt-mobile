@@ -169,7 +169,6 @@ export default function ContactPage() {
             </View>
           </View>
         </ScrollView>
-        <BottomNavbar />
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
