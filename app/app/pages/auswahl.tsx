@@ -47,7 +47,7 @@ export default function RoleSelectionPage() {
           </View>
         </View>
       </ScrollView>
-      <BottomNavbar />
+ 
     </SafeAreaView>
   );
 }

@@ -146,8 +146,7 @@ export default function LoginScreen() {
         </ScrollView>
       </KeyboardAvoidingView>
 
-      {/* bleibt wie gehabt */}
-      <BottomNavbar />
+  
     </SafeAreaView>
   );
 }
