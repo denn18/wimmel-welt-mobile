@@ -35,9 +35,8 @@ export default function RootLayout() {
           <Stack.Screen name="pages/impressum" options={{ headerShown: false, title: 'Impressum' }} />
           <Stack.Screen name="pages/kontakt" options={{ headerShown: false, title: 'Kontakt' }} />
           <Stack.Screen name="pages/auswahl" options={{ headerShown: false, title: 'Registrieren' }} />
-          <Stack.Screen name="pages/eltern" options={{ headerShown: false, title: 'Eltern' }} />
+          <Stack.Screen name="pages/Profilwarnung" options={{ headerShown: false, title: 'Profilwarnung' }} />
           <Stack.Screen name="pages/elternprofil" options={{ headerShown: false, title: 'Elternprofil' }} />
-          <Stack.Screen name="pages/tagespflegeperson" options={{ headerShown: false, title: 'Tagespflegeperson' }} />
           <Stack.Screen name="pages/tagespflegeprofil" options={{ headerShown: false, title: 'Tagespflegeprofil' }} />
           <Stack.Screen
             name="pages/kindertagespflegedetail"

@@ -1,18 +1,36 @@
-import { Link } from 'expo-router';
+import { Link, useLocalSearchParams } from 'expo-router';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { BottomNavbar } from '../../components/BottomNavbar';
 
-export default function ElternHinweisScreen() {
+type ProfilRolle = 'eltern' | 'tagespflegeperson';
+
+const ROLLEN_KONFIG: Record<ProfilRolle, { title: string; href: '/pages/elternprofil' | '/pages/tagespflegeprofil' }> = {
+  eltern: {
+    title: 'Elternprofil',
+    href: '/pages/elternprofil',
+  },
+  tagespflegeperson: {
+    title: 'Kindertagespflegeprofil',
+    href: '/pages/tagespflegeprofil',
+  },
+};
+
+export default function ProfilwarnungScreen() {
+  const { rolle } = useLocalSearchParams<{ rolle?: string }>();
+
+  const ausgewaehlteRolle: ProfilRolle = rolle === 'tagespflegeperson' ? 'tagespflegeperson' : 'eltern';
+  const konfig = ROLLEN_KONFIG[ausgewaehlteRolle];
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
-        <Text style={styles.title}>Elternprofil</Text>
+        <Text style={styles.title}>{konfig.title}</Text>
         <Text style={styles.subtitle}>
           Wir empfehlen die Profilerstellung auf einem Laptop oder Computer durchzuführen.
         </Text>
-        <Link href="/pages/elternprofil" asChild>
+        <Link href={konfig.href} asChild>
           <Pressable style={styles.button}>
             <Text style={styles.buttonText}>Trotzdem fortfahren</Text>
           </Pressable>
