@@ -139,7 +139,7 @@ export default function MessagesScreen() {
         console.error('Konnte Nachrichten nicht laden', requestError);
         if (requestError instanceof ApiUnauthorizedError) {
           await logout();
-          router.replace('/login');
+          router.replace('/pages/login');
           return;
         }
         setError('Nachrichten konnten nicht geladen werden.');
@@ -152,7 +152,7 @@ export default function MessagesScreen() {
   }, [logout, router, user?.id]);
 
   const handleOpenConversation = (partnerId: string) => {
-    router.push({ pathname: '/nachrichten/[id]', params: { id: partnerId } });
+    router.push({ pathname: '/pages/nachrichtendetail', params: { id: partnerId } });
   };
 
   if (authLoading) {
@@ -174,10 +174,10 @@ export default function MessagesScreen() {
           <Text style={styles.title}>Nachrichten</Text>
           <Text style={styles.hint}>Erstelle einen Account und melde dich an, um die Chatfunktion zu nutzen.</Text>
           <View style={styles.ctaRow}>
-            <Pressable style={styles.buttonPrimary} onPress={() => router.push('/login')}>
+            <Pressable style={styles.buttonPrimary} onPress={() => router.push('/pages/login')}>
               <Text style={styles.buttonPrimaryText}>Anmelden</Text>
             </Pressable>
-            <Pressable style={styles.buttonGhost} onPress={() => router.push('/anmelden/auswahl')}>
+            <Pressable style={styles.buttonGhost} onPress={() => router.push('/pages/auswahl')}>
               <Text style={styles.buttonGhostText}>Account erstellen</Text>
             </Pressable>
           </View>

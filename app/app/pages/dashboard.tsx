@@ -201,7 +201,7 @@ export default function DashboardScreen() {
 
   const handleOpenMessenger = useCallback(
     (caregiver: Caregiver) => {
-      router.push(`/nachrichten/${caregiver.id}`);
+      router.push(`/pages/nachrichtendetail?id=${caregiver.id}`);
     },
     [router]
   );
@@ -391,7 +391,7 @@ export default function DashboardScreen() {
                   </View>
 
                   <View style={styles.btnRow}>
-                    <Pressable style={styles.primaryAction} onPress={() => router.push(`/kindertagespflege/${caregiver.id}`)}>
+                    <Pressable style={styles.primaryAction} onPress={() => router.push(`/pages/kindertagespflegedetail?id=${caregiver.id}`)}>
                       <Ionicons name="chatbubble-ellipses" size={16} color="#fff" />
                       <Text style={styles.primaryActionText}>Kennenlernen</Text>
                     </Pressable>

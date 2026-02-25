@@ -12,11 +12,11 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { apiRequest } from '../../../services/api-client';
-import { pickSingleFile } from '../../../utils/file-picker';
-import { BottomNavbar } from '../../../components/BottomNavbar';
-import { useAuthStatus } from '../../../hooks/use-auth-status';
-import type { AuthUser } from '../../../types/auth';
+import { apiRequest } from '../../services/api-client';
+import { pickSingleFile } from '../../utils/file-picker';
+import { BottomNavbar } from '../../components/BottomNavbar';
+import { useAuthStatus } from '../../hooks/use-auth-status';
+import type { AuthUser } from '../../types/auth';
 
 type Child = { name: string; age: string; gender: '' | 'female' | 'male' | 'diverse'; notes: string };
 

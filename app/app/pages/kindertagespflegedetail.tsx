@@ -199,7 +199,7 @@ export default function CaregiverDetailScreen() {
 
   const handleStartConversation = useCallback(() => {
     if (!caregiver?.id) return;
-    router.push(`/nachrichten/${caregiver.id}`);
+    router.push(`/pages/nachrichtendetail?id=${caregiver.id}`);
   }, [caregiver?.id, router]);
 
   const handleOpenConcept = useCallback(() => {

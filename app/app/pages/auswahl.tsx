@@ -17,7 +17,7 @@ export default function RoleSelectionPage() {
           </View>
 
           <View style={styles.cardGrid}>
-            <Link href="/anmelden/eltern" asChild>
+            <Link href="/pages/eltern" asChild>
               <Pressable style={styles.roleCard}>
                 <View style={styles.cardHeader}>
                   <Text style={styles.roleTag}>Für Eltern</Text>
@@ -31,7 +31,7 @@ export default function RoleSelectionPage() {
               </Pressable>
             </Link>
 
-            <Link href="/anmelden/tagespflegeperson" asChild>
+            <Link href="/pages/tagespflegeperson" asChild>
               <Pressable style={styles.roleCard}>
                 <View style={styles.cardHeader}>
                   <Text style={styles.roleTag}>Für Kindertagespflegepersonen</Text>

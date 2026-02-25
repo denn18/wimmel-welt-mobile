@@ -13,11 +13,11 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { apiRequest } from '../services/api-client';
-import { BottomNavbar } from '../components/BottomNavbar';
-import { useAuthStatus } from '../hooks/use-auth-status';
-import type { AuthUser } from '../types/auth';
-import { normalizeAuthUser } from '../context/AuthContext';
+import { apiRequest } from '../../services/api-client';
+import { BottomNavbar } from '../../components/BottomNavbar';
+import { useAuthStatus } from '../../hooks/use-auth-status';
+import type { AuthUser } from '../../types/auth';
+import { normalizeAuthUser } from '../../context/AuthContext';
 
 const BRAND = 'rgb(49,66,154)';
 
@@ -121,7 +121,7 @@ export default function LoginScreen() {
 
             <View style={styles.registerRow}>
               <Text style={styles.helperText}>Neu bei Wimmel Welt?</Text>
-              <Link href="/anmelden/auswahl" style={styles.highlightText}>
+              <Link href="/pages/auswahl" style={styles.highlightText}>
                 Jetzt kostenlos registrieren!
               </Link>
             </View>
@@ -130,15 +130,15 @@ export default function LoginScreen() {
           <View style={styles.footerLinks}>
             <Text style={styles.footerNote}>© 2025 Wimmel Welt. Alle Rechte vorbehalten.</Text>
             <View style={styles.footerRow}>
-              <Link href="/datenschutz" style={styles.footerLink}>
+              <Link href="/pages/datenschutz" style={styles.footerLink}>
                 Datenschutz
               </Link>
               <Text style={styles.footerDivider}>·</Text>
-              <Link href="/impressum" style={styles.footerLink}>
+              <Link href="/pages/impressum" style={styles.footerLink}>
                 Impressum
               </Link>
               <Text style={styles.footerDivider}>·</Text>
-              <Link href="/kontakt" style={styles.footerLink}>
+              <Link href="/pages/kontakt" style={styles.footerLink}>
                 Kontakt
               </Link>
             </View>
