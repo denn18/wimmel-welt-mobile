@@ -219,7 +219,7 @@ export default function TagespflegepersonProfilScreen() {
       console.log('[REGISTER] endpoint', endpoint); // [LOG]
       console.log('[REGISTER] payload keys', Object.keys(payload)); // [LOG]
 
-      const response = await apiRequest(endpoint, {
+      const response = await apiRequest<{ id?: string | number }>(endpoint, {
         method: 'POST',
         body: JSON.stringify(payload),
       });

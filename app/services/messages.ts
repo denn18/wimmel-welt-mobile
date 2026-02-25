@@ -31,6 +31,7 @@ export async function fetchMessages(conversationId: string) {
 
 export type SendMessagePayload = {
   conversationId: string;
+  senderId?: string | number;
   recipientId: string | number;
   body?: string;
   attachments?: Array<{
