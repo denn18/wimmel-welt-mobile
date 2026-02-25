@@ -16,7 +16,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useAuthStatus } from '../../hooks/use-auth-status';
-import { ApiUnauthorizedError } from '../../services/api-client';
+import { ApiUnauthorizedError, apiRequest } from '../../services/api-client';
 import {
   addGroupMember,
   createGroup,
@@ -41,12 +41,41 @@ const BRAND = 'rgb(49,66,154)';
 const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
 
 type UserProfile = {
+  id?: string;
+  role?: string;
+  name?: string;
   daycareName?: string;
   shortDescription?: string;
   bio?: string;
   logoImageUrl?: string | null;
+  profileImageUrl?: string | null;
   careTimes?: Array<{ startTime?: string; endTime?: string; activity?: string }>;
 };
+
+function buildCareTimesDescription(careTimes?: UserProfile['careTimes']) {
+  if (!careTimes?.length) return 'Betreuungszeiten werden aus dem Profil übernommen.';
+  return careTimes
+    .map((slot) => `${slot.startTime || '--'} - ${slot.endTime || '--'} · ${slot.activity || 'Betreuung'}`)
+    .join('\n');
+}
+
+async function fetchUserProfiles(ids: string[]) {
+  const uniqueIds = Array.from(new Set(ids)).filter(Boolean);
+  if (!uniqueIds.length) return {} as Record<string, UserProfile | null>;
+
+  const entries = await Promise.all(
+    uniqueIds.map(async (id) => {
+      try {
+        const response = await apiRequest<UserProfile>(`api/users/${id}`);
+        return [id, response] as const;
+      } catch {
+        return [id, null] as const;
+      }
+    }),
+  );
+
+  return Object.fromEntries(entries) as Record<string, UserProfile | null>;
+}
 
 function uniqueByUserId(items: GroupCandidate[]) {
   const map = new Map<string, GroupCandidate>();
@@ -89,6 +118,7 @@ export default function KindertagespflegegruppeScreen() {
   const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null);
   const [messages, setMessages] = useState<GroupMessage[]>([]);
   const [candidates, setCandidates] = useState<GroupCandidate[]>([]);
+  const [candidateProfiles, setCandidateProfiles] = useState<Record<string, UserProfile | null>>({});
 
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -97,7 +127,7 @@ export default function KindertagespflegegruppeScreen() {
 
   const [createVisible, setCreateVisible] = useState(false);
   const [participantsVisible, setParticipantsVisible] = useState(true);
-  const [description, setDescription] = useState('');
+  const [description, setDescription] = useState('Betreuungszeiten werden aus dem Profil übernommen.');
   const [selectedParticipants, setSelectedParticipants] = useState<string[]>([]);
 
   const selectedGroup = useMemo(
@@ -131,6 +161,11 @@ export default function KindertagespflegegruppeScreen() {
     });
   }, [candidates, search]);
 
+  const parentCandidatePool = useMemo(
+    () => candidatePool.filter((item) => candidateProfiles[item.userId]?.role !== 'caregiver'),
+    [candidatePool, candidateProfiles],
+  );
+
   const loadScreen = useCallback(async () => {
     if (!user?.id) return;
 
@@ -141,6 +176,7 @@ export default function KindertagespflegegruppeScreen() {
         fetchGroups(),
       ]);
       setProfile(profileData ?? null);
+      setDescription(buildCareTimesDescription(profileData?.careTimes));
       setGroups(groupData ?? []);
 
       if ((groupData ?? []).length) {
@@ -149,7 +185,10 @@ export default function KindertagespflegegruppeScreen() {
 
       try {
         const suggested = await fetchGroupCandidates();
-        setCandidates(suggested ?? []);
+        const nextCandidates = suggested ?? [];
+        setCandidates(nextCandidates);
+        const profiles = await fetchUserProfiles(nextCandidates.map((item) => item.userId));
+        setCandidateProfiles(profiles);
       } catch {
         const fallbackChats = await fetchConversations();
         const fallback = (fallbackChats ?? []).map((conversation) => {
@@ -163,6 +202,8 @@ export default function KindertagespflegegruppeScreen() {
           };
         });
         setCandidates(fallback);
+        const profiles = await fetchUserProfiles(fallback.map((item) => item.userId));
+        setCandidateProfiles(profiles);
       }
     } catch (error) {
       if (error instanceof ApiUnauthorizedError) {
@@ -208,7 +249,7 @@ export default function KindertagespflegegruppeScreen() {
     try {
       const created = await createGroup({
         name: profile.daycareName,
-        description: description || profile.shortDescription || profile.bio || '',
+        description: buildCareTimesDescription(profile.careTimes),
         logoImageUrl: profile.logoImageUrl ?? null,
         participantIds: selectedParticipants,
         careTimes: profile.careTimes ?? [],
@@ -221,7 +262,7 @@ export default function KindertagespflegegruppeScreen() {
       setGroups((current) => [created, ...current.filter((group) => group.id !== created.id)]);
       setSelectedGroupId(created.id);
       setCreateVisible(false);
-      setDescription('');
+      setDescription(buildCareTimesDescription(profile.careTimes));
       setSelectedParticipants([]);
       Alert.alert('Erstellt', 'Betreuungsgruppe wurde erstellt.');
     } catch {
@@ -327,7 +368,7 @@ export default function KindertagespflegegruppeScreen() {
               {selectedGroup.logoImageUrl ? <Image source={{ uri: assetUrl(selectedGroup.logoImageUrl) }} style={styles.logo} /> : null}
               <View style={{ flex: 1 }}>
                 <Text style={styles.groupName}>{selectedGroup.name}</Text>
-                <Text style={styles.muted}>{selectedGroup.description || 'Gruppenbeschreibung noch leer.'}</Text>
+                <Text style={styles.muted}>{selectedGroup.description || 'Betreuungszeiten werden aus dem Profil übernommen.'}</Text>
               </View>
             </Pressable>
 
@@ -380,13 +421,25 @@ export default function KindertagespflegegruppeScreen() {
 
             {amIAdmin ? (
               <View style={styles.addMemberWrap}>
-                <Text style={styles.sectionTitle}>Eltern/Kontakte hinzufügen</Text>
-                {candidatePool.slice(0, 6).map((candidate) => (
-                  <Pressable key={candidate.userId} style={styles.memberRow} onPress={() => handleAddMember(candidate)}>
-                    <Text style={styles.memberName}>{candidate.name}</Text>
+                <Text style={styles.sectionTitle}>Eltern aus angeschriebenen Chats hinzufügen</Text>
+                {(parentCandidatePool.length ? parentCandidatePool : candidatePool).slice(0, 6).map((candidate) => {
+                  const avatarUrl = candidate.profileImageUrl || candidateProfiles[candidate.userId]?.profileImageUrl || null;
+                  return (
+                    <Pressable key={candidate.userId} style={styles.memberRow} onPress={() => handleAddMember(candidate)}>
+                    <View style={styles.memberInfoWrap}>
+                      <View style={styles.memberAvatar}>
+                        {avatarUrl ? (
+                          <Image source={{ uri: assetUrl(avatarUrl) }} style={styles.memberAvatarImage} />
+                        ) : (
+                          <Text style={styles.memberAvatarInitial}>{candidate.name.trim().charAt(0).toUpperCase()}</Text>
+                        )}
+                      </View>
+                      <Text style={styles.memberName}>{candidate.name}</Text>
+                    </View>
                     <Text style={styles.link}>Hinzufügen</Text>
                   </Pressable>
-                ))}
+                  );
+                })}
               </View>
             ) : null}
           </View>
@@ -435,7 +488,7 @@ export default function KindertagespflegegruppeScreen() {
       <Modal visible={createVisible} animationType="slide" onRequestClose={() => setCreateVisible(false)}>
         <SafeAreaView style={styles.safeArea}>
           <View style={styles.modalHeader}>
-            <Text style={styles.title}>Neue Betreuungsgruppe</Text>
+            <Text style={styles.modalTitle}>Neue Betreuungsgruppe</Text>
             <Pressable onPress={() => setCreateVisible(false)}>
               <Ionicons name="close" size={24} color={BRAND} />
             </Pressable>
@@ -446,7 +499,7 @@ export default function KindertagespflegegruppeScreen() {
             <TextInput
               value={search}
               onChangeText={setSearch}
-              placeholder="Kontakte / Chatpartner suchen (Name oder MongoDB ID)"
+              placeholder="Eltern aus Chats suchen (Name oder MongoDB ID)"
               style={styles.searchInput}
               placeholderTextColor="#94a3b8"
             />
@@ -455,9 +508,9 @@ export default function KindertagespflegegruppeScreen() {
           <TextInput
             style={[styles.input, styles.descriptionInput]}
             value={description}
-            onChangeText={setDescription}
             multiline
-            placeholder="Gruppenbeschreibung"
+            editable={false}
+            placeholder="Betreuungszeiten werden automatisch übernommen"
             placeholderTextColor="#94a3b8"
           />
 
@@ -467,21 +520,37 @@ export default function KindertagespflegegruppeScreen() {
           </View>
 
           <ScrollView contentContainerStyle={styles.modalList}>
-            {candidatePool.map((candidate) => {
+            {(parentCandidatePool.length ? parentCandidatePool : candidatePool).map((candidate) => {
               const selected = selectedParticipants.includes(candidate.userId);
+              const avatarUrl = candidate.profileImageUrl || candidateProfiles[candidate.userId]?.profileImageUrl || null;
               return (
-                <Pressable key={candidate.userId} style={styles.memberRow} onPress={() => toggleParticipant(candidate.userId)}>
-                  <View>
-                    <Text style={styles.memberName}>{candidate.name}</Text>
-                    <Text style={styles.muted}>{candidate.source === 'contact' ? 'Kontakt' : 'Letzter Chatpartner'}</Text>
+                <Pressable
+                  key={candidate.userId}
+                  style={[styles.parentTile, selected && styles.parentTileSelected]}
+                  onPress={() => toggleParticipant(candidate.userId)}
+                >
+                  <View style={styles.memberAvatarLarge}>
+                    {avatarUrl ? (
+                      <Image source={{ uri: assetUrl(avatarUrl) }} style={styles.memberAvatarLargeImage} />
+                    ) : (
+                      <Text style={styles.memberAvatarInitial}>{candidate.name.trim().charAt(0).toUpperCase()}</Text>
+                    )}
                   </View>
-                  {selected ? <Ionicons name="checkmark-circle" size={20} color={BRAND} /> : null}
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.memberName}>{candidate.name}</Text>
+                    <Text style={styles.muted}>{candidate.source === 'contact' ? 'Kontakt' : 'Aus Nachrichten'}</Text>
+                  </View>
+                  <Ionicons name={selected ? 'checkmark-circle' : 'ellipse-outline'} size={22} color={BRAND} />
                 </Pressable>
               );
             })}
           </ScrollView>
 
-          <Pressable style={[styles.buttonPrimary, saving && { opacity: 0.6 }]} onPress={handleCreateGroup} disabled={saving}>
+          <Pressable
+            style={[styles.modalCreateButton, saving && { opacity: 0.6 }]}
+            onPress={handleCreateGroup}
+            disabled={saving}
+          >
             <Text style={styles.buttonPrimaryText}>{saving ? 'Erstelle…' : 'Betreuungsgruppe erstellen'}</Text>
           </Pressable>
         </SafeAreaView>
@@ -511,6 +580,8 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     borderRadius: 10,
     alignSelf: 'flex-start',
+    minHeight: 44,
+    justifyContent: 'center',
   },
   buttonPrimaryText: { color: '#fff', fontWeight: '700' },
   muted: { color: '#64748b' },
@@ -534,6 +605,18 @@ const styles = StyleSheet.create({
   memberName: { color: '#0f172a', fontWeight: '600' },
   link: { color: BRAND, fontWeight: '700' },
   addMemberWrap: { gap: 4 },
+  memberInfoWrap: { flexDirection: 'row', alignItems: 'center', gap: 10, flex: 1 },
+  memberAvatar: {
+    width: 32,
+    height: 32,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#eef2ff',
+    overflow: 'hidden',
+  },
+  memberAvatarImage: { width: '100%', height: '100%' },
+  memberAvatarInitial: { color: BRAND, fontWeight: '700' },
   messageRow: { paddingVertical: 8, borderBottomWidth: 1, borderColor: '#e2e8f0', gap: 3 },
   messageMeta: { color: '#64748b', fontSize: 12 },
   messageBody: { color: '#0f172a' },
@@ -559,7 +642,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 16 },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingTop: 12,
+    paddingBottom: 8,
+  },
+  modalTitle: { color: BRAND, fontSize: 30, fontWeight: '800', flex: 1, paddingRight: 10 },
   searchWrap: {
     marginHorizontal: 16,
     flexDirection: 'row',
@@ -572,6 +663,42 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
   },
   searchInput: { flex: 1, height: 42, color: '#0f172a' },
-  descriptionInput: { margin: 16, minHeight: 80, textAlignVertical: 'top' },
-  modalList: { paddingHorizontal: 16, paddingBottom: 16 },
+  descriptionInput: { margin: 16, minHeight: 90, textAlignVertical: 'top', color: '#334155' },
+  modalList: { paddingHorizontal: 16, paddingBottom: 100, gap: 8 },
+  parentTile: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    borderWidth: 1,
+    borderColor: '#d9e4ff',
+    borderRadius: 12,
+    backgroundColor: '#fff',
+    paddingHorizontal: 10,
+    paddingVertical: 10,
+  },
+  parentTileSelected: {
+    borderColor: BRAND,
+    backgroundColor: '#eef2ff',
+  },
+  memberAvatarLarge: {
+    width: 42,
+    height: 42,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#eef2ff',
+    overflow: 'hidden',
+  },
+  memberAvatarLargeImage: { width: '100%', height: '100%' },
+  modalCreateButton: {
+    position: 'absolute',
+    left: 16,
+    right: 16,
+    bottom: 16,
+    borderRadius: 12,
+    backgroundColor: BRAND,
+    minHeight: 48,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
 });
