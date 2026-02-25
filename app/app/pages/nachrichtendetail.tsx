@@ -114,7 +114,7 @@ export default function MessageDetailScreen() {
         console.error('Konnte Gesprächspartner nicht laden', error);
         if (error instanceof ApiUnauthorizedError) {
           await logout();
-          router.replace('/login');
+          router.replace('/pages/login');
         }
       }
     }
@@ -133,7 +133,7 @@ export default function MessageDetailScreen() {
         console.error('Konnte Nachrichten nicht laden', error);
         if (error instanceof ApiUnauthorizedError) {
           await logout();
-          router.replace('/login');
+          router.replace('/pages/login');
           return;
         }
       } finally {
@@ -189,7 +189,7 @@ export default function MessageDetailScreen() {
       console.error('Konnte Nachricht nicht senden', error);
       if (error instanceof ApiUnauthorizedError) {
         await logout();
-        router.replace('/login');
+        router.replace('/pages/login');
       }
     } finally {
       setSending(false);
@@ -229,7 +229,7 @@ export default function MessageDetailScreen() {
           <Ionicons name="chatbubbles" size={48} color={BRAND} />
           <Text style={styles.title}>Nachrichten</Text>
           <Text style={styles.hint}>Erstelle einen Account und melde dich an, um die Chatfunktion zu nutzen.</Text>
-          <Pressable style={styles.buttonPrimary} onPress={() => router.push('/login')}>
+          <Pressable style={styles.buttonPrimary} onPress={() => router.push('/pages/login')}>
             <Text style={styles.buttonPrimaryText}>Anmelden</Text>
           </Pressable>
         </View>

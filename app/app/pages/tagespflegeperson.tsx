@@ -12,12 +12,12 @@ export default function TagespflegepersonHinweisScreen() {
         <Text style={styles.subtitle}>
           Wir empfehlen die Profilerstellung auf einem Laptop oder Computer durchzuführen.
         </Text>
-        <Link href="/anmelden/tagespflegeperson/profil" asChild>
+        <Link href="/pages/tagespflegeprofil" asChild>
           <Pressable style={styles.button}>
             <Text style={styles.buttonText}>Trotzdem fortfahren</Text>
           </Pressable>
         </Link>
-        <Link href="/anmelden/auswahl" style={styles.link}>
+        <Link href="/pages/auswahl" style={styles.link}>
           Zurück zur Rollenwahl
         </Link>
       </View>

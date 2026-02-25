@@ -18,7 +18,7 @@ const items = [
     icon: 'chatbubbles',
     routeName: 'messages',
     href: '/pages/messages',
-    aliases: ['/nachrichten'],
+    aliases: ['/pages/nachrichtendetail'],
   },
   // {
   //.  Erstmal brauchen wir Settings Icon nichts
@@ -36,7 +36,7 @@ export function BottomNavbar({ state, navigation }: Partial<BottomTabBarProps> =
   const { user, loading, refresh } = useAuthStatus();
   const [checkingProfile, setCheckingProfile] = useState(false);
 
-  const loginPath = '/login';
+  const loginPath = '/pages/login';
 
   const profileTabRouteName = 'profile';
   const profileTabHref = '/pages/profile';
