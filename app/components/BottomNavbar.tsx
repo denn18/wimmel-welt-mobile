@@ -20,6 +20,13 @@ const items = [
     href: '/pages/messages',
     aliases: ['/pages/nachrichtendetail'],
   },
+  {
+    key: 'group',
+    label: 'Gruppe',
+    icon: 'people',
+    routeName: 'kindertagespflegegruppe',
+    href: '/pages/kindertagespflegegruppe',
+  },
   // {
   //.  Erstmal brauchen wir Settings Icon nichts
   //   key: 'settings',

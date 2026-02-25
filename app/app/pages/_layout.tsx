@@ -45,6 +45,16 @@ export default function PagesLayout() {
       />
 
       <Tabs.Screen
+        name="kindertagespflegegruppe"
+        options={{
+          title: 'Gruppe',
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="people" size={size} color={color} />
+          ),
+        }}
+      />
+
+      <Tabs.Screen
         name="profile"
         options={{
           title: 'Profil',
