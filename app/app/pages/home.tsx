@@ -104,7 +104,7 @@ export default function HomeScreen() {
           <View style={styles.ctaWrap}>
             <Pressable
               style={({ pressed }) => [styles.primaryBtn, pressed && styles.primaryBtnPressed]}
-              onPress={() => router.push('/(tabs)/dashboard')}
+              onPress={() => router.push('/pages/dashboard')}
             >
               <Text style={styles.primaryBtnText}>Kindertagespflege finden</Text>
             </Pressable>

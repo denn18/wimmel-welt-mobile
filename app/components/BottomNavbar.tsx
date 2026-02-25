@@ -10,14 +10,14 @@ import { useAuthStatus } from '../hooks/use-auth-status';
 const BRAND = 'rgb(49,66,154)';
 
 const items = [
-  { key: 'home', label: 'Home', icon: 'home', routeName: 'home', href: '/(tabs)/home' },
-  { key: 'dashboard', label: 'Dashboard', icon: 'grid', routeName: 'dashboard/index', href: '/(tabs)/dashboard' },
+  { key: 'home', label: 'Home', icon: 'home', routeName: 'home', href: '/pages/home' },
+  { key: 'dashboard', label: 'Dashboard', icon: 'grid', routeName: 'dashboard', href: '/pages/dashboard' },
   {
     key: 'messages',
     label: 'Nachrichten',
     icon: 'chatbubbles',
-    routeName: 'messages/index',
-    href: '/(tabs)/messages',
+    routeName: 'messages',
+    href: '/pages/messages',
     aliases: ['/nachrichten'],
   },
   // {
@@ -25,8 +25,8 @@ const items = [
   //   key: 'settings',
   //   label: 'Einstellungen',
   //   icon: 'settings',
-  //   routeName: 'settings/index',
-  //   href: '/(tabs)/settings',
+  //   routeName: 'settings',
+  //   href: '/pages/settings',
   // },
 ];
 
@@ -38,9 +38,8 @@ export function BottomNavbar({ state, navigation }: Partial<BottomTabBarProps> =
 
   const loginPath = '/login';
 
-  // ✅ Profil muss in den Tab gehen (damit app/(tabs)/profile/index.tsx fokusiert wird)
-  const profileTabRouteName = 'profile/index';
-  const profileTabHref = '/(tabs)/profile';
+  const profileTabRouteName = 'profile';
+  const profileTabHref = '/pages/profile';
 
   const bottomPadding = Math.max(insets.bottom, 10);
   const navHeight = 64 + bottomPadding;

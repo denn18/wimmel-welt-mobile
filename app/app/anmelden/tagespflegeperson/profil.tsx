@@ -243,7 +243,7 @@ export default function TagespflegepersonProfilScreen() {
           type: 'success',
           message: 'Profil erstellt! Du wirst jetzt zum Dashboard weitergeleitet.',
         });
-        setTimeout(() => router.replace('/(tabs)/dashboard'), 1200);
+        setTimeout(() => router.replace('/pages/dashboard'), 1200);
       } catch (authError) {
         console.warn('Automatischer Login nach Registrierung nicht möglich', authError);
         setStatus({

@@ -1,4 +1,4 @@
-// app/(tabs)/profile/index.tsx
+// app/pages/profile.tsx
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
@@ -16,11 +16,11 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 
-import { BottomNavbar } from '../../../components/BottomNavbar';
-import { useAuthStatus } from '../../../hooks/use-auth-status';
-import { fetchProfile, profileEndpoint, updateProfile } from '../../../services/profile';
-import { PickedFile, pickSingleFile, pickMultipleFiles } from '../../../utils/file-picker';
-import { assetUrl, getApiBaseUrl } from '../../../utils/url';
+import { BottomNavbar } from '../../components/BottomNavbar';
+import { useAuthStatus } from '../../hooks/use-auth-status';
+import { fetchProfile, profileEndpoint, updateProfile } from '../../services/profile';
+import { PickedFile, pickSingleFile, pickMultipleFiles } from '../../utils/file-picker';
+import { assetUrl, getApiBaseUrl } from '../../utils/url';
 
 const BRAND = '#31429a';
 
@@ -530,7 +530,7 @@ function ParentProfileEditor({
 // Du kannst einfach die beiden Änderungen unten 1:1 in deine Datei übernehmen:
 //
 // 1) Import:
-//    import { BottomNavbar } from '../../../components/BottomNavbar';
+//    import { BottomNavbar } from '../../components/BottomNavbar';
 //
 // 2) In ALLEN <SafeAreaView> -> edges={['top','left','right']} setzen
 //    und am Ende <BottomNavbar /> rendern (wie Home/Dashboard).

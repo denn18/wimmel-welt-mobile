@@ -147,7 +147,7 @@ export default function ElternProfilScreen() {
           type: 'success',
           message: 'Registrierung erfolgreich! Du wirst jetzt zum Dashboard weitergeleitet.',
         });
-        setTimeout(() => router.replace('/(tabs)/dashboard'), 1200);
+        setTimeout(() => router.replace('/pages/dashboard'), 1200);
       } catch (authError) {
         console.warn('Automatischer Login nach Registrierung nicht möglich', authError);
         setStatus({

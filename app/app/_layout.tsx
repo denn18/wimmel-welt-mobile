@@ -5,13 +5,13 @@ import { useEffect } from 'react';
 import 'react-native-reanimated';
 
 import { AuthProvider } from '../context/AuthContext';
-import { StartupDebugOverlay } from '../components/StartupDebugOverlay';
 import { useColorScheme } from '../hooks/use-color-scheme';
 
 const APP_BACKGROUND = '#f5f7fb';
 
 export const unstable_settings = {
-  anchor: '(tabs)',
+  anchor: 'pages',
+  initialRouteName: 'pages/home',
 };
 
 export default function RootLayout() {
@@ -23,8 +23,7 @@ export default function RootLayout() {
 
   return (
     <AuthProvider>
-      {/* <StartupDebugOverlay> erstmal rausnehmen */}
-        <ThemeProvider
+      <ThemeProvider
           value={{
             ...(colorScheme === 'dark' ? DarkTheme : DefaultTheme),
             colors: {
@@ -34,12 +33,12 @@ export default function RootLayout() {
           }}
         >
           <Stack screenOptions={{ contentStyle: { backgroundColor: APP_BACKGROUND } }}>
-            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+            <Stack.Screen name="pages" options={{ headerShown: false }} />
             <Stack.Screen name="login" options={{ headerShown: false, title: 'Login' }} />
             <Stack.Screen name="datenschutz" options={{ headerShown: false, title: 'Datenschutz' }} />
             <Stack.Screen name="impressum" options={{ headerShown: false, title: 'Impressum' }} />
             <Stack.Screen name="kontakt" options={{ headerShown: false, title: 'Kontakt' }} />
-            <Stack.Screen name="anmelden/index" options={{ headerShown: false, title: 'Registrieren' }} />
+            <Stack.Screen name="anmelden/auswahl" options={{ headerShown: false, title: 'Registrieren' }} />
             <Stack.Screen name="anmelden/eltern" options={{ headerShown: false, title: 'Elternprofil' }} />
             <Stack.Screen name="anmelden/eltern/profil" options={{ headerShown: false, title: 'Elternprofil' }} />
             <Stack.Screen
@@ -50,11 +49,9 @@ export default function RootLayout() {
               name="anmelden/tagespflegeperson/profil"
               options={{ headerShown: false, title: 'Kindertagespflegeperson' }}
             />
-            <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
           </Stack>
           <StatusBar style="auto" />
-        </ThemeProvider>
-      {/* </StartupDebugOverlay> */}
+      </ThemeProvider>
     </AuthProvider>
   );
 }

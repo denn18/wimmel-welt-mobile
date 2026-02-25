@@ -17,7 +17,7 @@ export default function ElternHinweisScreen() {
             <Text style={styles.buttonText}>Trotzdem fortfahren</Text>
           </Pressable>
         </Link>
-        <Link href="/anmelden" style={styles.link}>
+        <Link href="/anmelden/auswahl" style={styles.link}>
           Zurück zur Rollenwahl
         </Link>
       </View>

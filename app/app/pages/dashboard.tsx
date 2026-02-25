@@ -1,4 +1,4 @@
-// app/(tabs)/dashboard/index.tsx
+// app/pages/dashboard.tsx
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { useFocusEffect, useRouter } from 'expo-router';
@@ -16,10 +16,10 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
  //Neuer richtiger Pfad
-import { BottomNavbar } from '../../../components/BottomNavbar';
+import { BottomNavbar } from '../../components/BottomNavbar';
 
-import { apiRequest } from '../../../services/api-client';
-import { assetUrl, FileReference } from '../../../utils/url';
+import { apiRequest } from '../../services/api-client';
+import { assetUrl, FileReference } from '../../utils/url';
 
 const BRAND = 'rgb(49,66,154)';
 
