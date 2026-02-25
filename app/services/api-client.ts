@@ -108,14 +108,13 @@ export async function apiRequest<T>(path: string, options: ApiRequestOptions = {
   }
 
   const contentType = response.headers.get('content-type') ?? '';
-  if (contentType.includes('application/json')) {
-    try {
-      return JSON.parse(textPreview) as T;
-    } catch {
-      // Wenn der Body kein valides JSON ist, geben wir die Rohdaten zurück
-      return textPreview as unknown as T;
-    }
+  if (!contentType.includes('application/json')) {
+    throw new Error(`Expected JSON response but received ${contentType || 'unknown content-type'}`);
   }
 
-  return textPreview as unknown as T;
+  try {
+    return JSON.parse(textPreview) as T;
+  } catch {
+    throw new Error('Invalid JSON response from API');
+  }
 }
