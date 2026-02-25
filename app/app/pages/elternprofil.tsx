@@ -34,7 +34,7 @@ type FormState = {
 
 type StatusMessage = { type: 'success' | 'error'; message: string } | null;
 
-type RegisterResponse = { role?: string; message?: string };
+type RegisterResponse = { id?: string | number; role?: string; message?: string };
 
 function createChild(): Child {
   return { name: '', age: '', gender: '', notes: '' };

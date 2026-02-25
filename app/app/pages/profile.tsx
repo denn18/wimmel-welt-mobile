@@ -525,15 +525,151 @@ function ParentProfileEditor({
   );
 }
 
-// NOTE: Der Rest deines Files (CaregiverProfileEditor etc.) bleibt unverändert –
-// ich lasse ihn bewusst weg, weil du ihn oben nicht komplett gepostet hast.
-// Du kannst einfach die beiden Änderungen unten 1:1 in deine Datei übernehmen:
-//
-// 1) Import:
-//    import { BottomNavbar } from '../../components/BottomNavbar';
-//
-// 2) In ALLEN <SafeAreaView> -> edges={['top','left','right']} setzen
-//    und am Ende <BottomNavbar /> rendern (wie Home/Dashboard).
+function CaregiverProfileEditor({
+  profile,
+  onSave,
+  saving,
+}: {
+  profile: CaregiverProfile;
+  onSave: (payload: unknown) => Promise<void>;
+  saving: boolean;
+}) {
+  const [formState, setFormState] = useState({
+    firstName: profile.firstName || '',
+    lastName: profile.lastName || '',
+    email: profile.email || '',
+    phone: profile.phone || '',
+    address: profile.address || '',
+    postalCode: profile.postalCode || '',
+    city: profile.city || '',
+    username: profile.username || '',
+    daycareName: profile.daycareName || '',
+    shortDescription: profile.shortDescription || '',
+    bio: profile.bio || '',
+    mealPlan: profile.mealPlan || '',
+    availableSpots: String(profile.availableSpots ?? 0),
+    childrenCount: String(profile.childrenCount ?? 0),
+    maxChildAge: profile.maxChildAge === '' || profile.maxChildAge == null ? '' : String(profile.maxChildAge),
+    newPassword: '',
+  });
+  const [statusMessage, setStatusMessage] = useState<string | null>(null);
+
+  const [careTimes, setCareTimes] = useState<ScheduleEntry[]>(
+    profile.careTimes?.length ? profile.careTimes.map((entry) => createScheduleEntry(entry)) : [createScheduleEntry()],
+  );
+  const [dailySchedule, setDailySchedule] = useState<ScheduleEntry[]>(
+    profile.dailySchedule?.length
+      ? profile.dailySchedule.map((entry) => createScheduleEntry(entry))
+      : [createScheduleEntry()],
+  );
+
+  useEffect(() => {
+    setFormState({
+      firstName: profile.firstName || '',
+      lastName: profile.lastName || '',
+      email: profile.email || '',
+      phone: profile.phone || '',
+      address: profile.address || '',
+      postalCode: profile.postalCode || '',
+      city: profile.city || '',
+      username: profile.username || '',
+      daycareName: profile.daycareName || '',
+      shortDescription: profile.shortDescription || '',
+      bio: profile.bio || '',
+      mealPlan: profile.mealPlan || '',
+      availableSpots: String(profile.availableSpots ?? 0),
+      childrenCount: String(profile.childrenCount ?? 0),
+      maxChildAge: profile.maxChildAge === '' || profile.maxChildAge == null ? '' : String(profile.maxChildAge),
+      newPassword: '',
+    });
+    setCareTimes(profile.careTimes?.length ? profile.careTimes.map((entry) => createScheduleEntry(entry)) : [createScheduleEntry()]);
+    setDailySchedule(
+      profile.dailySchedule?.length ? profile.dailySchedule.map((entry) => createScheduleEntry(entry)) : [createScheduleEntry()],
+    );
+    setStatusMessage(null);
+  }, [profile]);
+
+  function updateField(field: keyof typeof formState, value: string) {
+    setFormState((cur) => ({ ...cur, [field]: value }));
+  }
+
+  const handleSubmit = async () => {
+    const payload: Record<string, unknown> = {
+      firstName: formState.firstName,
+      lastName: formState.lastName,
+      email: formState.email,
+      phone: formState.phone,
+      address: formState.address,
+      postalCode: formState.postalCode,
+      city: formState.city,
+      username: formState.username,
+      daycareName: formState.daycareName,
+      shortDescription: formState.shortDescription,
+      bio: formState.bio,
+      mealPlan: formState.mealPlan,
+      availableSpots: Number(formState.availableSpots) || 0,
+      childrenCount: Number(formState.childrenCount) || 0,
+      maxChildAge: formState.maxChildAge ? Number(formState.maxChildAge) : null,
+      careTimes,
+      dailySchedule,
+    };
+
+    if (formState.newPassword.trim()) payload.password = formState.newPassword.trim();
+
+    try {
+      await onSave(payload);
+      setStatusMessage('Profil erfolgreich aktualisiert.');
+      setFormState((cur) => ({ ...cur, newPassword: '' }));
+    } catch {
+      Alert.alert('Fehler', 'Aktualisierung fehlgeschlagen.');
+    }
+  };
+
+  return (
+    <View style={{ gap: 18 }}>
+      <Section title="Deine Kontaktdaten">
+        <View style={styles.gridTwoCols}>
+          <LabeledInput label="Vorname" value={formState.firstName} onChangeText={(t) => updateField('firstName', t)} />
+          <LabeledInput label="Nachname" value={formState.lastName} onChangeText={(t) => updateField('lastName', t)} />
+          <LabeledInput label="E-Mail" value={formState.email} onChangeText={(t) => updateField('email', t)} keyboardType="email-address" />
+          <LabeledInput label="Telefonnummer" value={formState.phone} onChangeText={(t) => updateField('phone', t)} />
+          <LabeledInput label="Adresse" value={formState.address} onChangeText={(t) => updateField('address', t)} />
+          <LabeledInput label="Postleitzahl" value={formState.postalCode} onChangeText={(t) => updateField('postalCode', t)} />
+          <LabeledInput label="Ort" value={formState.city} onChangeText={(t) => updateField('city', t)} />
+          <LabeledInput label="Benutzername" value={formState.username} onChangeText={(t) => updateField('username', t)} />
+          <LabeledInput label="Neues Passwort (optional)" value={formState.newPassword} onChangeText={(t) => updateField('newPassword', t)} secureTextEntry />
+        </View>
+      </Section>
+
+      <Section title="Einrichtung & Plätze">
+        <LabeledInput label="Name der Tagespflege" value={formState.daycareName} onChangeText={(t) => updateField('daycareName', t)} />
+        <LabeledInput label="Kurzbeschreibung" value={formState.shortDescription} onChangeText={(t) => updateField('shortDescription', t)} multiline />
+        <LabeledInput label="Ausführliche Beschreibung" value={formState.bio} onChangeText={(t) => updateField('bio', t)} multiline />
+        <LabeledInput label="Verpflegung" value={formState.mealPlan} onChangeText={(t) => updateField('mealPlan', t)} multiline />
+        <View style={styles.gridTwoCols}>
+          <LabeledInput label="Freie Plätze" value={formState.availableSpots} onChangeText={(t) => updateField('availableSpots', t)} keyboardType="numeric" />
+          <LabeledInput label="Aktuelle Kinderzahl" value={formState.childrenCount} onChangeText={(t) => updateField('childrenCount', t)} keyboardType="numeric" />
+          <LabeledInput label="Max. Kindesalter" value={formState.maxChildAge} onChangeText={(t) => updateField('maxChildAge', t)} keyboardType="numeric" />
+        </View>
+      </Section>
+
+      <Section title="Betreuungszeiten">
+        <ScheduleEditor entries={careTimes} onChange={setCareTimes} title="Bring-/Abholzeiten" />
+      </Section>
+
+      <Section title="Tagesablauf">
+        <ScheduleEditor entries={dailySchedule} onChange={setDailySchedule} title="Typischer Tagesablauf" />
+      </Section>
+
+      <View style={{ gap: 10 }}>
+        <Pressable style={[styles.buttonPrimary, saving && styles.buttonDisabled]} disabled={saving} onPress={handleSubmit}>
+          <Text style={styles.buttonPrimaryText}>{saving ? 'Speichern…' : 'Profil speichern'}</Text>
+        </Pressable>
+        {statusMessage ? <Text style={styles.successText}>{statusMessage}</Text> : null}
+      </View>
+    </View>
+  );
+}
 
 export default function ProfileIndex() {
   const { user, loading: authLoading, refresh } = useAuthStatus();
@@ -608,16 +744,14 @@ export default function ProfileIndex() {
 
           {!loading && profile ? (
             user.role === 'caregiver' ? (
-              // <CaregiverProfileEditor profile={profile as CaregiverProfile} onSave={handleSave} saving={saving} />
-              <Text style={styles.hint}>CaregiverProfileEditor hier einfügen (in deiner Originaldatei vorhanden).</Text>
+              <CaregiverProfileEditor profile={profile as CaregiverProfile} onSave={handleSave} saving={saving} />
             ) : (
               <ParentProfileEditor profile={profile as ParentProfile} onSave={handleSave} saving={saving} />
             )
           ) : null}
         </ScrollView>
       </KeyboardAvoidingView>
-
-
+      <BottomNavbar />
     </SafeAreaView>
   );
 }
