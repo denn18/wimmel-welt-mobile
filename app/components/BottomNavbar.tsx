@@ -24,8 +24,8 @@ const items = [
     key: 'group',
     label: 'Gruppe',
     icon: 'people',
-    routeName: 'kindertagespflegegruppe',
-    href: '/pages/kindertagespflegegruppe',
+    routeName: 'betreuungsgruppechat',
+    href: '/pages/betreuungsgruppechat',
   },
   // {
   //.  Erstmal brauchen wir Settings Icon nichts
