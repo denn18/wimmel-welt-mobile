@@ -20,6 +20,13 @@ import type { AuthUser } from '../../types/auth';
 
 const BRAND = 'rgb(49,66,154)';
 const WEEKDAY_SUGGESTIONS = ['Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag'];
+const AVAILABILITY_TIMING_OPTIONS = [
+  { value: 'aktuell', label: 'Sofort' },
+  { value: '1_3_monate', label: 'In 1–3 Monaten' },
+  { value: '4_6_monate', label: 'In 4–6 Monaten' },
+  { value: '6_plus_monate', label: 'In 6+ Monaten' },
+  { value: 'unbekannt', label: 'Noch unklar' },
+];
 
 type ScheduleEntry = { startTime: string; endTime: string; activity: string };
 
@@ -34,6 +41,7 @@ type FormState = {
   daycareName: string;
   availableSpots: string;
   hasAvailability: boolean;
+  availabilityTiming: string;
   childrenCount: string;
   birthDate: string;
   caregiverSince: string;
@@ -46,6 +54,13 @@ type FormState = {
   closedDays: string[];
   username: string;
   password: string;
+};
+
+type ContractDocument = {
+  id: string;
+  name: string;
+  fileData: string | null;
+  fileName: string;
 };
 
 type StatusMessage = { type: 'success' | 'error'; message: string } | null;
@@ -70,6 +85,7 @@ const initialState: FormState = {
   daycareName: '',
   availableSpots: '0',
   hasAvailability: true,
+  availabilityTiming: 'aktuell',
   childrenCount: '0',
   birthDate: '',
   caregiverSince: '',
@@ -83,6 +99,10 @@ const initialState: FormState = {
   username: '',
   password: '',
 };
+
+function generateTempId() {
+  return `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+}
 
 function calculateAgeFromDateString(value: string) {
   if (!value) return null;
@@ -111,18 +131,25 @@ function calculateYearsSince(value: string) {
 export default function CaregiverSignupPage() {
   const router = useRouter();
   const { setSessionUser } = useAuthStatus();
+  const [showWarning, setShowWarning] = useState(true);
   const [formState, setFormState] = useState<FormState>(initialState);
   const [profileImage, setProfileImage] = useState<PickedFile | null>(null);
   const [logoImage, setLogoImage] = useState<PickedFile | null>(null);
   const [conceptFile, setConceptFile] = useState<PickedFile | null>(null);
-  const [careDocuments, setCareDocuments] = useState<PickedFile[]>([]);
+  const [contractDocuments, setContractDocuments] = useState<ContractDocument[]>([]);
   const [roomGallery, setRoomGallery] = useState<PickedFile[]>([]);
+  const [roomGalleryOffset, setRoomGalleryOffset] = useState(0);
   const [status, setStatus] = useState<StatusMessage>(null);
   const [submitting, setSubmitting] = useState(false);
   const [closedDayInput, setClosedDayInput] = useState('');
 
   const computedAge = useMemo(() => calculateAgeFromDateString(formState.birthDate), [formState.birthDate]);
   const experienceYears = useMemo(() => calculateYearsSince(formState.caregiverSince), [formState.caregiverSince]);
+  const visibleRoomImages =
+    roomGallery.length <= 3
+      ? roomGallery
+      : Array.from({ length: 3 }, (_, index) => roomGallery[(roomGalleryOffset + index) % roomGallery.length]);
+  const showRoomNavigation = roomGallery.length > 3;
 
   function updateField(field: keyof FormState, value: string | boolean) {
     setFormState((current) => ({ ...current, [field]: value }));
@@ -183,16 +210,56 @@ export default function CaregiverSignupPage() {
     setConceptFile(file);
   };
 
-  const handlePickCareDocuments = async () => {
-    const files = await pickMultipleFiles({ type: ['application/pdf', 'image/*'] });
-    if (!files.length) return;
-    setCareDocuments((current) => [...current, ...files]);
+  const handleAddContractDocument = () => {
+    setContractDocuments((current) => [...current, { id: generateTempId(), name: '', fileData: null, fileName: '' }]);
+  };
+
+  const handleRemoveContractDocument = (id: string) => {
+    setContractDocuments((current) => current.filter((document) => document.id !== id));
+  };
+
+  const updateContractDocument = (id: string, field: 'name' | 'fileData' | 'fileName', value: string | null) => {
+    setContractDocuments((current) => current.map((document) => (document.id === id ? { ...document, [field]: value } : document)));
+  };
+
+  const handlePickContractFile = async (id: string) => {
+    const file = await pickSingleFile({ type: ['application/pdf'] });
+    if (!file) return;
+    updateContractDocument(id, 'fileData', file.dataUrl);
+    updateContractDocument(id, 'fileName', file.fileName);
   };
 
   const handlePickRoomImages = async () => {
     const files = await pickMultipleFiles({ type: ['image/*'] });
     if (!files.length) return;
-    setRoomGallery((current) => [...current, ...files]);
+    setRoomGallery((current) => {
+      const next = [...current, ...files];
+      setRoomGalleryOffset(next.length <= 3 ? 0 : Math.max(0, next.length - 3));
+      return next;
+    });
+  };
+
+  const handleRemoveRoomImage = (indexInVisible: number) => {
+    const imageToRemove = visibleRoomImages[indexInVisible];
+    if (!imageToRemove) return;
+    setRoomGallery((current) => {
+      const filtered = current.filter((entry) => entry !== imageToRemove);
+      setRoomGalleryOffset((offset) => {
+        if (!filtered.length || filtered.length <= 3) return 0;
+        return offset % filtered.length;
+      });
+      return filtered;
+    });
+  };
+
+  const showPreviousRoomImages = () => {
+    if (roomGallery.length <= 3) return;
+    setRoomGalleryOffset((current) => (current - 1 + roomGallery.length) % roomGallery.length);
+  };
+
+  const showNextRoomImages = () => {
+    if (roomGallery.length <= 3) return;
+    setRoomGalleryOffset((current) => (current + 1) % roomGallery.length);
   };
 
   const handleSubmit = async () => {
@@ -204,6 +271,7 @@ export default function CaregiverSignupPage() {
         ...formState,
         availableSpots: Number(formState.availableSpots) || 0,
         hasAvailability: Boolean(formState.hasAvailability),
+        availabilityTiming: formState.availabilityTiming,
         childrenCount: Number(formState.childrenCount) || 0,
         age: computedAge ?? null,
         maxChildAge: formState.maxChildAge ? Number(formState.maxChildAge) : null,
@@ -217,7 +285,12 @@ export default function CaregiverSignupPage() {
         dailySchedule: formState.dailySchedule,
         mealPlan: formState.mealPlan,
         roomImages: roomGallery.map((image) => ({ dataUrl: image.dataUrl, fileName: image.fileName })),
-        careDocuments: careDocuments.map((file) => ({ dataUrl: file.dataUrl, fileName: file.fileName, mimeType: file.mimeType })),
+        contractDocuments: contractDocuments
+          .map((document) => ({
+            name: document.name.trim(),
+            file: document.fileData ? { dataUrl: document.fileData, fileName: document.fileName } : null,
+          }))
+          .filter((document) => document.name && document.file),
         closedDays: formState.closedDays,
         role: 'caregiver' as const,
       };
@@ -265,7 +338,8 @@ export default function CaregiverSignupPage() {
       setLogoImage(null);
       setConceptFile(null);
       setRoomGallery([]);
-      setCareDocuments([]);
+      setRoomGalleryOffset(0);
+      setContractDocuments([]);
       setClosedDayInput('');
     } catch (error) {
       console.log('[REGISTER] error', error); // [LOG]
@@ -280,6 +354,15 @@ export default function CaregiverSignupPage() {
 
   return (
     <SafeAreaView style={styles.safeArea}>
+      {showWarning ? (
+        <View style={styles.warningCard}>
+          <Text style={styles.warningTitle}>Tagespflegeprofil</Text>
+          <Text style={styles.warningText}>Wir empfehlen die Profilerstellung auf einem Laptop oder Computer durchzuführen.</Text>
+          <Pressable onPress={() => setShowWarning(false)} style={styles.primaryButton}>
+            <Text style={styles.primaryButtonText}>Trotzdem fortfahren</Text>
+          </Pressable>
+        </View>
+      ) : (
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
         <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
           <View style={styles.header}>
@@ -287,13 +370,6 @@ export default function CaregiverSignupPage() {
             <Text style={styles.title}>Erzähl Familien, welche Betreuung du anbietest.</Text>
             <Text style={styles.subtitle}>
               Kopiere deine Angaben aus der Webansicht: verfügbare Plätze, Konzept, Betreuungszeiten und Bilder.
-            </Text>
-          </View>
-
-          <View style={styles.infoBox}>
-            <Text style={styles.infoTitle}>Besser am Laptop bearbeiten</Text>
-            <Text style={styles.infoText}>
-              Wir empfehlen die Profilerstellung auf einem Laptop oder Computer durchzuführen.
             </Text>
           </View>
 
@@ -420,6 +496,23 @@ export default function CaregiverSignupPage() {
               />
             </View>
 
+            <View style={styles.inputGroup}>
+              <Text style={styles.label}>Wann werden Plätze frei?</Text>
+              <View style={styles.chipRow}>
+                {AVAILABILITY_TIMING_OPTIONS.map((option) => (
+                  <Pressable
+                    key={option.value}
+                    onPress={() => updateField('availabilityTiming', option.value)}
+                    style={[styles.chip, formState.availabilityTiming === option.value && styles.chipActive]}
+                  >
+                    <Text style={[styles.chipLabel, formState.availabilityTiming === option.value && styles.chipLabelActive]}>
+                      {option.label}
+                    </Text>
+                  </Pressable>
+                ))}
+              </View>
+            </View>
+
             <View style={styles.gridTwoCols}>
               <View style={styles.inputGroup}>
                 <Text style={styles.label}>Verfügbarkeit</Text>
@@ -476,21 +569,71 @@ export default function CaregiverSignupPage() {
               buttonLabel="PDF hochladen"
             />
             <UploadRow
-              title="Betreuungsunterlagen"
-              hint={
-                careDocuments.length
-                  ? `${careDocuments.length} Unterlage(n) ausgewählt`
-                  : 'z. B. Pflegeerlaubnis, Zertifikate oder Verträge'
-              }
-              onPress={handlePickCareDocuments}
-              buttonLabel="Unterlagen hochladen"
-            />
-            <UploadRow
               title="Räumlichkeiten"
               hint={roomGallery.length ? `${roomGallery.length} Bild(er) ausgewählt` : 'Füge bis zu mehreren Bildern hinzu.'}
               onPress={handlePickRoomImages}
               buttonLabel="Raumbilder hochladen"
             />
+
+            <View style={styles.sectionHeader}>
+              <View style={styles.sectionHeaderContent}>
+                <Text style={styles.sectionTitle}>Vertragsunterlagen</Text>
+                <Text style={styles.sectionHint}>Optional – nur PDF hochladen.</Text>
+              </View>
+              <Pressable onPress={handleAddContractDocument} style={styles.secondaryButton}>
+                <Text style={styles.secondaryButtonText}>+ Dokument</Text>
+              </Pressable>
+            </View>
+
+            {contractDocuments.length ? (
+              <View style={{ gap: 10 }}>
+                {contractDocuments.map((document) => (
+                  <View key={document.id} style={styles.scheduleRow}>
+                    <LabeledInput
+                      label="Name des Dokuments"
+                      value={document.name}
+                      onChangeText={(value) => updateContractDocument(document.id, 'name', value)}
+                      placeholder="z. B. Betreuungsvertrag"
+                    />
+                    <UploadRow
+                      title="Datei"
+                      hint={document.fileName ? `Ausgewählt: ${document.fileName}` : 'Noch kein Dokument ausgewählt.'}
+                      onPress={() => handlePickContractFile(document.id)}
+                      buttonLabel="PDF hochladen"
+                    />
+                    <Pressable onPress={() => handleRemoveContractDocument(document.id)} style={styles.removeLinkWrapper}>
+                      <Text style={styles.removeLink}>Dokument entfernen</Text>
+                    </Pressable>
+                  </View>
+                ))}
+              </View>
+            ) : (
+              <Text style={styles.sectionHint}>Noch keine Vertragsunterlagen hinzugefügt.</Text>
+            )}
+
+            {!!visibleRoomImages.length && (
+              <View style={{ gap: 8 }}>
+                {showRoomNavigation ? (
+                  <View style={styles.chipRow}>
+                    <Pressable onPress={showPreviousRoomImages} style={styles.secondaryButton}>
+                      <Text style={styles.secondaryButtonText}>←</Text>
+                    </Pressable>
+                    <Pressable onPress={showNextRoomImages} style={styles.secondaryButton}>
+                      <Text style={styles.secondaryButtonText}>→</Text>
+                    </Pressable>
+                  </View>
+                ) : null}
+
+                {visibleRoomImages.map((img, index) => (
+                  <View key={`${img.fileName}-${index}`} style={styles.scheduleRow}>
+                    <Text style={styles.sectionHint}>{img.fileName}</Text>
+                    <Pressable onPress={() => handleRemoveRoomImage(index)} style={styles.removeLinkWrapper}>
+                      <Text style={styles.removeLink}>Bild entfernen</Text>
+                    </Pressable>
+                  </View>
+                ))}
+              </View>
+            )}
           </View>
 
           <View style={styles.card}>
@@ -633,6 +776,8 @@ export default function CaregiverSignupPage() {
           <View style={{ height: 22 }} />
         </ScrollView>
       </KeyboardAvoidingView>
+      )}
+      <BottomNavbar />
     </SafeAreaView>
   );
 }
@@ -762,6 +907,26 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#c7d2fe',
     gap: 4,
+  },
+  warningCard: {
+    margin: 16,
+    marginTop: 80,
+    backgroundColor: 'rgba(255,255,255,0.92)',
+    borderRadius: 18,
+    padding: 16,
+    gap: 12,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+  },
+  warningTitle: {
+    fontSize: 22,
+    fontWeight: '800',
+    color: BRAND,
+    textAlign: 'center',
+  },
+  warningText: {
+    color: '#475569',
+    textAlign: 'center',
   },
   infoTitle: {
     color: BRAND,
