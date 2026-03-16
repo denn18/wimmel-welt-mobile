@@ -21,6 +21,7 @@ import { pickMultipleFiles, type PickedFile } from '../../utils/file-picker';
 import { assetUrl } from '../../utils/url';
 
 const BRAND = 'rgb(49,66,154)';
+const BG = '#EAF2FF';
 
 function formatTime(value?: string) {
   if (!value) return '';
@@ -286,7 +287,8 @@ export default function MessageDetailScreen() {
 
 const styles = StyleSheet.create({
   flex: { flex: 1 },
-  safeArea: { flex: 1, backgroundColor: '#e9edf5' },
+    safeArea: { flex: 1, backgroundColor: BG },
+  //safeArea: { flex: 1, backgroundColor: '#e9edf5' },
   header: {
     height: 56,
    // backgroundColor: '#fff',

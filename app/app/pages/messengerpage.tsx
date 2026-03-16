@@ -9,6 +9,7 @@ import { fetchConversations, type Message } from '../../services/messages';
 import { assetUrl } from '../../utils/url';
 
 const BRAND = 'rgb(49,66,154)';
+const BG = '#EAF2FF';
 
 type UserProfile = {
   id?: string;
@@ -197,7 +198,9 @@ export default function MessengerPageScreen() {
 }
 
 const styles = StyleSheet.create({
- safeArea: { flex: 1, backgroundColor: '#e9edf5' }, 
+
+ safeArea: { flex: 1, backgroundColor: BG }, 
+  //safeArea: { flex: 1, backgroundColor: '#e9edf5' }, 
   //safeArea: { flex: 1, backgroundColor: '#ffffff' },  
   header: { paddingHorizontal: 16, paddingVertical: 12 },
   title: { fontSize: 24, fontWeight: '800', color: BRAND },

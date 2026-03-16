@@ -24,6 +24,7 @@ import { pickSingleFile } from '../../utils/file-picker';
 import { assetUrl } from '../../utils/url';
 
 const BRAND = 'rgb(49,66,154)';
+const BG = '#EAF2FF';
 
 type UserProfile = { id?: string; role?: string; name?: string; profileImageUrl?: string | null };
 
@@ -322,7 +323,8 @@ export default function BetreuungsgruppechatScreen() {
 
 const styles = StyleSheet.create({
   flex: { flex: 1 },
-  safeArea: { flex: 1, backgroundColor: '#e9edf5' },
+  safeArea: { flex: 1, backgroundColor: BG },
+   //safeArea: { flex: 1, backgroundColor: '#e9edf5' },
   centered: { alignItems: 'center', justifyContent: 'center', paddingVertical: 24, gap: 8 },
   header: {
     // backgroundColor: '#fff', erstmal nicht farblich absetzen
