@@ -1,42 +1,20 @@
-import { apiRequest, type ApiRequestOptions } from './api-client';
-import { fetchMatchHistory } from './matches';
+import AsyncStorage from '../utils/async-storage';
+import { apiRequest } from './api-client';
+import { fetchConversations, fetchMessages, type Message } from './messages';
 
-export type GroupRole = 'admin' | 'member';
+const CARE_GROUP_STORAGE_PREFIX = 'wimmelwelt.caregroup.';
 
-export type GroupMember = {
-  userId: string;
-  name: string;
-  role: GroupRole;
-  joinedAt?: string;
-  lastReadAt?: string;
-  mutedUntil?: string | null;
-  profileImageUrl?: string | null;
-};
-
-export type GroupSettings = {
-  onlyAdminsCanWrite: boolean;
-  participantsVisible: boolean;
-};
-
-export type Group = {
-  id: string;
-  facilityId?: string;
-  createdByUserId: string;
-  name: string;
-  description?: string;
+export type CareGroup = {
+  caregiverId: string;
+  participantIds: string[];
+  daycareName: string;
   logoImageUrl?: string | null;
-  careTimes?: Array<{ startTime?: string; endTime?: string; activity?: string }>;
-  settings: GroupSettings;
-  members: GroupMember[];
-  memberCount: number;
-  lastMessageAt?: string;
-  lastMessagePreview?: string;
-  lastMessageId?: string;
   createdAt?: string;
   updatedAt?: string;
 };
 
 export type GroupAttachment = {
+  key?: string | null;
   url?: string | null;
   fileName?: string | null;
   mimeType?: string | null;
@@ -45,132 +23,186 @@ export type GroupAttachment = {
 
 export type GroupMessage = {
   id: string;
-  groupId: string;
+  conversationId: string;
+  participants: string[];
   senderId: string;
-  senderName?: string;
   body?: string | null;
-  type?: 'message' | 'system';
   attachments?: GroupAttachment[];
   createdAt: string;
-  readBy?: Array<{ userId: string; readAt: string }>;
 };
 
 export type GroupCandidate = {
   userId: string;
   name: string;
-  source: 'contact' | 'recent_chat';
+  source: 'contact' | 'group_member';
   lastInteractionAt?: string;
   profileImageUrl?: string | null;
 };
 
-const GROUP_BASE_PATHS = ['api/groups', 'api/group-chats', 'api/betreuungsgruppen'];
+type UserProfile = {
+  id?: string;
+  role?: string;
+  name?: string;
+  daycareName?: string;
+  profileImageUrl?: string | null;
+};
 
-async function getWithFallback<T>(suffix = '') {
-  let lastError: unknown;
-
-  for (const basePath of GROUP_BASE_PATHS) {
-    try {
-      return await apiRequest<T>(`${basePath}${suffix}`);
-    } catch (error) {
-      lastError = error;
-    }
-  }
-
-  throw lastError instanceof Error ? lastError : new Error('No compatible group API endpoint found.');
+function storageKey(userId: string) {
+  return `${CARE_GROUP_STORAGE_PREFIX}${userId}`;
 }
 
-async function mutateWithFallback<T>(suffix: string, options: ApiRequestOptions) {
-  let lastError: unknown;
+function normalizeCareGroup(group: Partial<CareGroup> | null | undefined): CareGroup | null {
+  if (!group?.caregiverId) return null;
 
-  for (const basePath of GROUP_BASE_PATHS) {
-    try {
-      return await apiRequest<T>(`${basePath}${suffix}`, options);
-    } catch (error) {
-      lastError = error;
-    }
-  }
-
-  throw lastError instanceof Error ? lastError : new Error('No compatible group API endpoint found.');
+  return {
+    caregiverId: String(group.caregiverId),
+    participantIds: Array.from(new Set((group.participantIds ?? []).map((id) => String(id)).filter(Boolean))),
+    daycareName: group.daycareName?.trim() || 'Betreuungsgruppe',
+    logoImageUrl: group.logoImageUrl ?? null,
+    createdAt: group.createdAt,
+    updatedAt: group.updatedAt,
+  };
 }
 
-export async function fetchGroups(userId?: string) {
-  const groups = await getWithFallback<Group[]>();
-  if (!userId) return groups;
-
-  return (groups ?? []).filter(
-    (group) => group.createdByUserId === userId || group.members?.some((member) => member.userId === userId),
-  );
-}
-
-export async function fetchGroupMessages(groupId: string) {
-  return getWithFallback<GroupMessage[]>(`/${groupId}/messages`);
-}
-
-export async function createGroup(payload: {
-  facilityId?: string;
-  name: string;
-  description?: string;
-  logoImageUrl?: string | null;
-  careTimes?: Array<{ startTime?: string; endTime?: string; activity?: string }>;
-  participantIds: string[];
-  settings?: Partial<GroupSettings>;
-}) {
-  return mutateWithFallback<Group>('', {
-    method: 'POST',
-    body: JSON.stringify(payload),
-  });
-}
-
-export async function fetchGroupCandidates(userId: string) {
+async function readCareGroupFromStorage(userId: string) {
   try {
-    return await getWithFallback<GroupCandidate[]>('/candidates');
+    const raw = await AsyncStorage.getItem(storageKey(userId));
+    if (!raw) return null;
+    return normalizeCareGroup(JSON.parse(raw) as Partial<CareGroup>);
   } catch {
-    const history = await fetchMatchHistory();
-    const parentIds = history.filter((item) => item.caregiverId === userId).map((item) => item.parentId);
-
-    return Array.from(new Set(parentIds)).map((parentId) => ({
-      userId: parentId,
-      name: `Elternaccount ${parentId.slice(0, 6)}`,
-      source: 'contact' as const,
-    }));
+    return null;
   }
 }
 
-export async function addGroupMember(groupId: string, userId: string) {
-  return mutateWithFallback<Group>(`/${groupId}/members`, {
-    method: 'POST',
-    body: JSON.stringify({ userId }),
-  });
+async function writeCareGroupToStorage(userId: string, group: CareGroup | null) {
+  try {
+    if (!group) {
+      await AsyncStorage.removeItem(storageKey(userId));
+      return;
+    }
+
+    await AsyncStorage.setItem(storageKey(userId), JSON.stringify(group));
+  } catch {
+    // noop
+  }
 }
 
-export async function removeGroupMember(groupId: string, userId: string) {
-  return mutateWithFallback<Group>(`/${groupId}/members/${userId}`, {
+export async function loadCareGroup(userId: string) {
+  if (!userId) return null;
+
+  try {
+    const group = await apiRequest<CareGroup | null>(`api/care-groups?userId=${encodeURIComponent(userId)}`);
+    const normalized = normalizeCareGroup(group);
+    if (normalized) {
+      await writeCareGroupToStorage(userId, normalized);
+      return normalized;
+    }
+  } catch {
+    // fallback to local storage below
+  }
+
+  return readCareGroupFromStorage(userId);
+}
+
+export async function persistCareGroup(group: CareGroup) {
+  const normalized = normalizeCareGroup(group);
+  if (!normalized) {
+    throw new Error('Ungültige Betreuungsgruppe.');
+  }
+
+  const saved = await apiRequest<CareGroup>('api/care-groups', {
+    method: 'PUT',
+    body: JSON.stringify(normalized),
+  });
+
+  const normalizedSaved = normalizeCareGroup(saved) ?? normalized;
+  await writeCareGroupToStorage(normalizedSaved.caregiverId, normalizedSaved);
+
+  for (const participantId of normalizedSaved.participantIds) {
+    await writeCareGroupToStorage(participantId, normalizedSaved);
+  }
+
+  return normalizedSaved;
+}
+
+export async function deleteCareGroup(caregiverId: string) {
+  await apiRequest<void>(`api/care-groups/${encodeURIComponent(caregiverId)}`, {
     method: 'DELETE',
   });
+
+  await writeCareGroupToStorage(caregiverId, null);
 }
 
-export async function leaveGroup(groupId: string) {
-  return mutateWithFallback<void>(`/${groupId}/leave`, {
-    method: 'POST',
-  });
+export async function fetchGroupMessages(caregiverId: string) {
+  const conversationId = `caregroup--${caregiverId}`;
+  return apiRequest<GroupMessage[]>(`api/messages/group/${conversationId}`);
 }
 
-export async function muteGroup(groupId: string, mutedUntil: string | null) {
-  return mutateWithFallback<Group>(`/${groupId}/mute`, {
-    method: 'POST',
-    body: JSON.stringify({ mutedUntil }),
-  });
+async function fetchProfile(userId: string) {
+  return apiRequest<UserProfile>(`api/users/${encodeURIComponent(userId)}`);
+}
+
+function resolvePartnerId(conversation: Message, userId: string) {
+  return conversation.participants?.find((participant) => participant !== userId) || conversation.senderId || '';
+}
+
+export async function fetchGroupCandidates(userId: string, existingParticipantIds: string[] = []) {
+  const conversations = await fetchConversations();
+  const parentContacts = new Map<string, GroupCandidate>();
+
+  await Promise.all(
+    conversations.map(async (conversation) => {
+      const partnerId = String(resolvePartnerId(conversation, userId));
+      if (!partnerId || partnerId === userId) return;
+
+      const profile = await fetchProfile(partnerId).catch(() => null);
+      if (!profile || profile.role !== 'parent') return;
+
+      const history = await fetchMessages(conversation.conversationId).catch(() => []);
+      const parentHasSent = history.some((message) => String(message.senderId) === partnerId);
+      if (!parentHasSent) return;
+
+      parentContacts.set(partnerId, {
+        userId: partnerId,
+        name: profile.name || `Elternaccount ${partnerId.slice(0, 6)}`,
+        source: 'contact',
+        lastInteractionAt: conversation.createdAt,
+        profileImageUrl: profile.profileImageUrl ?? null,
+      });
+    }),
+  );
+
+  for (const participantId of existingParticipantIds) {
+    if (parentContacts.has(participantId)) continue;
+
+    const profile = await fetchProfile(participantId).catch(() => null);
+    if (!profile || profile.role !== 'parent') continue;
+
+    parentContacts.set(participantId, {
+      userId: participantId,
+      name: profile.name || `Elternaccount ${participantId.slice(0, 6)}`,
+      source: 'group_member',
+      profileImageUrl: profile.profileImageUrl ?? null,
+    });
+  }
+
+  return Array.from(parentContacts.values());
 }
 
 export async function sendGroupMessage(
-  groupId: string,
+  caregiverId: string,
   payload: {
     body?: string;
+    participantIds: string[];
     attachments?: Array<{ name?: string; data: string; mimeType?: string | null; size?: number | null }>;
   },
 ) {
-  return mutateWithFallback<GroupMessage>(`/${groupId}/messages`, {
+  return apiRequest<GroupMessage>(`api/messages/group/${encodeURIComponent(caregiverId)}`, {
     method: 'POST',
-    body: JSON.stringify(payload),
+    body: JSON.stringify({
+      body: payload.body,
+      participantIds: payload.participantIds,
+      attachments: payload.attachments ?? [],
+    }),
   });
 }

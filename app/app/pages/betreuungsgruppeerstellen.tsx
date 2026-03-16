@@ -6,15 +6,12 @@ import { useRouter } from 'expo-router';
 
 import { useAuthStatus } from '../../hooks/use-auth-status';
 import {
-  addGroupMember,
-  createGroup,
   fetchGroupCandidates,
-  fetchGroups,
-  removeGroupMember,
-  type Group,
+  loadCareGroup,
+  persistCareGroup,
+  type CareGroup,
   type GroupCandidate,
 } from '../../services/groups';
-import { fetchConversations } from '../../services/messages';
 import { fetchProfile } from '../../services/profile';
 
 const BRAND = 'rgb(49,66,154)';
@@ -24,19 +21,14 @@ type UserProfile = {
   shortDescription?: string;
   bio?: string;
   logoImageUrl?: string | null;
-  careTimes?: Array<{ startTime?: string; endTime?: string; activity?: string }>;
 };
-
-function uniqueByUserId(items: GroupCandidate[]) {
-  return Array.from(new Map(items.map((item) => [item.userId, item])).values());
-}
 
 export default function BetreuungsgruppeErstellenScreen() {
   const router = useRouter();
   const { user } = useAuthStatus();
 
   const [profile, setProfile] = useState<UserProfile | null>(null);
-  const [existingGroup, setExistingGroup] = useState<Group | null>(null);
+  const [existingGroup, setExistingGroup] = useState<CareGroup | null>(null);
   const [candidates, setCandidates] = useState<GroupCandidate[]>([]);
   const [selectedParticipants, setSelectedParticipants] = useState<string[]>([]);
   const [description, setDescription] = useState('');
@@ -53,31 +45,17 @@ export default function BetreuungsgruppeErstellenScreen() {
 
       setLoading(true);
       try {
-        const [profileData, groups, suggested] = await Promise.all([
-          fetchProfile<UserProfile>(user as never),
-          fetchGroups(String(user.id)),
-          fetchGroupCandidates(String(user.id)).catch(async () => {
-            const fallbackChats = await fetchConversations(String(user.id));
-            return (fallbackChats ?? []).map((conversation) => {
-              const partnerId =
-                conversation.participants?.find((participant) => participant !== String(user.id)) || conversation.senderId;
-              return {
-                userId: String(partnerId),
-                name: `Kontakt ${String(partnerId).slice(0, 6)}`,
-                source: 'recent_chat' as const,
-                lastInteractionAt: conversation.createdAt,
-              };
-            });
-          }),
-        ]);
+        const profileData = await fetchProfile<UserProfile>(user as never);
+        const ownGroup = await loadCareGroup(String(user.id));
+        const participantIds = ownGroup?.participantIds ?? [];
+        const suggested = await fetchGroupCandidates(String(user.id), participantIds);
 
-        const ownGroup = (groups ?? []).find((group) => group.createdByUserId === String(user.id)) ?? null;
         setProfile(profileData ?? null);
         setExistingGroup(ownGroup);
-        setSelectedParticipants(ownGroup ? ownGroup.members.filter((m) => m.role !== 'admin').map((m) => m.userId) : []);
-        setDescription(ownGroup?.description || profileData?.shortDescription || profileData?.bio || '');
-        setParticipantsVisible(ownGroup?.settings?.participantsVisible ?? true);
-        setCandidates(uniqueByUserId(suggested ?? []));
+        setSelectedParticipants(participantIds);
+        setDescription(profileData?.shortDescription || profileData?.bio || '');
+        setParticipantsVisible(true);
+        setCandidates(suggested ?? []);
       } catch {
         Alert.alert('Fehler', 'Daten konnten nicht geladen werden.');
       } finally {
@@ -100,36 +78,19 @@ export default function BetreuungsgruppeErstellenScreen() {
 
   const handleSave = async () => {
     if (!isCaregiver || !user?.id) return;
-    if (!profile?.daycareName && !existingGroup?.name) {
+    if (!profile?.daycareName && !existingGroup?.daycareName) {
       Alert.alert('Hinweis', 'Bitte pflege zuerst den Namen deiner Kindertagespflege im Profil.');
       return;
     }
 
     setSaving(true);
     try {
-      if (!existingGroup) {
-        await createGroup({
-          name: profile?.daycareName || 'Betreuungsgruppe',
-          description,
-          logoImageUrl: profile?.logoImageUrl ?? null,
-          participantIds: selectedParticipants,
-          careTimes: profile?.careTimes ?? [],
-          settings: {
-            onlyAdminsCanWrite: true,
-            participantsVisible,
-          },
-        });
-      } else {
-        const existingParticipantIds = existingGroup.members.filter((member) => member.role !== 'admin').map((member) => member.userId);
-        const toAdd = selectedParticipants.filter((id) => !existingParticipantIds.includes(id));
-        const toRemove = existingParticipantIds.filter((id) => !selectedParticipants.includes(id));
-
-        await Promise.all([
-          ...toAdd.map((id) => addGroupMember(existingGroup.id, id)),
-          ...toRemove.map((id) => removeGroupMember(existingGroup.id, id)),
-        ]);
-      }
-
+      await persistCareGroup({
+        caregiverId: String(user.id),
+        participantIds: selectedParticipants,
+        daycareName: profile?.daycareName || existingGroup?.daycareName || 'Betreuungsgruppe',
+        logoImageUrl: profile?.logoImageUrl ?? existingGroup?.logoImageUrl ?? null,
+      });
       router.replace('/pages/betreuungsgruppechat');
     } catch {
       Alert.alert('Fehler', 'Betreuungsgruppe konnte nicht gespeichert werden.');
@@ -198,7 +159,7 @@ export default function BetreuungsgruppeErstellenScreen() {
               <Pressable key={candidate.userId} style={styles.memberRow} onPress={() => toggleParticipant(candidate.userId)}>
                 <View style={{ flex: 1 }}>
                   <Text style={styles.memberName}>{candidate.name}</Text>
-                  <Text style={styles.muted}>{candidate.source === 'contact' ? 'Kontakt' : 'Letzter Chatpartner'}</Text>
+                  <Text style={styles.muted}>{candidate.source === 'contact' ? 'Kontakt' : 'Gruppenmitglied'}</Text>
                 </View>
                 <Ionicons name={selected ? 'checkmark-circle' : 'ellipse-outline'} size={20} color={selected ? BRAND : '#94a3b8'} />
               </Pressable>
