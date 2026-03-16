@@ -289,7 +289,7 @@ const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: '#e9edf5' },
   header: {
     height: 56,
-    backgroundColor: '#fff',
+   // backgroundColor: '#fff',
     borderBottomWidth: 1,
     borderBottomColor: '#e2e8f0',
     flexDirection: 'row',
@@ -336,7 +336,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'flex-end',
     gap: 8,
-    backgroundColor: '#fff',
+   // backgroundColor: '#fff', erstmal nicht farblich absetzeh
     borderTopWidth: 1,
     borderTopColor: '#e2e8f0',
     paddingHorizontal: 10,

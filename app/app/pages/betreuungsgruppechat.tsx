@@ -254,7 +254,7 @@ export default function BetreuungsgruppechatScreen() {
             {!!group ? (
               <Text style={styles.membersInline} numberOfLines={1}>
                 {[group.caregiverId, ...group.participantIds]
-                  .map((id) => (id === group.caregiverId ? 'Tagespflege' : memberProfiles[id]?.name || `Elternaccount ${id.slice(0, 6)}`))
+                  .map((id) => (id === group.caregiverId ? 'Kindertagespflege' : memberProfiles[id]?.name || `Elternaccount ${id.slice(0, 6)}`))
                   .join(', ')}
               </Text>
             ) : null}
@@ -325,7 +325,7 @@ const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: '#e9edf5' },
   centered: { alignItems: 'center', justifyContent: 'center', paddingVertical: 24, gap: 8 },
   header: {
-    backgroundColor: '#fff',
+    // backgroundColor: '#fff', erstmal nicht farblich absetzen
     borderBottomWidth: 1,
     borderBottomColor: '#e2e8f0',
     minHeight: 60,
@@ -385,7 +385,7 @@ const styles = StyleSheet.create({
   },
   sendButton: { backgroundColor: BRAND, borderColor: BRAND },
   mutedBar: {
-    backgroundColor: '#fff',
+   // backgroundColor: '#fff', erstmal nicht farblich absetzen
     borderTopWidth: 1,
     borderTopColor: '#e2e8f0',
     color: '#64748b',
