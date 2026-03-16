@@ -20,6 +20,7 @@ import type { AuthUser } from '../../types/auth';
 import { normalizeAuthUser } from '../../context/AuthContext';
 
 const BRAND = 'rgb(49,66,154)';
+const BG = '#EAF2FF';
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -154,7 +155,7 @@ export default function LoginScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#f5f7fb',
+    backgroundColor: BG,
   },
   flex: {
     flex: 1,

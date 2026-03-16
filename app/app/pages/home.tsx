@@ -147,7 +147,8 @@ const styles = StyleSheet.create({
   },
   screen: {
     flex: 1,
-    backgroundColor: '#f5f7fb',
+    //war vorher farblich abgehoben, erstmal so lassen
+    //backgroundColor: '#f5f7fb',
   },
   content: {
     paddingHorizontal: 18,
