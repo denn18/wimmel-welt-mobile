@@ -36,13 +36,14 @@ export default function RootLayout() {
           <Stack.Screen name="pages/kontakt" options={{ headerShown: false, title: 'Kontakt' }} />
           <Stack.Screen name="pages/auswahl" options={{ headerShown: false, title: 'Registrieren' }} />
           <Stack.Screen name="pages/Profilwarnung" options={{ headerShown: false, title: 'Profilwarnung' }} />
-          <Stack.Screen name="pages/elternprofil" options={{ headerShown: false, title: 'Elternprofil' }} />
-          <Stack.Screen name="pages/tagespflegeprofil" options={{ headerShown: false, title: 'Tagespflegeprofil' }} />
+          <Stack.Screen name="pages/ParentSignUpPage" options={{ headerShown: false, title: 'Parent Signup' }} />
+          <Stack.Screen name="pages/CaregiverSignupPage" options={{ headerShown: false, title: 'Caregiver Signup' }} />
           <Stack.Screen
             name="pages/kindertagespflegedetail"
             options={{ headerShown: false, title: 'Kindertagespflegeprofil' }}
           />
           <Stack.Screen name="pages/nachrichtendetail" options={{ headerShown: false, title: 'Nachrichten' }} />
+          <Stack.Screen name="pages/ProfilePage" options={{ headerShown: false, title: 'Profil' }} />
         </Stack>
         <StatusBar style="auto" />
       </ThemeProvider>

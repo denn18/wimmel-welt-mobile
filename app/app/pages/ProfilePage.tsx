@@ -1,4 +1,4 @@
-// app/pages/profile.tsx
+// app/pages/ProfilePage.tsx
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
@@ -79,6 +79,7 @@ type CaregiverProfile = {
   profileImageUrl?: any;
   logoImageUrl?: any;
   conceptUrl?: any;
+  careDocuments?: unknown[];
 };
 
 type Profile = ParentProfile | CaregiverProfile | null;
@@ -432,6 +433,7 @@ function ParentProfileEditor({
     setPreview('');
   };
 
+
   const handleSubmit = async () => {
     const payload: Record<string, unknown> = {
       firstName: formState.firstName,
@@ -553,6 +555,7 @@ function CaregiverProfileEditor({
     newPassword: '',
   });
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
+  const [careDocumentFiles, setCareDocumentFiles] = useState<PickedFile[]>([]);
 
   const [careTimes, setCareTimes] = useState<ScheduleEntry[]>(
     profile.careTimes?.length ? profile.careTimes.map((entry) => createScheduleEntry(entry)) : [createScheduleEntry()],
@@ -593,6 +596,12 @@ function CaregiverProfileEditor({
     setFormState((cur) => ({ ...cur, [field]: value }));
   }
 
+  const handlePickCareDocuments = async () => {
+    const files = await pickMultipleFiles({ type: ['application/pdf', 'image/*'] });
+    if (!files.length) return;
+    setCareDocumentFiles((current) => [...current, ...files]);
+  };
+
   const handleSubmit = async () => {
     const payload: Record<string, unknown> = {
       firstName: formState.firstName,
@@ -612,6 +621,7 @@ function CaregiverProfileEditor({
       maxChildAge: formState.maxChildAge ? Number(formState.maxChildAge) : null,
       careTimes,
       dailySchedule,
+      careDocuments: careDocumentFiles.map((file) => ({ dataUrl: file.dataUrl, fileName: file.fileName, mimeType: file.mimeType })),
     };
 
     if (formState.newPassword.trim()) payload.password = formState.newPassword.trim();
@@ -660,6 +670,20 @@ function CaregiverProfileEditor({
       <Section title="Tagesablauf">
         <ScheduleEditor entries={dailySchedule} onChange={setDailySchedule} title="Typischer Tagesablauf" />
       </Section>
+      <Section title="Betreuungsunterlagen">
+        <FileUploadRow
+          label="Unterlagen"
+          fileName={
+            careDocumentFiles.length
+              ? `${careDocumentFiles.length} Datei(en) ausgewählt`
+              : profile.careDocuments?.length
+                ? `${profile.careDocuments.length} bestehende Datei(en)`
+                : undefined
+          }
+          onPick={handlePickCareDocuments}
+        />
+      </Section>
+
 
       <View style={{ gap: 10 }}>
         <Pressable style={[styles.buttonPrimary, saving && styles.buttonDisabled]} disabled={saving} onPress={handleSubmit}>
@@ -671,7 +695,7 @@ function CaregiverProfileEditor({
   );
 }
 
-export default function ProfileIndex() {
+export default function ProfilePage() {
   const { user, loading: authLoading, refresh } = useAuthStatus();
   const { profile, loading, error, setProfile } = useProfileData(user ?? null);
   const [saving, setSaving] = useState(false);

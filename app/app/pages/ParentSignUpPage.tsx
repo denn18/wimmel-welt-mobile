@@ -52,7 +52,7 @@ const initialState: FormState = {
   notes: '',
 };
 
-export default function ElternProfilScreen() {
+export default function ParentSignUpPage() {
   const router = useRouter();
   const { setSessionUser } = useAuthStatus();
   const [formState, setFormState] = useState<FormState>(initialState);
@@ -145,7 +145,7 @@ export default function ElternProfilScreen() {
         await setSessionUser(authenticatedUser ?? null);
         setStatus({
           type: 'success',
-          message: 'Registrierung erfolgreich! Du wirst jetzt zum Dashboard weitergeleitet.',
+          message: 'Registrierung erfolgreich! Du wirst jetzt zur Übersicht weitergeleitet.',
         });
         setTimeout(() => router.replace('/pages/dashboard'), 1200);
       } catch (authError) {
@@ -175,7 +175,7 @@ export default function ElternProfilScreen() {
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
         <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
           <View style={styles.header}>
-            <Text style={styles.kicker}>Profil für Eltern</Text>
+            <Text style={styles.kicker}>Registrierung für Eltern</Text>
             <Text style={styles.title}>Teile uns mit, wie wir dich erreichen können.</Text>
             <Text style={styles.subtitle}>
               Nach deiner Registrierung wird automatisch ein Zugang für dich erstellt und du kannst dich mit deinen

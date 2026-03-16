@@ -45,8 +45,8 @@ export function BottomNavbar({ state, navigation }: Partial<BottomTabBarProps> =
 
   const loginPath = '/pages/login';
 
-  const profileTabRouteName = 'profile';
-  const profileTabHref = '/pages/profile';
+  const profileTabRouteName = 'ProfilePage';
+  const profileTabHref = '/pages/ProfilePage';
 
   const bottomPadding = Math.max(insets.bottom, 10);
   const navHeight = 64 + bottomPadding;

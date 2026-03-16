@@ -108,13 +108,14 @@ function calculateYearsSince(value: string) {
   return years >= 0 ? years : null;
 }
 
-export default function TagespflegepersonProfilScreen() {
+export default function CaregiverSignupPage() {
   const router = useRouter();
   const { setSessionUser } = useAuthStatus();
   const [formState, setFormState] = useState<FormState>(initialState);
   const [profileImage, setProfileImage] = useState<PickedFile | null>(null);
   const [logoImage, setLogoImage] = useState<PickedFile | null>(null);
   const [conceptFile, setConceptFile] = useState<PickedFile | null>(null);
+  const [careDocuments, setCareDocuments] = useState<PickedFile[]>([]);
   const [roomGallery, setRoomGallery] = useState<PickedFile[]>([]);
   const [status, setStatus] = useState<StatusMessage>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -182,6 +183,12 @@ export default function TagespflegepersonProfilScreen() {
     setConceptFile(file);
   };
 
+  const handlePickCareDocuments = async () => {
+    const files = await pickMultipleFiles({ type: ['application/pdf', 'image/*'] });
+    if (!files.length) return;
+    setCareDocuments((current) => [...current, ...files]);
+  };
+
   const handlePickRoomImages = async () => {
     const files = await pickMultipleFiles({ type: ['image/*'] });
     if (!files.length) return;
@@ -210,6 +217,7 @@ export default function TagespflegepersonProfilScreen() {
         dailySchedule: formState.dailySchedule,
         mealPlan: formState.mealPlan,
         roomImages: roomGallery.map((image) => ({ dataUrl: image.dataUrl, fileName: image.fileName })),
+        careDocuments: careDocuments.map((file) => ({ dataUrl: file.dataUrl, fileName: file.fileName, mimeType: file.mimeType })),
         closedDays: formState.closedDays,
         role: 'caregiver' as const,
       };
@@ -241,9 +249,9 @@ export default function TagespflegepersonProfilScreen() {
         await setSessionUser(authenticatedUser ?? null);
         setStatus({
           type: 'success',
-          message: 'Profil erstellt! Du wirst jetzt zum Dashboard weitergeleitet.',
+          message: 'Profil erstellt! Du wirst jetzt zu deinem Profil weitergeleitet.',
         });
-        setTimeout(() => router.replace('/pages/dashboard'), 1200);
+        setTimeout(() => router.replace('/pages/ProfilePage'), 1200);
       } catch (authError) {
         console.warn('Automatischer Login nach Registrierung nicht möglich', authError);
         setStatus({
@@ -257,6 +265,7 @@ export default function TagespflegepersonProfilScreen() {
       setLogoImage(null);
       setConceptFile(null);
       setRoomGallery([]);
+      setCareDocuments([]);
       setClosedDayInput('');
     } catch (error) {
       console.log('[REGISTER] error', error); // [LOG]
@@ -465,6 +474,16 @@ export default function TagespflegepersonProfilScreen() {
               hint={conceptFile?.fileName ? `Ausgewählt: ${conceptFile.fileName}` : 'Optional, hilft Familien bei der Entscheidung.'}
               onPress={handlePickConcept}
               buttonLabel="PDF hochladen"
+            />
+            <UploadRow
+              title="Betreuungsunterlagen"
+              hint={
+                careDocuments.length
+                  ? `${careDocuments.length} Unterlage(n) ausgewählt`
+                  : 'z. B. Pflegeerlaubnis, Zertifikate oder Verträge'
+              }
+              onPress={handlePickCareDocuments}
+              buttonLabel="Unterlagen hochladen"
             />
             <UploadRow
               title="Räumlichkeiten"

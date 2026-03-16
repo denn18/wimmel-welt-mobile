@@ -6,14 +6,14 @@ import { BottomNavbar } from '../../components/BottomNavbar';
 
 type ProfilRolle = 'eltern' | 'tagespflegeperson';
 
-const ROLLEN_KONFIG: Record<ProfilRolle, { title: string; href: '/pages/elternprofil' | '/pages/tagespflegeprofil' }> = {
+const ROLLEN_KONFIG: Record<ProfilRolle, { title: string; href: '/pages/ParentSignUpPage' | '/pages/CaregiverSignupPage' }> = {
   eltern: {
     title: 'Elternprofil',
-    href: '/pages/elternprofil',
+    href: '/pages/ParentSignUpPage',
   },
   tagespflegeperson: {
     title: 'Kindertagespflegeprofil',
-    href: '/pages/tagespflegeprofil',
+    href: '/pages/CaregiverSignupPage',
   },
 };
 
