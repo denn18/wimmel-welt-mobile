@@ -45,7 +45,7 @@ export default function PagesLayout() {
       />
 
       <Tabs.Screen
-        name="kindertagespflegegruppe"
+        name="betreuungsgruppechat"
         options={{
           title: 'Gruppe',
           tabBarIcon: ({ color, size }) => (
