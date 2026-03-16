@@ -13,6 +13,7 @@ import {
   type CareGroup,
   type GroupCandidate,
 } from '../../services/groups';
+import { fetchConversations } from '../../services/messages';
 import { fetchProfile } from '../../services/profile';
 
 const BRAND = 'rgb(49,66,154)';
@@ -46,10 +47,13 @@ export default function BetreuungsgruppeErstellenScreen() {
 
       setLoading(true);
       try {
-        const profileData = await fetchProfile<UserProfile>(user as never);
-        const ownGroup = await loadCareGroup(String(user.id));
+        const [conversations, profileData, ownGroup] = await Promise.all([
+          fetchConversations(String(user.id)),
+          fetchProfile<UserProfile>(user as never),
+          loadCareGroup(String(user.id)),
+        ]);
         const participantIds = ownGroup?.participantIds ?? [];
-        const suggested = await fetchGroupCandidates(String(user.id), participantIds);
+        const suggested = await fetchGroupCandidates(String(user.id), participantIds, conversations);
 
         setProfile(profileData ?? null);
         setExistingGroup(ownGroup);
