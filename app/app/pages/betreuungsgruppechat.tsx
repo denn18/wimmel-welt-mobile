@@ -1,30 +1,31 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import { ActivityIndicator, Alert, Image, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import {
+  ActivityIndicator,
+  Alert,
+  FlatList,
+  Image,
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from 'react-native';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
 
 import { useAuthStatus } from '../../hooks/use-auth-status';
 import { ApiUnauthorizedError, apiRequest } from '../../services/api-client';
-import {
-  fetchGroupMessages,
-  loadCareGroup,
-  sendGroupMessage,
-  type CareGroup,
-  type GroupMessage,
-} from '../../services/groups';
+import { fetchGroupMessages, loadCareGroup, sendGroupMessage, type CareGroup, type GroupMessage } from '../../services/groups';
 import { pickSingleFile } from '../../utils/file-picker';
 import { assetUrl } from '../../utils/url';
 
 const BRAND = 'rgb(49,66,154)';
 
-type UserProfile = {
-  id?: string;
-  role?: string;
-  name?: string;
-  profileImageUrl?: string | null;
-};
+type UserProfile = { id?: string; role?: string; name?: string; profileImageUrl?: string | null };
 
 function formatDate(value?: string) {
   if (!value) return '';
@@ -38,8 +39,10 @@ function formatDate(value?: string) {
 
 export default function BetreuungsgruppechatScreen() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const { user, logout } = useAuthStatus();
   const userId = String(user?.id ?? '');
+  const listRef = useRef<FlatList<GroupMessage>>(null);
 
   const [group, setGroup] = useState<CareGroup | null>(null);
   const [memberProfiles, setMemberProfiles] = useState<Record<string, UserProfile | null>>({});
@@ -49,6 +52,10 @@ export default function BetreuungsgruppechatScreen() {
   const [sending, setSending] = useState(false);
 
   const canWrite = useMemo(() => user?.role === 'caregiver' && group?.caregiverId === userId, [group?.caregiverId, user?.role, userId]);
+
+  const scrollToLatest = useCallback((animated = false) => {
+    requestAnimationFrame(() => listRef.current?.scrollToEnd({ animated }));
+  }, []);
 
   const loadGroup = useCallback(async () => {
     if (!user?.id) return;
@@ -99,10 +106,11 @@ export default function BetreuungsgruppechatScreen() {
     try {
       const items = await fetchGroupMessages(group.caregiverId);
       setMessages(items ?? []);
+      setTimeout(() => scrollToLatest(false), 40);
     } catch {
       setMessages([]);
     }
-  }, [group?.caregiverId]);
+  }, [group?.caregiverId, scrollToLatest]);
 
   const backgroundSync = useCallback(async () => {
     if (!user?.id) {
@@ -139,13 +147,14 @@ export default function BetreuungsgruppechatScreen() {
 
       setMemberProfiles(Object.fromEntries(loadedProfiles));
       setMessages(loadedMessages ?? []);
+      setTimeout(() => scrollToLatest(false), 40);
     } catch (error) {
       if (error instanceof ApiUnauthorizedError) {
         await logout();
         router.replace('/pages/login');
       }
     }
-  }, [logout, router, user?.id]);
+  }, [logout, router, scrollToLatest, user?.id]);
 
   useEffect(() => {
     void loadGroup();
@@ -162,6 +171,10 @@ export default function BetreuungsgruppechatScreen() {
     }, [backgroundSync]),
   );
 
+  useEffect(() => {
+    if (messages.length) scrollToLatest(false);
+  }, [messages.length, scrollToLatest]);
+
   const handleSendText = async () => {
     if (!group?.caregiverId || !canWrite || !composer.trim() || sending) return;
 
@@ -173,6 +186,7 @@ export default function BetreuungsgruppechatScreen() {
       });
       setComposer('');
       await loadMessages();
+      scrollToLatest(true);
     } finally {
       setSending(false);
     }
@@ -192,6 +206,7 @@ export default function BetreuungsgruppechatScreen() {
       });
       setComposer('');
       await loadMessages();
+      scrollToLatest(true);
     } finally {
       setSending(false);
     }
@@ -208,138 +223,155 @@ export default function BetreuungsgruppechatScreen() {
     );
   }
 
-  return (
-    <SafeAreaView style={styles.safeArea}>
-      <ScrollView contentContainerStyle={styles.content}>
+  if (!group && !loading) {
+    return (
+      <SafeAreaView style={styles.safeArea}>
         <View style={styles.header}>
-          <View>
-            <Text style={styles.subtitle}>Betreuungsgruppe</Text>
-            <Text style={styles.title}>Chat</Text>
+          <Text style={styles.title}>Betreuungsgruppe</Text>
+          {user.role === 'caregiver' ? (
+            <Pressable style={styles.buttonPrimary} onPress={() => router.push('/pages/betreuungsgruppeerstellen')}>
+              <Text style={styles.buttonPrimaryText}>Erstellen</Text>
+            </Pressable>
+          ) : null}
+        </View>
+        <View style={styles.centered}>
+          <Text style={styles.muted}>Es gibt aktuell keine Betreuungsgruppe.</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  return (
+    <SafeAreaView style={styles.safeArea} edges={['top']}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? insets.top + 8 : 0}
+        style={styles.flex}
+      >
+        <View style={styles.header}>
+          <View style={styles.headerMain}>
+            <Text style={styles.title}>{group?.daycareName || 'Betreuungsgruppe'}</Text>
+            {!!group ? (
+              <Text style={styles.membersInline} numberOfLines={1}>
+                {[group.caregiverId, ...group.participantIds]
+                  .map((id) => (id === group.caregiverId ? 'Tagespflege' : memberProfiles[id]?.name || `Elternaccount ${id.slice(0, 6)}`))
+                  .join(', ')}
+              </Text>
+            ) : null}
           </View>
           {user.role === 'caregiver' ? (
             <Pressable style={styles.buttonPrimary} onPress={() => router.push('/pages/betreuungsgruppeerstellen')}>
-              <Text style={styles.buttonPrimaryText}>{group ? 'Betreuungsgruppe bearbeiten' : 'Betreuungsgruppe erstellen'}</Text>
+              <Text style={styles.buttonPrimaryText}>Bearbeiten</Text>
             </Pressable>
           ) : null}
         </View>
 
         {loading ? (
-          <View style={styles.centered}>
-            <ActivityIndicator color={BRAND} />
-          </View>
-        ) : null}
-
-        {!group && !loading ? (
-          <View style={styles.card}>
-            <Text style={styles.muted}>Es gibt aktuell keine Betreuungsgruppe.</Text>
-          </View>
-        ) : null}
-
-        {group ? (
-          <View style={styles.card}>
-            <Text style={styles.sectionTitle}>{group.daycareName}</Text>
-            <View style={styles.memberRowWrap}>
-              {[group.caregiverId, ...group.participantIds].map((id) => {
-                const profile = memberProfiles[id];
-                const imageUrl = profile?.profileImageUrl ? assetUrl(profile.profileImageUrl) : '';
-                return (
-                  <View key={id} style={styles.memberPill}>
-                    {imageUrl ? (
-                      <Image source={{ uri: imageUrl }} style={styles.memberAvatar} />
-                    ) : (
-                      <View style={styles.memberAvatarFallback}>
-                        <Ionicons name="person" size={14} color={BRAND} />
-                      </View>
-                    )}
-                    <Text style={styles.memberName}>
-                      {id === group.caregiverId ? 'Tagespflege' : profile?.name || `Elternaccount ${id.slice(0, 6)}`}
-                    </Text>
+          <View style={styles.centered}><ActivityIndicator color={BRAND} /></View>
+        ) : (
+          <FlatList
+            ref={listRef}
+            data={messages}
+            keyExtractor={(item) => item.id}
+            keyboardShouldPersistTaps="handled"
+            contentContainerStyle={styles.listContent}
+            onContentSizeChange={() => scrollToLatest(false)}
+            ListEmptyComponent={<Text style={styles.muted}>Noch keine Nachrichten vorhanden.</Text>}
+            renderItem={({ item }) => {
+              const isOwn = item.senderId === userId;
+              const avatar = memberProfiles[item.senderId]?.profileImageUrl ? assetUrl(memberProfiles[item.senderId]?.profileImageUrl || '') : '';
+              return (
+                <View style={[styles.messageRow, { justifyContent: isOwn ? 'flex-end' : 'flex-start' }]}>
+                  {!isOwn ? (
+                    avatar ? <Image source={{ uri: avatar }} style={styles.avatar} /> : <View style={styles.avatarFallback}><Ionicons name="person" size={14} color={BRAND} /></View>
+                  ) : null}
+                  <View style={[styles.messageBubble, isOwn ? styles.messageOwn : styles.messageOther]}>
+                    <Text style={styles.messageMeta}>{isOwn ? 'Du' : memberProfiles[item.senderId]?.name || item.senderId} · {formatDate(item.createdAt)}</Text>
+                    <Text style={[styles.messageBody, isOwn ? styles.messageBodyOwn : null]}>{item.body || '(Anhang)'}</Text>
                   </View>
-                );
-              })}
-            </View>
+                </View>
+              );
+            }}
+          />
+        )}
 
-            <View style={styles.messageWrap}>
-              {messages.map((message) => {
-                const isOwn = message.senderId === userId;
-                return (
-                  <View key={message.id} style={[styles.messageBubble, isOwn ? styles.messageOwn : styles.messageOther]}>
-                    <Text style={styles.messageMeta}>{isOwn ? 'Du' : memberProfiles[message.senderId]?.name || message.senderId} · {formatDate(message.createdAt)}</Text>
-                    <Text style={styles.messageBody}>{message.body || '(Anhang)'}</Text>
-                  </View>
-                );
-              })}
-              {!messages.length ? <Text style={styles.muted}>Noch keine Nachrichten vorhanden.</Text> : null}
-            </View>
-
-            {!canWrite ? (
-              <Text style={styles.muted}>Nur die betreuende Kindertagespflegeperson kann schreiben.</Text>
-            ) : (
-              <View style={styles.composer}>
-                <TextInput
-                  value={composer}
-                  onChangeText={setComposer}
-                  style={styles.input}
-                  placeholder="Nachricht schreiben"
-                  placeholderTextColor="#94a3b8"
-                />
-                <Pressable onPress={handleSendAttachment} style={styles.iconButton} disabled={sending}>
-                  <Ionicons name="attach" color={BRAND} size={20} />
-                </Pressable>
-                <Pressable onPress={handleSendText} style={styles.iconButton} disabled={sending}>
-                  <Ionicons name="send" color={BRAND} size={20} />
-                </Pressable>
-              </View>
-            )}
+        {!canWrite ? (
+          <Text style={styles.mutedBar}>Nur die betreuende Kindertagespflegeperson kann schreiben.</Text>
+        ) : (
+          <View style={[styles.composer, { paddingBottom: Math.max(insets.bottom, 6) }]}>
+            <TextInput
+              value={composer}
+              onChangeText={setComposer}
+              style={styles.input}
+              placeholder="Nachricht schreiben"
+              placeholderTextColor="#94a3b8"
+              multiline
+            />
+            <Pressable onPress={handleSendAttachment} style={styles.iconButton} disabled={sending}>
+              <Ionicons name="attach" color={BRAND} size={20} />
+            </Pressable>
+            <Pressable onPress={handleSendText} style={[styles.iconButton, styles.sendButton]} disabled={sending || !composer.trim()}>
+              <Ionicons name="send" color="#fff" size={18} />
+            </Pressable>
           </View>
-        ) : null}
-      </ScrollView>
+        )}
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: '#f5f7fb' },
-  content: { padding: 16, gap: 14, paddingBottom: 120 },
+  flex: { flex: 1 },
+  safeArea: { flex: 1, backgroundColor: '#e9edf5' },
   centered: { alignItems: 'center', justifyContent: 'center', paddingVertical: 24, gap: 8 },
-  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: 10 },
-  subtitle: { color: '#475569', fontWeight: '600' },
-  title: { color: BRAND, fontSize: 24, fontWeight: '800' },
-  card: { borderRadius: 16, borderWidth: 1, borderColor: '#d9e4ff', backgroundColor: '#fff', padding: 14, gap: 10 },
-  buttonPrimary: { backgroundColor: BRAND, paddingHorizontal: 14, paddingVertical: 10, borderRadius: 10 },
-  buttonPrimaryText: { color: '#fff', fontWeight: '700' },
-  sectionTitle: { color: '#0f172a', fontWeight: '700', fontSize: 16 },
-  muted: { color: '#64748b' },
-  memberRowWrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  memberPill: {
+  header: {
+    backgroundColor: '#fff',
+    borderBottomWidth: 1,
+    borderBottomColor: '#e2e8f0',
+    minHeight: 60,
     flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
-    gap: 6,
-    paddingHorizontal: 8,
-    paddingVertical: 6,
-    borderWidth: 1,
-    borderColor: '#dbeafe',
-    borderRadius: 999,
+    gap: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
   },
-  memberAvatar: { width: 22, height: 22, borderRadius: 11 },
-  memberAvatarFallback: { width: 22, height: 22, borderRadius: 11, alignItems: 'center', justifyContent: 'center', backgroundColor: '#eef2ff' },
-  memberName: { color: '#0f172a', fontSize: 12 },
-  messageWrap: { gap: 8, marginTop: 8 },
-  messageBubble: { borderRadius: 12, padding: 10 },
-  messageOwn: { backgroundColor: '#dbeafe' },
-  messageOther: { backgroundColor: '#f1f5f9' },
-  messageMeta: { color: '#64748b', fontSize: 12, marginBottom: 2 },
+  headerMain: { flex: 1, gap: 2 },
+  title: { color: BRAND, fontSize: 20, fontWeight: '800' },
+  membersInline: { color: '#64748b', fontSize: 12 },
+  buttonPrimary: { backgroundColor: BRAND, paddingHorizontal: 12, paddingVertical: 8, borderRadius: 10 },
+  buttonPrimaryText: { color: '#fff', fontWeight: '700' },
+  muted: { color: '#64748b' },
+  listContent: { gap: 8, paddingHorizontal: 12, paddingVertical: 10 },
+  messageRow: { flexDirection: 'row', alignItems: 'flex-end', gap: 6 },
+  avatar: { width: 24, height: 24, borderRadius: 12 },
+  avatarFallback: { width: 24, height: 24, borderRadius: 12, alignItems: 'center', justifyContent: 'center', backgroundColor: '#eef2ff' },
+  messageBubble: { borderRadius: 12, padding: 10, maxWidth: '84%' },
+  messageOwn: { backgroundColor: BRAND },
+  messageOther: { backgroundColor: '#fff' },
+  messageMeta: { color: '#94a3b8', fontSize: 12, marginBottom: 2 },
   messageBody: { color: '#0f172a' },
-  composer: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 6 },
+  messageBodyOwn: { color: '#fff' },
+  composer: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    gap: 8,
+    backgroundColor: '#fff',
+    borderTopWidth: 1,
+    borderTopColor: '#e2e8f0',
+    paddingHorizontal: 10,
+    paddingTop: 8,
+  },
   input: {
     flex: 1,
     borderWidth: 1,
     borderColor: '#cbd5e1',
     borderRadius: 10,
-    backgroundColor: '#fff',
+    backgroundColor: '#f8fafc',
     paddingHorizontal: 12,
     paddingVertical: 10,
     color: '#0f172a',
+    maxHeight: 120,
   },
   iconButton: {
     borderWidth: 1,
@@ -350,5 +382,16 @@ const styles = StyleSheet.create({
     height: 40,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  sendButton: { backgroundColor: BRAND, borderColor: BRAND },
+  mutedBar: {
+    backgroundColor: '#fff',
+    borderTopWidth: 1,
+    borderTopColor: '#e2e8f0',
+    color: '#64748b',
+    textAlign: 'center',
+    paddingHorizontal: 12,
+    paddingTop: 10,
+    paddingBottom: 10,
   },
 });

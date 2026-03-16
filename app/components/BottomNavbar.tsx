@@ -16,8 +16,8 @@ const items = [
     key: 'messages',
     label: 'Nachrichten',
     icon: 'chatbubbles',
-    routeName: 'messages',
-    href: '/pages/messages',
+    routeName: 'messengerpage',
+    href: '/pages/messengerpage',
     aliases: ['/pages/nachrichtendetail'],
   },
   {
@@ -194,4 +194,3 @@ const styles = StyleSheet.create({
     color: '#94A3B8',
   },
 });
-
