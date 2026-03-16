@@ -62,12 +62,29 @@ export type GroupCandidate = {
   profileImageUrl?: string | null;
 };
 
+async function requestWithFallback<T>(paths: string[], options?: Parameters<typeof apiRequest<T>>[1]) {
+  let lastError: unknown;
+
+  for (const path of paths) {
+    try {
+      return await apiRequest<T>(path, options);
+    } catch (error) {
+      lastError = error;
+    }
+  }
+
+  throw lastError;
+}
+
 export async function fetchGroups() {
-  return apiRequest<Group[]>('api/groups');
+  return requestWithFallback<Group[]>(['api/groups', 'api/betreuungsgruppen']);
 }
 
 export async function fetchGroupMessages(groupId: string) {
-  return apiRequest<GroupMessage[]>(`api/groups/${groupId}/messages`);
+  return requestWithFallback<GroupMessage[]>([
+    `api/groups/${groupId}/messages`,
+    `api/betreuungsgruppen/${groupId}/messages`,
+  ]);
 }
 
 export async function createGroup(payload: {
@@ -79,37 +96,37 @@ export async function createGroup(payload: {
   participantIds: string[];
   settings?: Partial<GroupSettings>;
 }) {
-  return apiRequest<Group>('api/groups', {
+  return requestWithFallback<Group>(['api/groups', 'api/betreuungsgruppen'], {
     method: 'POST',
     body: JSON.stringify(payload),
   });
 }
 
 export async function fetchGroupCandidates() {
-  return apiRequest<GroupCandidate[]>('api/groups/candidates');
+  return requestWithFallback<GroupCandidate[]>(['api/groups/candidates', 'api/betreuungsgruppen/candidates']);
 }
 
 export async function addGroupMember(groupId: string, userId: string) {
-  return apiRequest<Group>(`api/groups/${groupId}/members`, {
+  return requestWithFallback<Group>([`api/groups/${groupId}/members`, `api/betreuungsgruppen/${groupId}/members`], {
     method: 'POST',
     body: JSON.stringify({ userId }),
   });
 }
 
 export async function removeGroupMember(groupId: string, userId: string) {
-  return apiRequest<Group>(`api/groups/${groupId}/members/${userId}`, {
+  return requestWithFallback<Group>([`api/groups/${groupId}/members/${userId}`, `api/betreuungsgruppen/${groupId}/members/${userId}`], {
     method: 'DELETE',
   });
 }
 
 export async function leaveGroup(groupId: string) {
-  return apiRequest<void>(`api/groups/${groupId}/leave`, {
+  return requestWithFallback<void>([`api/groups/${groupId}/leave`, `api/betreuungsgruppen/${groupId}/leave`], {
     method: 'POST',
   });
 }
 
 export async function muteGroup(groupId: string, mutedUntil: string | null) {
-  return apiRequest<Group>(`api/groups/${groupId}/mute`, {
+  return requestWithFallback<Group>([`api/groups/${groupId}/mute`, `api/betreuungsgruppen/${groupId}/mute`], {
     method: 'POST',
     body: JSON.stringify({ mutedUntil }),
   });
@@ -122,7 +139,10 @@ export async function sendGroupMessage(
     attachments?: Array<{ name?: string; data: string; mimeType?: string | null; size?: number | null }>;
   },
 ) {
-  return apiRequest<GroupMessage>(`api/groups/${groupId}/messages`, {
+  return requestWithFallback<GroupMessage>([
+    `api/groups/${groupId}/messages`,
+    `api/betreuungsgruppen/${groupId}/messages`,
+  ], {
     method: 'POST',
     body: JSON.stringify(payload),
   });

@@ -15,10 +15,35 @@ import {
   type GroupCandidate,
 } from '../../services/groups';
 import { fetchConversations } from '../../services/messages';
+import { apiRequest } from '../../services/api-client';
 import { fetchProfile } from '../../services/profile';
 
 const BRAND = 'rgb(49,66,154)';
 
+
+
+type BasicUser = {
+  id?: string;
+  role?: string;
+  name?: string;
+  daycareName?: string;
+};
+
+async function fetchUsersByIds(ids: string[]) {
+  const unique = Array.from(new Set(ids.filter(Boolean)));
+  const entries = await Promise.all(
+    unique.map(async (id) => {
+      try {
+        const user = await apiRequest<BasicUser>(`api/users/${id}`);
+        return [id, user] as const;
+      } catch {
+        return [id, null] as const;
+      }
+    }),
+  );
+
+  return Object.fromEntries(entries) as Record<string, BasicUser | null>;
+}
 type UserProfile = {
   daycareName?: string;
   shortDescription?: string;
@@ -58,16 +83,29 @@ export default function BetreuungsgruppeErstellenScreen() {
           fetchGroups(),
           fetchGroupCandidates().catch(async () => {
             const fallbackChats = await fetchConversations();
-            return (fallbackChats ?? []).map((conversation) => {
-              const partnerId =
-                conversation.participants?.find((participant) => participant !== String(user.id)) || conversation.senderId;
-              return {
-                userId: String(partnerId),
-                name: `Kontakt ${String(partnerId).slice(0, 6)}`,
-                source: 'recent_chat' as const,
-                lastInteractionAt: conversation.createdAt,
-              };
-            });
+            const chatPartners = (fallbackChats ?? [])
+              .map((conversation) => ({
+                partnerId:
+                  conversation.participants?.find((participant) => participant !== String(user.id)) || conversation.senderId,
+                createdAt: conversation.createdAt,
+              }))
+              .filter((item) => item.partnerId);
+
+            const users = await fetchUsersByIds(chatPartners.map((item) => String(item.partnerId)));
+
+            return chatPartners
+              .filter((item) => users[String(item.partnerId)]?.role === 'parent')
+              .map((item) => {
+                const profile = users[String(item.partnerId)];
+                const readableName = profile?.name || profile?.daycareName || `Kontakt ${String(item.partnerId).slice(0, 6)}`;
+
+                return {
+                  userId: String(item.partnerId),
+                  name: readableName,
+                  source: 'recent_chat' as const,
+                  lastInteractionAt: item.createdAt,
+                };
+              });
           }),
         ]);
 
@@ -77,7 +115,12 @@ export default function BetreuungsgruppeErstellenScreen() {
         setSelectedParticipants(ownGroup ? ownGroup.members.filter((m) => m.role !== 'admin').map((m) => m.userId) : []);
         setDescription(ownGroup?.description || profileData?.shortDescription || profileData?.bio || '');
         setParticipantsVisible(ownGroup?.settings?.participantsVisible ?? true);
-        setCandidates(uniqueByUserId(suggested ?? []));
+
+        const suggestedItems = uniqueByUserId(suggested ?? []);
+        const suggestedUsers = await fetchUsersByIds(suggestedItems.map((item) => item.userId));
+        const parentCandidates = suggestedItems.filter((item) => suggestedUsers[item.userId]?.role === 'parent');
+
+        setCandidates(parentCandidates);
       } catch {
         Alert.alert('Fehler', 'Daten konnten nicht geladen werden.');
       } finally {
