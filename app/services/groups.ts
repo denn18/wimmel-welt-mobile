@@ -97,6 +97,9 @@ export async function loadCareGroup(userId: string) {
       await writeCareGroupToStorage(userId, normalized);
       return normalized;
     }
+
+    await writeCareGroupToStorage(userId, null);
+    return null;
   } catch {
     // fallback to local storage below
   }
@@ -126,11 +129,16 @@ export async function persistCareGroup(group: CareGroup) {
 }
 
 export async function deleteCareGroup(caregiverId: string) {
+  const existingGroup = (await loadCareGroup(caregiverId).catch(() => null)) ?? (await readCareGroupFromStorage(caregiverId));
+
   await apiRequest<void>(`api/care-groups/${encodeURIComponent(caregiverId)}`, {
     method: 'DELETE',
   });
 
   await writeCareGroupToStorage(caregiverId, null);
+
+  const participantIds = existingGroup?.participantIds ?? [];
+  await Promise.all(participantIds.map((participantId) => writeCareGroupToStorage(participantId, null)));
 }
 
 export async function fetchGroupMessages(caregiverId: string) {
