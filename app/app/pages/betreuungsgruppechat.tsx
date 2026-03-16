@@ -216,7 +216,7 @@ export default function BetreuungsgruppechatScreen() {
     return (
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.centered}>
-          <Text style={styles.title}>Betreuungsgruppechat</Text>
+          <Text style={styles.title}>Betreuungsgruppe</Text>
           <Text style={styles.muted}>Bitte melde dich an.</Text>
         </View>
       </SafeAreaView>

@@ -197,7 +197,8 @@ export default function MessengerPageScreen() {
 }
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: '#ffffff' },
+ safeArea: { flex: 1, backgroundColor: '#e9edf5' }, 
+  //safeArea: { flex: 1, backgroundColor: '#ffffff' },  
   header: { paddingHorizontal: 16, paddingVertical: 12 },
   title: { fontSize: 24, fontWeight: '800', color: BRAND },
   threadRow: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 16, paddingVertical: 12, backgroundColor: '#fff' },

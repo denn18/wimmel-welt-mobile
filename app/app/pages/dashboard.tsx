@@ -226,16 +226,17 @@ export default function DashboardScreen() {
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
+        {/* Hier Wimmel Welt erstmal ausblenden */}
         {/* Top Title (zentriert wie Screenshot) */}
-        <View style={styles.topHeader}>
-          <Text style={styles.topTitle}>Wimmel Welt</Text>
-        </View>
+        {/* <View style={styles.topHeader}>
+        <Text style={styles.topTitle}>Wimmel Welt</Text>
+        </View> */}
 
         {/* Header */}
         <View style={styles.headerBlock}>
-          <Text style={styles.pageTitle}>Familienzentrum</Text>
+          <Text style={styles.pageTitle}>Kindertagespflege finden</Text>
           <Text style={styles.pageSubtitle}>
-            Finde Tagespflegepersonen in deiner Nähe, vergleiche Profile und starte persönliche Gespräche.
+            Finde Tagesmütter & Väter in deiner Nähe, vergleiche Profile und starte persönliche Gespräche.
           </Text>
         </View>
 
