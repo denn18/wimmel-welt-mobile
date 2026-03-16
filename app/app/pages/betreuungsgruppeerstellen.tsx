@@ -9,6 +9,7 @@ import {
   fetchGroupCandidates,
   loadCareGroup,
   persistCareGroup,
+  deleteCareGroup,
   type CareGroup,
   type GroupCandidate,
 } from '../../services/groups';
@@ -74,6 +75,36 @@ export default function BetreuungsgruppeErstellenScreen() {
 
   const toggleParticipant = (id: string) => {
     setSelectedParticipants((current) => (current.includes(id) ? current.filter((item) => item !== id) : [...current, id]));
+  };
+
+
+  const handleDeleteGroup = async () => {
+    if (!existingGroup?.caregiverId || !user?.id || !isCaregiver || saving) return;
+
+    Alert.alert(
+      'Betreuungsgruppe löschen',
+      'Möchtest du die Betreuungsgruppe wirklich löschen? Alle Teilnehmer werden entfernt und der Gruppenchat wird gelöscht.',
+      [
+        { text: 'Abbrechen', style: 'cancel' },
+        {
+          text: 'Löschen',
+          style: 'destructive',
+          onPress: () => {
+            void (async () => {
+              setSaving(true);
+              try {
+                await deleteCareGroup(String(user.id));
+                router.replace('/pages/betreuungsgruppechat');
+              } catch {
+                Alert.alert('Fehler', 'Betreuungsgruppe konnte nicht gelöscht werden.');
+              } finally {
+                setSaving(false);
+              }
+            })();
+          },
+        },
+      ],
+    );
   };
 
   const handleSave = async () => {
@@ -166,6 +197,17 @@ export default function BetreuungsgruppeErstellenScreen() {
             );
           })}
           {!candidatePool.length ? <Text style={styles.muted}>Keine Elternkontakte gefunden.</Text> : null}
+
+          {existingGroup ? (
+            <Pressable
+              style={[styles.deleteButton, saving && styles.deleteButtonDisabled]}
+              onPress={handleDeleteGroup}
+              disabled={saving}
+            >
+              <Ionicons name="trash-outline" size={18} color="#b91c1c" />
+              <Text style={styles.deleteButtonText}>Betreuungsgruppe löschen</Text>
+            </Pressable>
+          ) : null}
         </ScrollView>
       )}
     </SafeAreaView>
@@ -212,4 +254,19 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
   },
   memberName: { color: '#0f172a', fontWeight: '600' },
+  deleteButton: {
+    marginTop: 14,
+    borderWidth: 1,
+    borderColor: '#fecaca',
+    backgroundColor: '#fef2f2',
+    borderRadius: 12,
+    paddingVertical: 11,
+    paddingHorizontal: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+  },
+  deleteButtonDisabled: { opacity: 0.65 },
+  deleteButtonText: { color: '#b91c1c', fontWeight: '700' },
 });
