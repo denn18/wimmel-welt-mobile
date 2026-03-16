@@ -119,7 +119,7 @@ export default function BetreuungsgruppechatScreen() {
     try {
       await sendGroupMessage(group.caregiverId, {
         body: composer.trim(),
-        participantIds: [group.caregiverId, ...group.participantIds],
+        participantIds: group.participantIds,
       });
       setComposer('');
       await loadMessages();
@@ -137,7 +137,7 @@ export default function BetreuungsgruppechatScreen() {
     try {
       await sendGroupMessage(group.caregiverId, {
         body: composer.trim() || undefined,
-        participantIds: [group.caregiverId, ...group.participantIds],
+        participantIds: group.participantIds,
         attachments: [{ name: picked.fileName, data: picked.dataUrl, mimeType: picked.mimeType }],
       });
       setComposer('');

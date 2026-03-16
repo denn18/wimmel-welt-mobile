@@ -1,6 +1,6 @@
 import AsyncStorage from '../utils/async-storage';
 import { ApiHttpError, apiRequest } from './api-client';
-import { fetchConversations, fetchMessages, type Message } from './messages';
+import { fetchConversations, type Message } from './messages';
 
 const CARE_GROUP_STORAGE_PREFIX = 'wimmelwelt.caregroup.';
 
@@ -165,8 +165,12 @@ function resolvePartnerId(conversation: Message, userId: string) {
   return conversation.participants?.find((participant) => participant !== userId) || conversation.senderId || '';
 }
 
-export async function fetchGroupCandidates(userId: string, existingParticipantIds: string[] = []) {
-  const conversations = await fetchConversations();
+export async function fetchGroupCandidates(
+  userId: string,
+  existingParticipantIds: string[] = [],
+  conversationsInput?: Message[],
+) {
+  const conversations = conversationsInput ?? (await fetchConversations());
   const parentContacts = new Map<string, GroupCandidate>();
 
   await Promise.all(
@@ -176,10 +180,6 @@ export async function fetchGroupCandidates(userId: string, existingParticipantId
 
       const profile = await fetchProfile(partnerId).catch(() => null);
       if (!profile || profile.role !== 'parent') return;
-
-      const history = await fetchMessages(conversation.conversationId).catch(() => []);
-      const parentHasSent = history.some((message) => String(message.senderId) === partnerId);
-      if (!parentHasSent) return;
 
       parentContacts.set(partnerId, {
         userId: partnerId,
