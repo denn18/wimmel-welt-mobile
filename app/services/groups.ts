@@ -113,6 +113,8 @@ export async function persistCareGroup(group: CareGroup) {
     throw new Error('Ungültige Betreuungsgruppe.');
   }
 
+  const previousGroup = (await readCareGroupFromStorage(normalized.caregiverId)) ?? null;
+
   const saved = await apiRequest<CareGroup>('api/care-groups', {
     method: 'PUT',
     body: JSON.stringify(normalized),
@@ -124,6 +126,11 @@ export async function persistCareGroup(group: CareGroup) {
   for (const participantId of normalizedSaved.participantIds) {
     await writeCareGroupToStorage(participantId, normalizedSaved);
   }
+
+  const removedParticipantIds = (previousGroup?.participantIds ?? []).filter(
+    (participantId) => !normalizedSaved.participantIds.includes(participantId),
+  );
+  await Promise.all(removedParticipantIds.map((participantId) => writeCareGroupToStorage(participantId, null)));
 
   return normalizedSaved;
 }
