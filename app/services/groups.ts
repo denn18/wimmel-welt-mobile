@@ -1,5 +1,5 @@
 import AsyncStorage from '../utils/async-storage';
-import { apiRequest } from './api-client';
+import { ApiHttpError, apiRequest } from './api-client';
 import { fetchConversations, fetchMessages, type Message } from './messages';
 
 const CARE_GROUP_STORAGE_PREFIX = 'wimmelwelt.caregroup.';
@@ -100,7 +100,11 @@ export async function loadCareGroup(userId: string) {
 
     await writeCareGroupToStorage(userId, null);
     return null;
-  } catch {
+  } catch (error) {
+    if (error instanceof ApiHttpError && error.status === 403) {
+      await writeCareGroupToStorage(userId, null);
+      return null;
+    }
     // fallback to local storage below
   }
 

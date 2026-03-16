@@ -30,6 +30,16 @@ export class ApiUnauthorizedError extends Error {
   }
 }
 
+export class ApiHttpError extends Error {
+  readonly status: number;
+
+  constructor(status: number, message: string) {
+    super(message);
+    this.name = 'ApiHttpError';
+    this.status = status;
+  }
+}
+
 
 export type ApiRequestOptions = RequestInit & {
   method?: HttpMethod;
@@ -94,13 +104,13 @@ export async function apiRequest<T>(path: string, options: ApiRequestOptions = {
     if (contentType.includes('application/json')) {
       try {
         const parsed = JSON.parse(textPreview) as unknown;
-        throw new Error(`Request failed with ${response.status}: ${JSON.stringify(parsed)}`);
+        throw new ApiHttpError(response.status, `Request failed with ${response.status}: ${JSON.stringify(parsed)}`);
       } catch {
-        throw new Error(`Request failed with ${response.status}: ${textPreview}`);
+        throw new ApiHttpError(response.status, `Request failed with ${response.status}: ${textPreview}`);
       }
     }
 
-    throw new Error(`Request failed with ${response.status}: ${textPreview}`);
+    throw new ApiHttpError(response.status, `Request failed with ${response.status}: ${textPreview}`);
   }
 
   if (response.status === 204 || textPreview.length === 0) {
