@@ -51,7 +51,7 @@ export default function BetreuungsgruppechatScreen() {
 
     setLoading(true);
     try {
-      const groupData = await fetchGroups();
+      const groupData = await fetchGroups(String(user.id));
       setGroups(groupData ?? []);
       if ((groupData ?? []).length) {
         setSelectedGroupId((current) => current ?? groupData[0].id);
