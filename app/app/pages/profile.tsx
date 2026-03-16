@@ -751,7 +751,6 @@ export default function ProfileIndex() {
           ) : null}
         </ScrollView>
       </KeyboardAvoidingView>
-      <BottomNavbar />
     </SafeAreaView>
   );
 }
