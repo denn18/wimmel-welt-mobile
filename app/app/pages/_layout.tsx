@@ -55,7 +55,7 @@ export default function PagesLayout() {
       />
 
       <Tabs.Screen
-        name="profile"
+        name="ProfilePage"
         options={{
           title: 'Profil',
           tabBarIcon: ({ color, size }) => (
