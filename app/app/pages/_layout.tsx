@@ -35,7 +35,7 @@ export default function PagesLayout() {
       />
 
       <Tabs.Screen
-        name="messages"
+        name="messengerpage"
         options={{
           title: 'Nachrichten',
           tabBarIcon: ({ color, size }) => (
