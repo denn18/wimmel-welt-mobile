@@ -3,6 +3,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, Alert, Image, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
+import { useFocusEffect } from '@react-navigation/native';
 
 import { useAuthStatus } from '../../hooks/use-auth-status';
 import { ApiUnauthorizedError, apiRequest } from '../../services/api-client';
@@ -103,6 +104,49 @@ export default function BetreuungsgruppechatScreen() {
     }
   }, [group?.caregiverId]);
 
+  const backgroundSync = useCallback(async () => {
+    if (!user?.id) {
+      setGroup(null);
+      setMemberProfiles({});
+      setMessages([]);
+      return;
+    }
+
+    try {
+      const currentGroup = await loadCareGroup(String(user.id));
+      setGroup(currentGroup);
+
+      if (!currentGroup) {
+        setMemberProfiles({});
+        setMessages([]);
+        return;
+      }
+
+      const participantIds = [currentGroup.caregiverId, ...currentGroup.participantIds];
+      const [loadedProfiles, loadedMessages] = await Promise.all([
+        Promise.all(
+          participantIds.map(async (id) => {
+            try {
+              const profile = await apiRequest<UserProfile>(`api/users/${id}`);
+              return [id, profile] as const;
+            } catch {
+              return [id, null] as const;
+            }
+          }),
+        ),
+        fetchGroupMessages(currentGroup.caregiverId).catch(() => [] as GroupMessage[]),
+      ]);
+
+      setMemberProfiles(Object.fromEntries(loadedProfiles));
+      setMessages(loadedMessages ?? []);
+    } catch (error) {
+      if (error instanceof ApiUnauthorizedError) {
+        await logout();
+        router.replace('/pages/login');
+      }
+    }
+  }, [logout, router, user?.id]);
+
   useEffect(() => {
     void loadGroup();
   }, [loadGroup]);
@@ -111,6 +155,12 @@ export default function BetreuungsgruppechatScreen() {
     void loadMembers();
     void loadMessages();
   }, [loadMembers, loadMessages]);
+
+  useFocusEffect(
+    useCallback(() => {
+      void backgroundSync();
+    }, [backgroundSync]),
+  );
 
   const handleSendText = async () => {
     if (!group?.caregiverId || !canWrite || !composer.trim() || sending) return;
