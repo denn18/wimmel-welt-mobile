@@ -127,7 +127,7 @@ export default function MessagesScreen() {
       setLoading(true);
       setError(null);
       try {
-        const data = await fetchConversations();
+        const data = await fetchConversations(String(user.id));
         setConversations(data);
         const loadedProfiles = await fetchUserProfiles(
           data

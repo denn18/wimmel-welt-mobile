@@ -55,9 +55,9 @@ export default function BetreuungsgruppeErstellenScreen() {
       try {
         const [profileData, groups, suggested] = await Promise.all([
           fetchProfile<UserProfile>(user as never),
-          fetchGroups(),
-          fetchGroupCandidates().catch(async () => {
-            const fallbackChats = await fetchConversations();
+          fetchGroups(String(user.id)),
+          fetchGroupCandidates(String(user.id)).catch(async () => {
+            const fallbackChats = await fetchConversations(String(user.id));
             return (fallbackChats ?? []).map((conversation) => {
               const partnerId =
                 conversation.participants?.find((participant) => participant !== String(user.id)) || conversation.senderId;
