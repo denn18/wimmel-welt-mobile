@@ -5,12 +5,25 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 
 import { useAuthStatus } from '../../hooks/use-auth-status';
-import { ApiUnauthorizedError } from '../../services/api-client';
-import { fetchGroups, fetchGroupMessages, sendGroupMessage, type Group, type GroupMessage } from '../../services/groups';
+import { ApiUnauthorizedError, apiRequest } from '../../services/api-client';
+import {
+  fetchGroupMessages,
+  loadCareGroup,
+  sendGroupMessage,
+  type CareGroup,
+  type GroupMessage,
+} from '../../services/groups';
 import { pickSingleFile } from '../../utils/file-picker';
 import { assetUrl } from '../../utils/url';
 
 const BRAND = 'rgb(49,66,154)';
+
+type UserProfile = {
+  id?: string;
+  role?: string;
+  name?: string;
+  profileImageUrl?: string | null;
+};
 
 function formatDate(value?: string) {
   if (!value) return '';
@@ -27,77 +40,87 @@ export default function BetreuungsgruppechatScreen() {
   const { user, logout } = useAuthStatus();
   const userId = String(user?.id ?? '');
 
-  const [groups, setGroups] = useState<Group[]>([]);
-  const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null);
+  const [group, setGroup] = useState<CareGroup | null>(null);
+  const [memberProfiles, setMemberProfiles] = useState<Record<string, UserProfile | null>>({});
   const [messages, setMessages] = useState<GroupMessage[]>([]);
   const [composer, setComposer] = useState('');
   const [loading, setLoading] = useState(false);
   const [sending, setSending] = useState(false);
 
-  const selectedGroup = useMemo(
-    () => groups.find((group) => group.id === selectedGroupId) ?? groups[0] ?? null,
-    [groups, selectedGroupId],
-  );
+  const canWrite = useMemo(() => user?.role === 'caregiver' && group?.caregiverId === userId, [group?.caregiverId, user?.role, userId]);
 
-  const amIAdmin = useMemo(() => {
-    if (!selectedGroup || !userId) return false;
-    return selectedGroup.members.some((member) => member.userId === userId && member.role === 'admin');
-  }, [selectedGroup, userId]);
-
-  const canWrite = Boolean(selectedGroup) && user?.role === 'caregiver' && amIAdmin;
-
-  const loadGroups = useCallback(async () => {
+  const loadGroup = useCallback(async () => {
     if (!user?.id) return;
 
     setLoading(true);
     try {
-      const groupData = await fetchGroups(String(user.id));
-      setGroups(groupData ?? []);
-      if ((groupData ?? []).length) {
-        setSelectedGroupId((current) => current ?? groupData[0].id);
-      } else {
-        setSelectedGroupId(null);
-      }
+      const loaded = await loadCareGroup(String(user.id));
+      setGroup(loaded);
     } catch (error) {
       if (error instanceof ApiUnauthorizedError) {
         await logout();
         router.replace('/pages/login');
         return;
       }
-      Alert.alert('Fehler', 'Betreuungsgruppen konnten nicht geladen werden.');
+      Alert.alert('Fehler', 'Betreuungsgruppe konnte nicht geladen werden.');
     } finally {
       setLoading(false);
     }
   }, [logout, router, user?.id]);
 
+  const loadMembers = useCallback(async () => {
+    if (!group) {
+      setMemberProfiles({});
+      return;
+    }
+
+    const ids = [group.caregiverId, ...group.participantIds];
+    const entries = await Promise.all(
+      ids.map(async (id) => {
+        try {
+          const profile = await apiRequest<UserProfile>(`api/users/${id}`);
+          return [id, profile] as const;
+        } catch {
+          return [id, null] as const;
+        }
+      }),
+    );
+
+    setMemberProfiles(Object.fromEntries(entries));
+  }, [group]);
+
   const loadMessages = useCallback(async () => {
-    if (!selectedGroup?.id) {
+    if (!group?.caregiverId) {
       setMessages([]);
       return;
     }
 
     try {
-      const items = await fetchGroupMessages(selectedGroup.id);
+      const items = await fetchGroupMessages(group.caregiverId);
       setMessages(items ?? []);
     } catch {
       setMessages([]);
     }
-  }, [selectedGroup?.id]);
+  }, [group?.caregiverId]);
 
   useEffect(() => {
-    void loadGroups();
-  }, [loadGroups]);
+    void loadGroup();
+  }, [loadGroup]);
 
   useEffect(() => {
+    void loadMembers();
     void loadMessages();
-  }, [loadMessages]);
+  }, [loadMembers, loadMessages]);
 
   const handleSendText = async () => {
-    if (!selectedGroup?.id || !canWrite || !composer.trim() || sending) return;
+    if (!group?.caregiverId || !canWrite || !composer.trim() || sending) return;
 
     setSending(true);
     try {
-      await sendGroupMessage(selectedGroup.id, { body: composer.trim() });
+      await sendGroupMessage(group.caregiverId, {
+        body: composer.trim(),
+        participantIds: [group.caregiverId, ...group.participantIds],
+      });
       setComposer('');
       await loadMessages();
     } finally {
@@ -106,14 +129,15 @@ export default function BetreuungsgruppechatScreen() {
   };
 
   const handleSendAttachment = async () => {
-    if (!selectedGroup?.id || !canWrite || sending) return;
+    if (!group?.caregiverId || !canWrite || sending) return;
     const picked = await pickSingleFile({ type: '*/*' });
     if (!picked) return;
 
     setSending(true);
     try {
-      await sendGroupMessage(selectedGroup.id, {
+      await sendGroupMessage(group.caregiverId, {
         body: composer.trim() || undefined,
+        participantIds: [group.caregiverId, ...group.participantIds],
         attachments: [{ name: picked.fileName, data: picked.dataUrl, mimeType: picked.mimeType }],
       });
       setComposer('');
@@ -144,7 +168,7 @@ export default function BetreuungsgruppechatScreen() {
           </View>
           {user.role === 'caregiver' ? (
             <Pressable style={styles.buttonPrimary} onPress={() => router.push('/pages/betreuungsgruppeerstellen')}>
-              <Text style={styles.buttonPrimaryText}>Betreuungsgruppe erstellen</Text>
+              <Text style={styles.buttonPrimaryText}>{group ? 'Betreuungsgruppe bearbeiten' : 'Betreuungsgruppe erstellen'}</Text>
             </Pressable>
           ) : null}
         </View>
@@ -155,36 +179,42 @@ export default function BetreuungsgruppechatScreen() {
           </View>
         ) : null}
 
-        <View style={styles.card}>
-          <Text style={styles.sectionTitle}>Meine Gruppen</Text>
-          {groups.map((group) => {
-            const active = selectedGroup?.id === group.id;
-            return (
-              <Pressable key={group.id} style={[styles.groupRow, active && styles.groupRowActive]} onPress={() => setSelectedGroupId(group.id)}>
-                {group.logoImageUrl ? <Image source={{ uri: assetUrl(group.logoImageUrl) }} style={styles.logo} /> : <View style={styles.logoFallback}><Ionicons name="people" size={18} color={BRAND} /></View>}
-                <View style={{ flex: 1 }}>
-                  <Text style={styles.groupName}>{group.name}</Text>
-                  <Text style={styles.muted}>{group.memberCount} Teilnehmende</Text>
-                </View>
-              </Pressable>
-            );
-          })}
-          {!groups.length && !loading ? <Text style={styles.muted}>Es gibt aktuell keine Betreuungsgruppe.</Text> : null}
-        </View>
-
-        {selectedGroup ? (
+        {!group && !loading ? (
           <View style={styles.card}>
-            <Text style={styles.sectionTitle}>{selectedGroup.name}</Text>
-            <Text style={styles.muted}>{selectedGroup.description || 'Keine Gruppenbeschreibung vorhanden.'}</Text>
+            <Text style={styles.muted}>Es gibt aktuell keine Betreuungsgruppe.</Text>
+          </View>
+        ) : null}
+
+        {group ? (
+          <View style={styles.card}>
+            <Text style={styles.sectionTitle}>{group.daycareName}</Text>
+            <View style={styles.memberRowWrap}>
+              {[group.caregiverId, ...group.participantIds].map((id) => {
+                const profile = memberProfiles[id];
+                const imageUrl = profile?.profileImageUrl ? assetUrl(profile.profileImageUrl) : '';
+                return (
+                  <View key={id} style={styles.memberPill}>
+                    {imageUrl ? (
+                      <Image source={{ uri: imageUrl }} style={styles.memberAvatar} />
+                    ) : (
+                      <View style={styles.memberAvatarFallback}>
+                        <Ionicons name="person" size={14} color={BRAND} />
+                      </View>
+                    )}
+                    <Text style={styles.memberName}>
+                      {id === group.caregiverId ? 'Tagespflege' : profile?.name || `Elternaccount ${id.slice(0, 6)}`}
+                    </Text>
+                  </View>
+                );
+              })}
+            </View>
 
             <View style={styles.messageWrap}>
               {messages.map((message) => {
                 const isOwn = message.senderId === userId;
                 return (
                   <View key={message.id} style={[styles.messageBubble, isOwn ? styles.messageOwn : styles.messageOther]}>
-                    <Text style={styles.messageMeta}>
-                      {isOwn ? 'Du' : message.senderName || message.senderId} · {formatDate(message.createdAt)}
-                    </Text>
+                    <Text style={styles.messageMeta}>{isOwn ? 'Du' : memberProfiles[message.senderId]?.name || message.senderId} · {formatDate(message.createdAt)}</Text>
                     <Text style={styles.messageBody}>{message.body || '(Anhang)'}</Text>
                   </View>
                 );
@@ -230,28 +260,20 @@ const styles = StyleSheet.create({
   buttonPrimaryText: { color: '#fff', fontWeight: '700' },
   sectionTitle: { color: '#0f172a', fontWeight: '700', fontSize: 16 },
   muted: { color: '#64748b' },
-  groupRow: {
+  memberRowWrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  memberPill: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
+    gap: 6,
+    paddingHorizontal: 8,
+    paddingVertical: 6,
     borderWidth: 1,
     borderColor: '#dbeafe',
-    borderRadius: 12,
-    padding: 10,
+    borderRadius: 999,
   },
-  groupRowActive: { borderColor: BRAND, backgroundColor: '#eef2ff' },
-  logo: { width: 36, height: 36, borderRadius: 18 },
-  logoFallback: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    borderWidth: 1,
-    borderColor: '#dbeafe',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#f8fafc',
-  },
-  groupName: { color: '#0f172a', fontWeight: '700' },
+  memberAvatar: { width: 22, height: 22, borderRadius: 11 },
+  memberAvatarFallback: { width: 22, height: 22, borderRadius: 11, alignItems: 'center', justifyContent: 'center', backgroundColor: '#eef2ff' },
+  memberName: { color: '#0f172a', fontSize: 12 },
   messageWrap: { gap: 8, marginTop: 8 },
   messageBubble: { borderRadius: 12, padding: 10 },
   messageOwn: { backgroundColor: '#dbeafe' },

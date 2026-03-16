@@ -21,8 +21,9 @@ export type Message = {
   updatedAt?: string;
 };
 
-export async function fetchConversations(participantId: string) {
-  return apiRequest<Message[]>(`api/messages?participantId=${encodeURIComponent(participantId)}`);
+export async function fetchConversations(participantId?: string) {
+  const query = participantId ? `?participantId=${encodeURIComponent(participantId)}` : '';
+  return apiRequest<Message[]>(`api/messages${query}`);
 }
 
 export async function fetchMessages(conversationId: string) {
