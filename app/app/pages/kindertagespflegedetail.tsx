@@ -424,7 +424,6 @@ export default function CaregiverDetailScreen() {
         </ScrollView>
       )}
 
-      <BottomNavbar />
 
       <Modal visible={Boolean(lightboxImage)} transparent animationType="fade" onRequestClose={() => setLightboxImage(null)}>
         <View style={styles.lightboxBackdrop}>
