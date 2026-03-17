@@ -34,6 +34,7 @@ export default function RootLayout() {
           <Stack.Screen name="pages/PrivacyPolicyPage" options={{ headerShown: false, title: 'Datenschutz' }} />
           <Stack.Screen name="pages/ImprintPage" options={{ headerShown: false, title: 'Impressum' }} />
           <Stack.Screen name="pages/ContactPage" options={{ headerShown: false, title: 'Kontakt' }} />
+          <Stack.Screen name="pages/FAQPage" options={{ headerShown: false, title: 'FAQ' }} />
           <Stack.Screen name="pages/RoleSelectionPage" options={{ headerShown: false, title: 'Registrieren' }} />
           <Stack.Screen name="pages/Profilwarnung" options={{ headerShown: false, title: 'Profilwarnung' }} />
           <Stack.Screen name="pages/ParentSignUpPage" options={{ headerShown: false, title: 'Parent Signup' }} />
