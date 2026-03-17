@@ -217,7 +217,7 @@ export default function FAQPage() {
                 <Text style={styles.primaryActionText}>Kontakt</Text>
               </Pressable>
             </Link>
-            <Link href="/pages/kindertagespflege" asChild>
+            <Link href="/pages/dashboard" asChild>
               <Pressable style={styles.secondaryAction}>
                 <Text style={styles.secondaryActionText}>Kindertagespflege finden</Text>
               </Pressable>
