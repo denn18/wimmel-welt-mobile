@@ -40,11 +40,6 @@ const AVAILABILITY_TIMING_OPTIONS = [
   { value: 'dezember', label: 'Dezember' },
 ];
 
-const AVAILABLE_SPOT_OPTIONS = Array.from({ length: 16 }, (_, index) => ({
-  value: String(index),
-  label: String(index),
-}));
-
 const YES_NO_OPTIONS = [
   { value: 'true', label: 'Ja, es sind Plätze frei' },
   { value: 'false', label: 'Aktuell keine Plätze frei' },
@@ -619,16 +614,17 @@ export default function CaregiverSignupPage() {
 
                 <View style={styles.inputGroupThird}>
                   <Text style={styles.label}>Anzahl freier Plätze</Text>
-                  <SelectField
+                  <TextInput
+                    style={styles.input}
                     value={formState.availableSpots}
-                    options={AVAILABLE_SPOT_OPTIONS}
-                    onChange={(value) => updateField('availableSpots', value)}
+                    onChangeText={(value) => updateField('availableSpots', value)}
+                    keyboardType="number-pad"
                   />
                 </View>
 
                 <View style={styles.inputGroupThird}>
                   <Text style={styles.label}>Wann werden Plätze frei?</Text>
-                  <SelectField
+                  <DropdownField
                     value={formState.availabilityTiming}
                     options={AVAILABILITY_TIMING_OPTIONS}
                     onChange={(value) => updateField('availabilityTiming', value)}
@@ -1015,7 +1011,7 @@ function LabeledInput({
   );
 }
 
-function SelectField({
+function DropdownField({
   value,
   options,
   onChange,
@@ -1024,38 +1020,38 @@ function SelectField({
   options: { value: string; label: string }[];
   onChange: (value: string) => void;
 }) {
-  const currentIndex = Math.max(
-    0,
-    options.findIndex((option) => option.value === value),
-  );
-
-  const currentOption = options[currentIndex] ?? options[0];
-
-  function handlePrevious() {
-    const nextIndex = currentIndex <= 0 ? options.length - 1 : currentIndex - 1;
-    onChange(options[nextIndex].value);
-  }
-
-  function handleNext() {
-    const nextIndex = currentIndex >= options.length - 1 ? 0 : currentIndex + 1;
-    onChange(options[nextIndex].value);
-  }
+  const [isOpen, setIsOpen] = useState(false);
+  const currentOption = options.find((option) => option.value === value) ?? options[0];
 
   return (
-    <View style={styles.selectField}>
-      <Pressable onPress={handlePrevious} style={styles.selectArrow}>
-        <Text style={styles.selectArrowText}>‹</Text>
-      </Pressable>
-
-      <View style={styles.selectValueWrapper}>
-        <Text numberOfLines={1} style={styles.selectValueText}>
-          {currentOption?.label}
+    <View style={styles.dropdownField}>
+      <Pressable onPress={() => setIsOpen((open) => !open)} style={styles.dropdownTrigger}>
+        <Text numberOfLines={1} style={styles.dropdownValueText}>
+          {currentOption.label}
         </Text>
-      </View>
-
-      <Pressable onPress={handleNext} style={styles.selectArrow}>
-        <Text style={styles.selectArrowText}>›</Text>
+        <Text style={styles.dropdownChevron}>{isOpen ? '▲' : '▼'}</Text>
       </Pressable>
+
+      {isOpen ? (
+        <View style={styles.dropdownMenu}>
+          {options.map((option) => {
+            const selected = option.value === currentOption.value;
+
+            return (
+              <Pressable
+                key={option.value}
+                onPress={() => {
+                  onChange(option.value);
+                  setIsOpen(false);
+                }}
+                style={[styles.dropdownItem, selected && styles.dropdownItemSelected]}
+              >
+                <Text style={[styles.dropdownItemText, selected && styles.dropdownItemTextSelected]}>{option.label}</Text>
+              </Pressable>
+            );
+          })}
+        </View>
+      ) : null}
     </View>
   );
 }
@@ -1306,36 +1302,54 @@ const styles = StyleSheet.create({
   chipLabelActive: {
     color: '#1d4ed8',
   },
-  selectField: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  dropdownField: {
+    position: 'relative',
+  },
+  dropdownTrigger: {
+    minHeight: 50,
     borderWidth: 1,
     borderColor: '#bfdbfe',
     borderRadius: 12,
     backgroundColor: '#fff',
-    minHeight: 50,
-    overflow: 'hidden',
-  },
-  selectArrow: {
-    width: 42,
-    alignItems: 'center',
-    justifyContent: 'center',
-    alignSelf: 'stretch',
-    backgroundColor: '#f8fafc',
-  },
-  selectArrowText: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: '#3353c5',
-  },
-  selectValueWrapper: {
-    flex: 1,
-    justifyContent: 'center',
     paddingHorizontal: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 8,
   },
-  selectValueText: {
+  dropdownValueText: {
     color: '#0f172a',
     fontSize: 16,
+    flexShrink: 1,
+  },
+  dropdownChevron: {
+    color: '#3353c5',
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  dropdownMenu: {
+    marginTop: 6,
+    borderWidth: 1,
+    borderColor: '#bfdbfe',
+    borderRadius: 12,
+    backgroundColor: '#fff',
+    maxHeight: 220,
+    overflow: 'hidden',
+  },
+  dropdownItem: {
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+  },
+  dropdownItemSelected: {
+    backgroundColor: 'rgba(51,83,197,0.12)',
+  },
+  dropdownItemText: {
+    color: '#334155',
+    fontSize: 15,
+  },
+  dropdownItemTextSelected: {
+    color: '#1d4ed8',
+    fontWeight: '700',
   },
 
   checklistGroup: {
