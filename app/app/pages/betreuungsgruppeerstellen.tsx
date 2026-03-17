@@ -17,6 +17,7 @@ import { fetchConversations } from '../../services/messages';
 import { fetchProfile } from '../../services/profile';
 
 const BRAND = 'rgb(49,66,154)';
+const BG = '#EAF2FF';
 
 type UserProfile = {
   daycareName?: string;
@@ -219,7 +220,7 @@ export default function BetreuungsgruppeErstellenScreen() {
 }
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: '#f5f7fb' },
+  safeArea: { flex: 1, backgroundColor: BG },
   header: {
     paddingHorizontal: 16,
     paddingVertical: 12,
@@ -256,6 +257,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     paddingHorizontal: 12,
     paddingVertical: 10,
+    backgroundColor: '#fff'
   },
   memberName: { color: '#0f172a', fontWeight: '600' },
   deleteButton: {
