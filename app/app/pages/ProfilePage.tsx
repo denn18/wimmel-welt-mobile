@@ -65,6 +65,7 @@ type CaregiverProfile = {
   daycareName?: string;
   availableSpots?: number;
   hasAvailability?: boolean;
+  availabilityTiming?: string;
   childrenCount?: number;
   maxChildAge?: number | '';
   birthDate?: string | null;
@@ -550,6 +551,8 @@ function CaregiverProfileEditor({
     bio: profile.bio || '',
     mealPlan: profile.mealPlan || '',
     availableSpots: String(profile.availableSpots ?? 0),
+    hasAvailability: profile.hasAvailability == null ? 'true' : String(profile.hasAvailability),
+    availabilityTiming: profile.availabilityTiming || 'aktuell',
     childrenCount: String(profile.childrenCount ?? 0),
     maxChildAge: profile.maxChildAge === '' || profile.maxChildAge == null ? '' : String(profile.maxChildAge),
     newPassword: '',
@@ -581,6 +584,8 @@ function CaregiverProfileEditor({
       bio: profile.bio || '',
       mealPlan: profile.mealPlan || '',
       availableSpots: String(profile.availableSpots ?? 0),
+      hasAvailability: profile.hasAvailability == null ? 'true' : String(profile.hasAvailability),
+      availabilityTiming: profile.availabilityTiming || 'aktuell',
       childrenCount: String(profile.childrenCount ?? 0),
       maxChildAge: profile.maxChildAge === '' || profile.maxChildAge == null ? '' : String(profile.maxChildAge),
       newPassword: '',
@@ -617,6 +622,8 @@ function CaregiverProfileEditor({
       bio: formState.bio,
       mealPlan: formState.mealPlan,
       availableSpots: Number(formState.availableSpots) || 0,
+      hasAvailability: formState.hasAvailability === 'true',
+      availabilityTiming: formState.availabilityTiming,
       childrenCount: Number(formState.childrenCount) || 0,
       maxChildAge: formState.maxChildAge ? Number(formState.maxChildAge) : null,
       careTimes,
@@ -657,9 +664,33 @@ function CaregiverProfileEditor({
         <LabeledInput label="Ausführliche Beschreibung" value={formState.bio} onChangeText={(t) => updateField('bio', t)} multiline />
         <LabeledInput label="Verpflegung" value={formState.mealPlan} onChangeText={(t) => updateField('mealPlan', t)} multiline />
         <View style={styles.gridTwoCols}>
-          <LabeledInput label="Freie Plätze" value={formState.availableSpots} onChangeText={(t) => updateField('availableSpots', t)} keyboardType="numeric" />
           <LabeledInput label="Aktuelle Kinderzahl" value={formState.childrenCount} onChangeText={(t) => updateField('childrenCount', t)} keyboardType="numeric" />
           <LabeledInput label="Max. Kindesalter" value={formState.maxChildAge} onChangeText={(t) => updateField('maxChildAge', t)} keyboardType="numeric" />
+          <LabeledInput label="Freie Plätze" value={formState.availableSpots} onChangeText={(t) => updateField('availableSpots', t)} keyboardType="numeric" />
+          <LabeledInput
+            label="Wann werden Plätze frei? (genaue Zeit)"
+            value={formState.availabilityTiming}
+            onChangeText={(t) => updateField('availabilityTiming', t)}
+            placeholder="z. B. 15.09.2026, 08:00"
+          />
+        </View>
+
+        <View style={styles.inputGroup}>
+          <Text style={styles.inputLabel}>Plätze verfügbar?</Text>
+          <View style={styles.chipRow}>
+            {[
+              { label: 'Ja, es sind Plätze frei', value: 'true' },
+              { label: 'Momentan ausgebucht', value: 'false' },
+            ].map((option) => (
+              <Pressable
+                key={option.value}
+                onPress={() => updateField('hasAvailability', option.value)}
+                style={[styles.chip, formState.hasAvailability === option.value && styles.chipActive]}
+              >
+                <Text style={[styles.chipLabel, formState.hasAvailability === option.value && styles.chipLabelActive]}>{option.label}</Text>
+              </Pressable>
+            ))}
+          </View>
         </View>
       </Section>
 
@@ -849,6 +880,26 @@ const styles = StyleSheet.create({
     borderRadius: 20,
   },
   badgeText: { color: BRAND, fontWeight: '700' },
+  chipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  chip: {
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: '#c9d6ff',
+    backgroundColor: '#eef2ff',
+  },
+  chipActive: {
+    backgroundColor: BRAND,
+    borderColor: BRAND,
+  },
+  chipLabel: {
+    color: BRAND,
+    fontWeight: '700',
+  },
+  chipLabelActive: {
+    color: '#ffffff',
+  },
   galleryGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
   galleryItem: {
     width: '48%',
