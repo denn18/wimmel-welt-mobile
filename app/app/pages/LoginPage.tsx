@@ -142,6 +142,10 @@ export default function LoginScreen() {
               <Link href="/pages/ContactPage" style={styles.footerLink}>
                 Kontakt
               </Link>
+              <Text style={styles.footerDivider}>·</Text>
+              <Link href="/pages/FAQPage" style={styles.footerLink}>
+                FAQ
+              </Link>
             </View>
           </View>
         </ScrollView>
