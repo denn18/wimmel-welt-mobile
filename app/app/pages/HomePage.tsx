@@ -55,7 +55,7 @@ export default function HomeScreen() {
 
   const handleAuthPress = useCallback(async () => {
     if (!user) {
-      router.push('/pages/login');
+      router.push('/pages/LoginPage');
       return;
     }
 

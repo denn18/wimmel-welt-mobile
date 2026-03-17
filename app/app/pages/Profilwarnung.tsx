@@ -35,7 +35,7 @@ export default function ProfilwarnungScreen() {
             <Text style={styles.buttonText}>Trotzdem fortfahren</Text>
           </Pressable>
         </Link>
-        <Link href="/pages/auswahl" style={styles.link}>
+        <Link href="/pages/RoleSelectionPage" style={styles.link}>
           Zurück zur Rollenwahl
         </Link>
       </View>

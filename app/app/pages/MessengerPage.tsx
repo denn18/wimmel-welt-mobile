@@ -102,7 +102,7 @@ export default function MessageDetailScreen() {
       } catch (error) {
         if (error instanceof ApiUnauthorizedError) {
           await logout();
-          router.replace('/pages/login');
+          router.replace('/pages/LoginPage');
         }
       }
     }
@@ -121,7 +121,7 @@ export default function MessageDetailScreen() {
       } catch (error) {
         if (error instanceof ApiUnauthorizedError) {
           await logout();
-          router.replace('/pages/login');
+          router.replace('/pages/LoginPage');
           return;
         }
       } finally {
@@ -176,7 +176,7 @@ export default function MessageDetailScreen() {
     } catch (error) {
       if (error instanceof ApiUnauthorizedError) {
         await logout();
-        router.replace('/pages/login');
+        router.replace('/pages/LoginPage');
       }
     } finally {
       setSending(false);
@@ -197,7 +197,7 @@ export default function MessageDetailScreen() {
         <View style={styles.centered}>
           <Text style={styles.title}>Nachrichten</Text>
           <Text style={styles.hint}>Bitte melde dich an.</Text>
-          <Pressable style={styles.buttonPrimary} onPress={() => router.push('/pages/login')}>
+          <Pressable style={styles.buttonPrimary} onPress={() => router.push('/pages/LoginPage')}>
             <Text style={styles.buttonPrimaryText}>Anmelden</Text>
           </Pressable>
         </View>

@@ -122,7 +122,7 @@ export default function LoginScreen() {
 
             <View style={styles.registerRow}>
               <Text style={styles.helperText}>Neu bei Wimmel Welt?</Text>
-              <Link href="/pages/auswahl" style={styles.highlightText}>
+              <Link href="/pages/RoleSelectionPage" style={styles.highlightText}>
                 Jetzt kostenlos registrieren!
               </Link>
             </View>
@@ -131,15 +131,15 @@ export default function LoginScreen() {
           <View style={styles.footerLinks}>
             <Text style={styles.footerNote}>© 2025 Wimmel Welt. Alle Rechte vorbehalten.</Text>
             <View style={styles.footerRow}>
-              <Link href="/pages/datenschutz" style={styles.footerLink}>
+              <Link href="/pages/PrivacyPolicyPage" style={styles.footerLink}>
                 Datenschutz
               </Link>
               <Text style={styles.footerDivider}>·</Text>
-              <Link href="/pages/impressum" style={styles.footerLink}>
+              <Link href="/pages/ImprintPage" style={styles.footerLink}>
                 Impressum
               </Link>
               <Text style={styles.footerDivider}>·</Text>
-              <Link href="/pages/kontakt" style={styles.footerLink}>
+              <Link href="/pages/ContactPage" style={styles.footerLink}>
                 Kontakt
               </Link>
             </View>

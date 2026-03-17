@@ -114,7 +114,7 @@ export default function MessengerPageScreen() {
       } catch (requestError) {
         if (requestError instanceof ApiUnauthorizedError) {
           await logout();
-          router.replace('/pages/login');
+          router.replace('/pages/LoginPage');
           return;
         }
         setError('Nachrichten konnten nicht geladen werden.');
@@ -156,7 +156,7 @@ export default function MessengerPageScreen() {
           <Ionicons name="chatbubbles" size={48} color={BRAND} />
           <Text style={styles.title}>Nachrichten</Text>
           <Text style={styles.hint}>Erstelle einen Account und melde dich an, um die Chatfunktion zu nutzen.</Text>
-          <Pressable style={styles.buttonPrimary} onPress={() => router.push('/pages/login')}>
+          <Pressable style={styles.buttonPrimary} onPress={() => router.push('/pages/LoginPage')}>
             <Text style={styles.buttonPrimaryText}>Anmelden</Text>
           </Pressable>
         </View>
@@ -189,7 +189,7 @@ export default function MessengerPageScreen() {
           <ConversationRow
             conversation={item.conversation}
             partner={item.partner}
-            onPress={() => router.push({ pathname: '/pages/nachrichtendetail', params: { id: item.partnerId } })}
+            onPress={() => router.push({ pathname: '/pages/MessengerPage', params: { id: item.partnerId } })}
           />
         )}
       />
