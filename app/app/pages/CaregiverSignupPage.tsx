@@ -1,7 +1,3 @@
-
-
-
-
 import { useRouter } from 'expo-router';
 import { useMemo, useState } from 'react';
 import {
@@ -20,9 +16,10 @@ import { apiRequest } from '../../services/api-client';
 import { pickMultipleFiles, pickSingleFile, type PickedFile } from '../../utils/file-picker';
 import { useAuthStatus } from '../../hooks/use-auth-status';
 import type { AuthUser } from '../../types/auth';
+import { red } from 'react-native-reanimated/lib/typescript/Colors';
 
 const BRAND = 'rgb(49,66,154)';
-const WEEKDAY_SUGGESTIONS = ['Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag'];
+const WEEKDAY_SUGGESTIONS = ['Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag' , 'Sonntag'];
 
 const AVAILABILITY_TIMING_OPTIONS = [
   { value: 'aktuell', label: 'Aktuell' },
@@ -602,6 +599,8 @@ export default function CaregiverSignupPage() {
                 />
               </View>
 
+           <View>
+
               <View style={styles.gridThreeCols}>
                 <View style={styles.inputGroupThird}>
                   <Text style={styles.label}>Plätze verfügbar?</Text>
@@ -612,6 +611,11 @@ export default function CaregiverSignupPage() {
                   />
                 </View>
 
+                </View>
+               
+
+      
+
                 <View style={styles.inputGroupThird}>
                   <Text style={styles.label}>Anzahl freier Plätze</Text>
                   <TextInput
@@ -621,6 +625,8 @@ export default function CaregiverSignupPage() {
                     keyboardType="number-pad"
                   />
                 </View>
+
+            
 
                 <View style={styles.inputGroupThird}>
                   <Text style={styles.label}>Wann werden Plätze frei?</Text>
@@ -789,7 +795,7 @@ export default function CaregiverSignupPage() {
                 </View>
               </View>
 
-              <View style={styles.gridTwoCols}>
+              {/* <View style={styles.gridTwoCols}>
                 <LabeledInput
                   label="Neuer Tag"
                   placeholder="z. B. Samstag oder Feiertage"
@@ -799,7 +805,7 @@ export default function CaregiverSignupPage() {
                 <Pressable onPress={() => handleAddClosedDay()} style={styles.secondaryButton}>
                   <Text style={styles.secondaryButtonText}>Tag hinzufügen</Text>
                 </Pressable>
-              </View>
+              </View> */}
 
               <View style={styles.chipRow}>
                 {WEEKDAY_SUGGESTIONS.map((day) => (
@@ -813,7 +819,7 @@ export default function CaregiverSignupPage() {
                 <View style={styles.chipRowWrap}>
                   {formState.closedDays.map((day) => (
                     <Pressable key={day} style={styles.chip} onPress={() => handleRemoveClosedDay(day)}>
-                      <Text style={styles.chipLabel}>{day} (Entfernen)</Text>
+                      <Text style={[styles.chipLabel , styles.chipLabelRemove]}>{day} (Entfernen)</Text>
                     </Pressable>
                   ))}
                 </View>
@@ -1024,7 +1030,7 @@ function DropdownField({
   const currentOption = options.find((option) => option.value === value) ?? options[0];
 
   return (
-    <View style={styles.dropdownField}>
+    <View style={[styles.dropdownField, isOpen && styles.dropdownFieldOpen]}>
       <Pressable onPress={() => setIsOpen((open) => !open)} style={styles.dropdownTrigger}>
         <Text numberOfLines={1} style={styles.dropdownValueText}>
           {currentOption.label}
@@ -1034,28 +1040,36 @@ function DropdownField({
 
       {isOpen ? (
         <View style={styles.dropdownMenu}>
-          {options.map((option) => {
-            const selected = option.value === currentOption.value;
+          <ScrollView
+            nestedScrollEnabled
+            showsVerticalScrollIndicator
+            keyboardShouldPersistTaps="handled"
+            contentContainerStyle={styles.dropdownScrollContent}
+          >
+            {options.map((option) => {
+              const selected = option.value === currentOption.value;
 
-            return (
-              <Pressable
-                key={option.value}
-                onPress={() => {
-                  onChange(option.value);
-                  setIsOpen(false);
-                }}
-                style={[styles.dropdownItem, selected && styles.dropdownItemSelected]}
-              >
-                <Text style={[styles.dropdownItemText, selected && styles.dropdownItemTextSelected]}>{option.label}</Text>
-              </Pressable>
-            );
-          })}
+              return (
+                <Pressable
+                  key={option.value}
+                  onPress={() => {
+                    onChange(option.value);
+                    setIsOpen(false);
+                  }}
+                  style={[styles.dropdownItem, selected && styles.dropdownItemSelected]}
+                >
+                  <Text style={[styles.dropdownItemText, selected && styles.dropdownItemTextSelected]}>
+                    {option.label}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </ScrollView>
         </View>
       ) : null}
     </View>
   );
 }
-
 
 function ChecklistField({
   value,
@@ -1083,6 +1097,7 @@ function ChecklistField({
     </View>
   );
 }
+
 function UploadRow({
   title,
   hint,
@@ -1269,6 +1284,13 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     color: '#0f172a',
   },
+  chipLabelRemove: {
+    color: 'red',
+    fontWeight: '700'
+
+
+
+  },
   inputMultiline: {
     minHeight: 110,
     textAlignVertical: 'top',
@@ -1304,6 +1326,10 @@ const styles = StyleSheet.create({
   },
   dropdownField: {
     position: 'relative',
+    zIndex: 20,
+  },
+  dropdownFieldOpen: {
+    zIndex: 999,
   },
   dropdownTrigger: {
     minHeight: 50,
@@ -1335,6 +1361,10 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     maxHeight: 220,
     overflow: 'hidden',
+    elevation: 8,
+  },
+  dropdownScrollContent: {
+    paddingVertical: 4,
   },
   dropdownItem: {
     paddingHorizontal: 12,
@@ -1351,7 +1381,6 @@ const styles = StyleSheet.create({
     color: '#1d4ed8',
     fontWeight: '700',
   },
-
   checklistGroup: {
     gap: 8,
   },
@@ -1462,7 +1491,6 @@ const styles = StyleSheet.create({
     fontSize: 15,
   },
 });
-
 
 // import { useRouter } from 'expo-router';
 // import { useMemo, useState } from 'react';

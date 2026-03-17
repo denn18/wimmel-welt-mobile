@@ -14,7 +14,7 @@ const items = [
   { key: 'dashboard', label: 'Dashboard', icon: 'grid', routeName: 'dashboard', href: '/pages/dashboard' },
   {
     key: 'messages',
-    label: 'Nachrichten',
+    label: 'Chat',
     icon: 'chatbubbles',
     routeName: 'MessegeOverviewPage',
     href: '/pages/MessegeOverviewPage',
@@ -27,14 +27,6 @@ const items = [
     routeName: 'betreuungsgruppechat',
     href: '/pages/betreuungsgruppechat',
   },
-  // {
-  //.  Erstmal brauchen wir Settings Icon nichts
-  //   key: 'settings',
-  //   label: 'Einstellungen',
-  //   icon: 'settings',
-  //   routeName: 'settings',
-  //   href: '/pages/settings',
-  // },
 ];
 
 export function BottomNavbar({ state, navigation }: Partial<BottomTabBarProps> = {}) {
@@ -44,7 +36,6 @@ export function BottomNavbar({ state, navigation }: Partial<BottomTabBarProps> =
   const [checkingProfile, setCheckingProfile] = useState(false);
 
   const loginPath = '/pages/LoginPage';
-
   const profileTabRouteName = 'ProfilePage';
   const profileTabHref = '/pages/ProfilePage';
 
@@ -61,28 +52,20 @@ export function BottomNavbar({ state, navigation }: Partial<BottomTabBarProps> =
 
     setCheckingProfile(true);
     try {
-      console.log('[NAV] profile pressed', { hasUser: Boolean(user), loading }); // [LOG]
-
-      // ✅ wichtig: refresh liefert User zurück (siehe use-auth-status.ts)
       const authUser = user ?? (await refresh());
 
       if (!authUser) {
-        console.log('[NAV] no user -> go login'); // [LOG]
         router.push(loginPath);
         return;
       }
 
-      // ✅ Tab-route öffnen (damit useFocusEffect im Profil feuert)
       const routeIndex = routes.findIndex((r) => r.name === profileTabRouteName);
 
       if (navigation && routeIndex !== -1) {
-        console.log('[NAV] navigate tab route', profileTabRouteName); // [LOG]
         navigation.navigate(profileTabRouteName as never);
         return;
       }
 
-      // Fallback wenn navbar standalone gerendert wird
-      console.log('[NAV] router.push fallback', profileTabHref); // [LOG]
       router.push(profileTabHref);
     } finally {
       setCheckingProfile(false);
@@ -105,7 +88,6 @@ export function BottomNavbar({ state, navigation }: Partial<BottomTabBarProps> =
           const isFocused = activeIndex !== -1 && routeIndex === activeIndex;
 
           const handlePress = () => {
-            console.log('[NAV] tab press', item.href); // [LOG]
             if (navigation && routeIndex !== -1) {
               navigation.navigate(item.routeName as never);
               return;
@@ -124,7 +106,12 @@ export function BottomNavbar({ state, navigation }: Partial<BottomTabBarProps> =
                       color={isFocused ? BRAND : '#94A3B8'}
                       style={{ opacity: pressed ? 0.7 : 1 }}
                     />
-                    <Text style={[styles.navLabel, !isFocused && styles.navLabelInactive]}>{item.label}</Text>
+                    <Text
+                      numberOfLines={2}
+                      style={[styles.navLabel, !isFocused && styles.navLabelInactive]}
+                    >
+                      {item.label}
+                    </Text>
                   </>
                 )}
               </Pressable>
@@ -139,7 +126,10 @@ export function BottomNavbar({ state, navigation }: Partial<BottomTabBarProps> =
             color={activeRouteName === profileTabRouteName ? BRAND : '#94A3B8'}
             style={{ opacity: loading ? 0.6 : 1 }}
           />
-          <Text style={[styles.navLabel, activeRouteName !== profileTabRouteName && styles.navLabelInactive]}>
+          <Text
+            numberOfLines={2}
+            style={[styles.navLabel, activeRouteName !== profileTabRouteName && styles.navLabelInactive]}
+          >
             Profil
           </Text>
         </Pressable>
@@ -169,26 +159,30 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(191,211,255,0.9)',
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-around',
+    justifyContent: 'space-between',
     shadowColor: '#9BB9FF',
     shadowOpacity: 0.22,
     shadowOffset: { width: 0, height: 14 },
     shadowRadius: 20,
     elevation: 10,
-    paddingHorizontal: 8,
-    gap: 8,
+    paddingHorizontal: 4,
+    gap: 2,
   },
   navItem: {
     alignItems: 'center',
     justifyContent: 'center',
     gap: 4,
-    minWidth: 64,
     flex: 1,
+    minWidth: 0,
+    paddingHorizontal: 2,
   },
   navLabel: {
     fontSize: 13,
     fontWeight: '800',
     color: BRAND,
+    textAlign: 'center',
+    lineHeight: 14,
+    flexShrink: 1,
   },
   navLabelInactive: {
     color: '#94A3B8',

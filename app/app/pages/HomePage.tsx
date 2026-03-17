@@ -10,6 +10,7 @@ import { useAuthStatus } from '../../hooks/use-auth-status';
 // Vorgaben aus deiner Web-Version / neuen Werten
 const BG = '#EAF2FF';
 const CARD_BG = 'rgba(255,255,255,0.7)';
+const darkbluefont = '#353e73';
 
 const BRAND_50 = '#EEF4FF';
 const BRAND_200 = '#BFD3FF';
@@ -192,7 +193,8 @@ const styles = StyleSheet.create({
     marginTop: 8,
     fontSize: 30,
     fontWeight: '900',
-    color: SLATE_900,
+    //color: SLATE_900,
+    color: '#353e73',
     lineHeight: 36,
   },
 
