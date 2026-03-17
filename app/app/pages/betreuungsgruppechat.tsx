@@ -68,7 +68,7 @@ export default function BetreuungsgruppechatScreen() {
     } catch (error) {
       if (error instanceof ApiUnauthorizedError) {
         await logout();
-        router.replace('/pages/login');
+        router.replace('/pages/LoginPage');
         return;
       }
       Alert.alert('Fehler', 'Betreuungsgruppe konnte nicht geladen werden.');
@@ -152,7 +152,7 @@ export default function BetreuungsgruppechatScreen() {
     } catch (error) {
       if (error instanceof ApiUnauthorizedError) {
         await logout();
-        router.replace('/pages/login');
+        router.replace('/pages/LoginPage');
       }
     }
   }, [logout, router, scrollToLatest, user?.id]);

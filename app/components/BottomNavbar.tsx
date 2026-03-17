@@ -10,15 +10,15 @@ import { useAuthStatus } from '../hooks/use-auth-status';
 const BRAND = 'rgb(49,66,154)';
 
 const items = [
-  { key: 'home', label: 'Home', icon: 'home', routeName: 'home', href: '/pages/home' },
+  { key: 'home', label: 'Home', icon: 'home', routeName: 'HomePage', href: '/pages/HomePage' },
   { key: 'dashboard', label: 'Dashboard', icon: 'grid', routeName: 'dashboard', href: '/pages/dashboard' },
   {
     key: 'messages',
     label: 'Nachrichten',
     icon: 'chatbubbles',
-    routeName: 'messengerpage',
-    href: '/pages/messengerpage',
-    aliases: ['/pages/nachrichtendetail'],
+    routeName: 'MessegeOverviewPage',
+    href: '/pages/MessegeOverviewPage',
+    aliases: ['/pages/MessengerPage'],
   },
   {
     key: 'group',
@@ -43,7 +43,7 @@ export function BottomNavbar({ state, navigation }: Partial<BottomTabBarProps> =
   const { user, loading, refresh } = useAuthStatus();
   const [checkingProfile, setCheckingProfile] = useState(false);
 
-  const loginPath = '/pages/login';
+  const loginPath = '/pages/LoginPage';
 
   const profileTabRouteName = 'ProfilePage';
   const profileTabHref = '/pages/ProfilePage';

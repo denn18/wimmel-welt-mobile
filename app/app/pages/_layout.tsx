@@ -15,7 +15,7 @@ export default function PagesLayout() {
       tabBar={(props) => <BottomNavbar {...props} />}
     >
       <Tabs.Screen
-        name="home"
+        name="HomePage"
         options={{
           title: 'Home',
           tabBarIcon: ({ color, size }) => (
@@ -35,7 +35,7 @@ export default function PagesLayout() {
       />
 
       <Tabs.Screen
-        name="messengerpage"
+        name="MessegeOverviewPage"
         options={{
           title: 'Nachrichten',
           tabBarIcon: ({ color, size }) => (

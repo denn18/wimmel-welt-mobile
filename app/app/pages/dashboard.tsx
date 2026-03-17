@@ -202,7 +202,7 @@ export default function DashboardScreen() {
 
   const handleOpenMessenger = useCallback(
     (caregiver: Caregiver) => {
-      router.push(`/pages/nachrichtendetail?id=${caregiver.id}`);
+      router.push(`/pages/MessengerPage?id=${caregiver.id}`);
     },
     [router]
   );
