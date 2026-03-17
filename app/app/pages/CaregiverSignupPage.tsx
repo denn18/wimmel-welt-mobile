@@ -40,14 +40,14 @@ const AVAILABILITY_TIMING_OPTIONS = [
   { value: 'dezember', label: 'Dezember' },
 ];
 
-const AVAILABLE_SPOT_OPTIONS = Array.from({ length: 11 }, (_, index) => ({
+const AVAILABLE_SPOT_OPTIONS = Array.from({ length: 16 }, (_, index) => ({
   value: String(index),
   label: String(index),
 }));
 
 const YES_NO_OPTIONS = [
   { value: 'true', label: 'Ja, es sind Plätze frei' },
-  { value: 'false', label: 'Momentan ausgebucht' },
+  { value: 'false', label: 'Aktuell keine Plätze frei' },
 ];
 
 type ScheduleEntry = {
@@ -190,7 +190,7 @@ function mapPickedFileToRoomImage(file: PickedFile): RoomImage {
     id: generateTempId(),
     dataUrl: file.dataUrl,
     fileName: file.fileName,
-    mimeType: file.mimeType,
+    mimeType: file.mimeType ?? undefined,
   };
 }
 
@@ -610,7 +610,7 @@ export default function CaregiverSignupPage() {
               <View style={styles.gridThreeCols}>
                 <View style={styles.inputGroupThird}>
                   <Text style={styles.label}>Plätze verfügbar?</Text>
-                  <SelectField
+                  <ChecklistField
                     value={formState.hasAvailability ? 'true' : 'false'}
                     options={YES_NO_OPTIONS}
                     onChange={(value) => updateField('hasAvailability', value === 'true')}
@@ -1060,6 +1060,33 @@ function SelectField({
   );
 }
 
+
+function ChecklistField({
+  value,
+  options,
+  onChange,
+}: {
+  value: string;
+  options: { value: string; label: string }[];
+  onChange: (value: string) => void;
+}) {
+  return (
+    <View style={styles.checklistGroup}>
+      {options.map((option) => {
+        const selected = value === option.value;
+
+        return (
+          <Pressable key={option.value} onPress={() => onChange(option.value)} style={styles.checklistItem}>
+            <View style={[styles.checkbox, selected && styles.checkboxSelected]}>
+              {selected ? <Text style={styles.checkboxCheckmark}>✓</Text> : null}
+            </View>
+            <Text style={styles.checklistLabel}>{option.label}</Text>
+          </Pressable>
+        );
+      })}
+    </View>
+  );
+}
 function UploadRow({
   title,
   hint,
@@ -1309,6 +1336,39 @@ const styles = StyleSheet.create({
   selectValueText: {
     color: '#0f172a',
     fontSize: 16,
+  },
+
+  checklistGroup: {
+    gap: 8,
+  },
+  checklistItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  checklistLabel: {
+    color: '#0f172a',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  checkbox: {
+    width: 18,
+    height: 18,
+    borderRadius: 4,
+    borderWidth: 1,
+    borderColor: '#94a3b8',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#fff',
+  },
+  checkboxSelected: {
+    backgroundColor: BRAND,
+    borderColor: BRAND,
+  },
+  checkboxCheckmark: {
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: '700',
   },
   secondaryButton: {
     alignSelf: 'flex-start',
