@@ -22,9 +22,7 @@ const BRAND = 'rgb(49,66,154)';
 const WEEKDAY_SUGGESTIONS = ['Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag'];
 const AVAILABILITY_TIMING_OPTIONS = [
   { value: 'aktuell', label: 'Sofort' },
-  { value: '1_3_monate', label: 'In 1–3 Monaten' },
-  { value: '4_6_monate', label: 'In 4–6 Monaten' },
-  { value: '6_plus_monate', label: 'In 6+ Monaten' },
+  { value: 'datum_festgelegt', label: 'Zu einem konkreten Datum/Uhrzeit' },
   { value: 'unbekannt', label: 'Noch unklar' },
 ];
 
@@ -481,36 +479,19 @@ export default function CaregiverSignupPage() {
 
             <View style={styles.gridTwoCols}>
               <LabeledInput
+                label="Max. Alter der Kinder"
+                keyboardType="number-pad"
+                placeholder="z. B. 6"
+                value={formState.maxChildAge}
+                onChangeText={(value) => updateField('maxChildAge', value)}
+              />
+              <LabeledInput
                 label="Aktuell betreute Kinder"
                 required
                 keyboardType="number-pad"
                 value={formState.childrenCount}
                 onChangeText={(value) => updateField('childrenCount', value)}
               />
-              <LabeledInput
-                label="Freie Plätze"
-                required
-                keyboardType="number-pad"
-                value={formState.availableSpots}
-                onChangeText={(value) => updateField('availableSpots', value)}
-              />
-            </View>
-
-            <View style={styles.inputGroup}>
-              <Text style={styles.label}>Wann werden Plätze frei?</Text>
-              <View style={styles.chipRow}>
-                {AVAILABILITY_TIMING_OPTIONS.map((option) => (
-                  <Pressable
-                    key={option.value}
-                    onPress={() => updateField('availabilityTiming', option.value)}
-                    style={[styles.chip, formState.availabilityTiming === option.value && styles.chipActive]}
-                  >
-                    <Text style={[styles.chipLabel, formState.availabilityTiming === option.value && styles.chipLabelActive]}>
-                      {option.label}
-                    </Text>
-                  </Pressable>
-                ))}
-              </View>
             </View>
 
             <View style={styles.gridTwoCols}>
@@ -530,13 +511,41 @@ export default function CaregiverSignupPage() {
                   ))}
                 </View>
               </View>
+
               <LabeledInput
-                label="Max. Alter der Kinder"
+                label="Freie Plätze"
+                required
                 keyboardType="number-pad"
-                placeholder="z. B. 6"
-                value={formState.maxChildAge}
-                onChangeText={(value) => updateField('maxChildAge', value)}
+                value={formState.availableSpots}
+                onChangeText={(value) => updateField('availableSpots', value)}
               />
+            </View>
+
+            <View style={styles.inputGroup}>
+              <Text style={styles.label}>Wann werden Plätze frei?</Text>
+              <LabeledInput
+                label="Genaue Zeit"
+                placeholder="z. B. 15.09.2026, 08:00"
+                value={formState.availabilityTiming}
+                onChangeText={(value) => updateField('availabilityTiming', value)}
+              />
+            </View>
+
+            <View style={styles.inputGroup}>
+              <Text style={styles.label}>Schnellauswahl</Text>
+              <View style={styles.chipRow}>
+                {AVAILABILITY_TIMING_OPTIONS.map((option) => (
+                  <Pressable
+                    key={option.value}
+                    onPress={() => updateField('availabilityTiming', option.value)}
+                    style={[styles.chip, formState.availabilityTiming === option.value && styles.chipActive]}
+                  >
+                    <Text style={[styles.chipLabel, formState.availabilityTiming === option.value && styles.chipLabelActive]}>
+                      {option.label}
+                    </Text>
+                  </Pressable>
+                ))}
+              </View>
             </View>
           </View>
 
