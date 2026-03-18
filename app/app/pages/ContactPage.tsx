@@ -18,7 +18,10 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { BottomNavbar } from '../../components/BottomNavbar';
 
 const BRAND = 'rgb(49,66,154)';
-const CONTACT_EMAIL = 'wimmel-welt@info.de';
+const CONTACT_EMAIL = 'info@wimmel-welt.de';
+;
+const BG = '#EAF2FF';
+const darkbluefont = '#353e73';
 
 export default function ContactPage() {
   const [copied, setCopied] = useState(false);
@@ -177,7 +180,7 @@ export default function ContactPage() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#f5f7fb',
+    backgroundColor: BG,
   },
   content: {
     padding: 16,

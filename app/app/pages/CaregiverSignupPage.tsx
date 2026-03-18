@@ -19,6 +19,8 @@ import type { AuthUser } from '../../types/auth';
 import { red } from 'react-native-reanimated/lib/typescript/Colors';
 
 const BRAND = 'rgb(49,66,154)';
+const BG = '#EAF2FF';
+const darkbluefont = '#353e73';
 const WEEKDAY_SUGGESTIONS = ['Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag' , 'Sonntag'];
 
 const AVAILABILITY_TIMING_OPTIONS = [
@@ -1163,7 +1165,7 @@ function ScheduleRow({
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#f5f7fb',
+    backgroundColor: BG,
   },
   content: {
     flexGrow: 1,
@@ -1182,7 +1184,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: '800',
-    color: '#0f172a',
+    color: darkbluefont,
   },
   subtitle: {
     color: '#475569',

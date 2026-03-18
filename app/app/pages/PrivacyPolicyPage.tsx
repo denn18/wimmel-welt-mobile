@@ -5,6 +5,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { BottomNavbar } from '../../components/BottomNavbar';
 
 const BRAND = 'rgb(49,66,154)';
+const BG = '#EAF2FF';
+const darkbluefont = '#353e73';
 
 type Section = {
   title: string;
@@ -138,7 +140,7 @@ export default function PrivacyPolicyPage() {
           <Ionicons name="shield-checkmark" size={20} color={BRAND} />
           <Text style={styles.topBarTitle}>Datenschutz</Text>
           <View style={styles.placeholderIcon}>
-            <Ionicons name="ellipsis-horizontal" size={20} color={BRAND} />
+           <Ionicons name="ellipsis-horizontal" size={20} color={BRAND} />
           </View>
         </View>
 
@@ -181,7 +183,7 @@ export default function PrivacyPolicyPage() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#f5f7fb',
+    backgroundColor: BG,
   },
   content: {
     padding: 16,

@@ -23,6 +23,7 @@ import { PickedFile, pickSingleFile, pickMultipleFiles } from '../../utils/file-
 import { assetUrl, getApiBaseUrl } from '../../utils/url';
 
 const BRAND = '#31429a';
+const BG = '#EAF2FF';
 
 type Child = { name: string; age: string; gender: '' | 'female' | 'male' | 'diverse'; notes: string };
 type ScheduleEntry = { startTime: string; endTime: string; activity: string };
@@ -811,7 +812,7 @@ export default function ProfilePage() {
 }
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: '#f5f7fb' },
+  safeArea: { flex: 1, backgroundColor: BG },
   content: { padding: 16, gap: 18, paddingBottom: 0 },
   header: { gap: 6 },
 

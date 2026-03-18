@@ -18,6 +18,11 @@ import { BottomNavbar } from '../../components/BottomNavbar';
 import { useAuthStatus } from '../../hooks/use-auth-status';
 import type { AuthUser } from '../../types/auth';
 
+
+const BRAND = 'rgb(49,66,154)';
+const BG = '#EAF2FF';
+const darkbluefont = '#353e73';
+
 type Child = { name: string; age: string; gender: '' | 'female' | 'male' | 'diverse'; notes: string };
 
 type FormState = {
@@ -51,6 +56,8 @@ const initialState: FormState = {
   password: '',
   notes: '',
 };
+
+
 
 export default function ParentSignUpPage() {
   const router = useRouter();
@@ -416,12 +423,11 @@ function LabeledInput({
   );
 }
 
-const BRAND = 'rgb(49,66,154)';
 
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#f5f7fb',
+    backgroundColor: BG,
   },
   content: {
     flexGrow: 1,
@@ -440,7 +446,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: '800',
-    color: '#0f172a',
+    color: darkbluefont,
   },
   subtitle: {
     color: '#475569',

@@ -4,6 +4,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { BottomNavbar } from '../../components/BottomNavbar';
 
+const BG = '#EAF2FF';
+
 export default function RoleSelectionPage() {
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -55,7 +57,7 @@ export default function RoleSelectionPage() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#f5f7fb',
+    backgroundColor: BG,
   },
   content: {
     flexGrow: 1,

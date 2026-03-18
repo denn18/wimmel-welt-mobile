@@ -5,6 +5,8 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 const BRAND = 'rgb(49,66,154)';
+const BG = '#EAF2FF';
+const darkbluefont = '#353e73';
 
 type FaqQuestion = {
   q: string;
@@ -232,7 +234,7 @@ export default function FAQPage() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#f5f7fb',
+    backgroundColor: BG,
   },
   content: {
     padding: 16,
