@@ -5,31 +5,32 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { BottomNavbar } from '../../components/BottomNavbar';
 
 const BRAND = 'rgb(49,66,154)';
+const BG = '#EAF2FF';
 
 const sections = [
   {
     title: 'Diensteanbieter',
-    content: ['Wimmel Welt Muster GmbH', 'Musterstraße 12', '12345 Beispielstadt'],
+    content: ['Wimmel Welt', 'Falkenrecks Heide 6', '33332 Gütersloh'],
   },
   {
     title: 'Kontakt',
-    content: ['Telefon: +49 (0) 123 456789', 'E-Mail: wimmel-welt@info.de', 'Web: www.wimmel-welt.de'],
+    content: ['E-Mail: info@wimmel-welt.de', 'Web: www.wimmel-welt.de'],
   },
-  {
-    title: 'Vertretungsberechtigt',
-    content: ['Max Beispiel (Geschäftsführung)'],
-  },
-  {
-    title: 'Registereintrag',
-    content: ['Handelsregister: Amtsgericht Beispielstadt', 'Registernummer: HRB 012345'],
-  },
-  {
-    title: 'Umsatzsteuer-ID',
-    content: ['USt-IdNr.: DE123456789'],
-  },
+  // {
+  //   title: 'Vertretungsberechtigt',
+  //   content: ['Max Beispiel (Geschäftsführung)'],
+  // },
+  // {
+  //   title: 'Registereintrag',
+  //   content: ['Handelsregister: Amtsgericht Beispielstadt', 'Registernummer: HRB 012345'],
+  // },
+  // {
+  //   title: 'Umsatzsteuer-ID',
+  //   content: ['USt-IdNr.: DE123456789'],
+  // },
   {
     title: 'Verantwortlich für den Inhalt',
-    content: ['Verantwortlich gemäß § 18 Abs. 2 MStV: Max Beispiel, Musterstraße 12, 12345 Beispielstadt.'],
+    content: ['Verantwortlich gemäß § 18 Abs. 2 MStV:','Wimmel Welt','Falkenrecks Heide 6','33332 Gütersloh']
   },
   {
     title: 'Haftungshinweise',
@@ -87,7 +88,7 @@ export default function ImprintPage() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#f5f7fb',
+    backgroundColor: BG,
   },
   content: {
     padding: 16,

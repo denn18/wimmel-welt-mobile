@@ -20,16 +20,12 @@ const sections: Section[] = [
     title: '1. Verantwortlicher und Geltungsbereich',
     bullets: [
       'Verantwortlicher im Sinne der Datenschutz-Grundverordnung (DSGVO) ist:',
-      'Wimmel Welt [Rechtsform, z.B. e.K. / UG (haftungsbeschränkt) / GmbH]',
-      '[Straße, Hausnummer]',
-      '[PLZ, Ort]',
-      'Telefon: [Telefonnummer]',
-      'E-Mail: [zentrale Kontaktadresse]',
-      'Sofern ein Datenschutzbeauftragter bestellt ist:',
-      'Datenschutzbeauftragter: [Name oder externer Dienstleister]',
-      'Anschrift: [Anschrift]',
-      'E-Mail: [DSB-E-Mail-Adresse]',
-      'Diese Datenschutzerklärung gilt für die Nutzung der Online-Plattform „Wimmel Welt“ unter den Domains [z.B. wimmelwelt.de] einschließlich der API-Endpunkte https://api.wimmelwelt.de (Produktivsystem) und https://api-staging.wimmelwelt.de (Staging-Umgebung) sowie aller zugehörigen Weboberflächen und Funktionen (Registrierung, Login, Profile, Suche, Chat, Medien-Uploads, Rechnungsbereitstellung).',
+      'Wimmel Welt',
+      'Falkenrecks Heide 6',
+      '33332 Gütersloh',
+      'E-Mail: info@wimmel-welt.de',
+    
+      'Diese Datenschutzerklärung gilt für die Nutzung der Online-Plattform „Wimmel Welt“ unter den Domains www.wimmel-welt.de'
     ],
   },
   {
