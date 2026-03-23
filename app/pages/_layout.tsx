@@ -39,7 +39,6 @@ export default function RootLayout() {
           <Stack.Screen name="ContactPage" options={{ headerShown: false, title: 'Kontakt' }} />
           <Stack.Screen name="FAQPage" options={{ headerShown: false, title: 'FAQ' }} />
           <Stack.Screen name="RoleSelectionPage" options={{ headerShown: false, title: 'Registrieren' }} />
-          <Stack.Screen name="Profilwarnung" options={{ headerShown: false, title: 'Profilwarnung' }} />
           <Stack.Screen name="ParentSignUpPage" options={{ headerShown: false, title: 'Parent Signup' }} />
           <Stack.Screen name="CaregiverSignupPage" options={{ headerShown: false, title: 'Caregiver Signup' }} />
           <Stack.Screen
