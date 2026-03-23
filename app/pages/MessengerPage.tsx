@@ -14,11 +14,11 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useAuthStatus } from '../../hooks/use-auth-status';
-import { ApiUnauthorizedError, apiRequest } from '../../services/api-client';
-import { fetchMessages, sendMessage as sendMessageRequest, type Message, type MessageAttachment } from '../../services/messages';
-import { pickMultipleFiles, type PickedFile } from '../../utils/file-picker';
-import { assetUrl } from '../../utils/url';
+import { useAuthStatus } from '../hooks/use-auth-status';
+import { ApiUnauthorizedError, apiRequest } from '../services/api-client';
+import { fetchMessages, sendMessage as sendMessageRequest, type Message, type MessageAttachment } from '../services/messages';
+import { pickMultipleFiles, type PickedFile } from '../utils/file-picker';
+import { assetUrl } from '../utils/url';
 
 const BRAND = 'rgb(49,66,154)';
 const BG = '#EAF2FF';
@@ -102,7 +102,7 @@ export default function MessageDetailScreen() {
       } catch (error) {
         if (error instanceof ApiUnauthorizedError) {
           await logout();
-          router.replace('/pages/LoginPage');
+          router.replace('/LoginPage');
         }
       }
     }
@@ -121,7 +121,7 @@ export default function MessageDetailScreen() {
       } catch (error) {
         if (error instanceof ApiUnauthorizedError) {
           await logout();
-          router.replace('/pages/LoginPage');
+          router.replace('/LoginPage');
           return;
         }
       } finally {
@@ -176,7 +176,7 @@ export default function MessageDetailScreen() {
     } catch (error) {
       if (error instanceof ApiUnauthorizedError) {
         await logout();
-        router.replace('/pages/LoginPage');
+        router.replace('/LoginPage');
       }
     } finally {
       setSending(false);
@@ -197,7 +197,7 @@ export default function MessageDetailScreen() {
         <View style={styles.centered}>
           <Text style={styles.title}>Nachrichten</Text>
           <Text style={styles.hint}>Bitte melde dich an.</Text>
-          <Pressable style={styles.buttonPrimary} onPress={() => router.push('/pages/LoginPage')}>
+          <Pressable style={styles.buttonPrimary} onPress={() => router.push('/LoginPage')}>
             <Text style={styles.buttonPrimaryText}>Anmelden</Text>
           </Pressable>
         </View>

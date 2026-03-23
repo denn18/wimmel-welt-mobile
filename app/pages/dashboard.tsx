@@ -16,10 +16,10 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
  //Neuer richtiger Pfad
-import { BottomNavbar } from '../../components/BottomNavbar';
+import { BottomNavbar } from '../components/BottomNavbar';
 
-import { apiRequest } from '../../services/api-client';
-import { assetUrl, FileReference } from '../../utils/url';
+import { apiRequest } from '../services/api-client';
+import { assetUrl, FileReference } from '../utils/url';
 
 const BRAND = 'rgb(49,66,154)';
 const BG = '#EAF2FF';
@@ -202,7 +202,7 @@ export default function DashboardScreen() {
 
   const handleOpenMessenger = useCallback(
     (caregiver: Caregiver) => {
-      router.push(`/pages/MessengerPage?id=${caregiver.id}`);
+      router.push(`/MessengerPage?id=${caregiver.id}`);
     },
     [router]
   );
@@ -393,7 +393,7 @@ export default function DashboardScreen() {
                   </View>
 
                   <View style={styles.btnRow}>
-                    <Pressable style={styles.primaryAction} onPress={() => router.push(`/pages/kindertagespflegedetail?id=${caregiver.id}`)}>
+                    <Pressable style={styles.primaryAction} onPress={() => router.push(`/kindertagespflegedetail?id=${caregiver.id}`)}>
                       <Ionicons name="chatbubble-ellipses" size={16} color="#fff" />
                       <Text style={styles.primaryActionText}>Kennenlernen</Text>
                     </Pressable>

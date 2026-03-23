@@ -3,10 +3,10 @@ import { useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, FlatList, Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { useAuthStatus } from '../../hooks/use-auth-status';
-import { ApiUnauthorizedError, apiRequest } from '../../services/api-client';
-import { fetchConversations, type Message } from '../../services/messages';
-import { assetUrl } from '../../utils/url';
+import { useAuthStatus } from '../hooks/use-auth-status';
+import { ApiUnauthorizedError, apiRequest } from '../services/api-client';
+import { fetchConversations, type Message } from '../services/messages';
+import { assetUrl } from '../utils/url';
 
 const BRAND = 'rgb(49,66,154)';
 const BG = '#EAF2FF';
@@ -114,7 +114,7 @@ export default function MessengerPageScreen() {
       } catch (requestError) {
         if (requestError instanceof ApiUnauthorizedError) {
           await logout();
-          router.replace('/pages/LoginPage');
+          router.replace('/LoginPage');
           return;
         }
         setError('Nachrichten konnten nicht geladen werden.');
@@ -156,7 +156,7 @@ export default function MessengerPageScreen() {
           <Ionicons name="chatbubbles" size={48} color={BRAND} />
           <Text style={styles.title}>Nachrichten</Text>
           <Text style={styles.hint}>Erstelle einen Account und melde dich an, um die Chatfunktion zu nutzen.</Text>
-          <Pressable style={styles.buttonPrimary} onPress={() => router.push('/pages/LoginPage')}>
+          <Pressable style={styles.buttonPrimary} onPress={() => router.push('/LoginPage')}>
             <Text style={styles.buttonPrimaryText}>Anmelden</Text>
           </Pressable>
         </View>
@@ -189,7 +189,7 @@ export default function MessengerPageScreen() {
           <ConversationRow
             conversation={item.conversation}
             partner={item.partner}
-            onPress={() => router.push({ pathname: '/pages/MessengerPage', params: { id: item.partnerId } })}
+            onPress={() => router.push({ pathname: '/MessengerPage', params: { id: item.partnerId } })}
           />
         )}
       />

@@ -12,10 +12,10 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { apiRequest } from '../../services/api-client';
-import { pickMultipleFiles, pickSingleFile, type PickedFile } from '../../utils/file-picker';
-import { useAuthStatus } from '../../hooks/use-auth-status';
-import type { AuthUser } from '../../types/auth';
+import { apiRequest } from '../services/api-client';
+import { pickMultipleFiles, pickSingleFile, type PickedFile } from '../utils/file-picker';
+import { useAuthStatus } from '../hooks/use-auth-status';
+import type { AuthUser } from '../types/auth';
 import { red } from 'react-native-reanimated/lib/typescript/Colors';
 
 const BRAND = 'rgb(49,66,154)';
@@ -467,7 +467,7 @@ export default function CaregiverSignupPage() {
         });
 
         setTimeout(() => {
-          router.replace('/pages/ProfilePage');
+          router.replace('/ProfilePage');
         }, 1200);
       } catch (authError) {
         console.warn('Automatisches Login nach Registrierung nicht möglich', authError);
@@ -1508,11 +1508,11 @@ const styles = StyleSheet.create({
 // } from 'react-native';
 // import { SafeAreaView } from 'react-native-safe-area-context';
 
-// import { apiRequest } from '../../services/api-client';
-// import { pickMultipleFiles, pickSingleFile, type PickedFile } from '../../utils/file-picker';
-// import { BottomNavbar } from '../../components/BottomNavbar';
-// import { useAuthStatus } from '../../hooks/use-auth-status';
-// import type { AuthUser } from '../../types/auth';
+// import { apiRequest } from '../services/api-client';
+// import { pickMultipleFiles, pickSingleFile, type PickedFile } from '../utils/file-picker';
+// import { BottomNavbar } from '../components/BottomNavbar';
+// import { useAuthStatus } from '../hooks/use-auth-status';
+// import type { AuthUser } from '../types/auth';
 
 // const BRAND = 'rgb(49,66,154)';
 // const WEEKDAY_SUGGESTIONS = ['Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag'];
@@ -1818,7 +1818,7 @@ const styles = StyleSheet.create({
 //           type: 'success',
 //           message: 'Profil erstellt! Du wirst jetzt zu deinem Profil weitergeleitet.',
 //         });
-//         setTimeout(() => router.replace('/pages/ProfilePage'), 1200);
+//         setTimeout(() => router.replace('/ProfilePage'), 1200);
 //       } catch (authError) {
 //         console.warn('Automatischer Login nach Registrierung nicht möglich', authError);
 //         setStatus({

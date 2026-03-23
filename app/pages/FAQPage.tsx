@@ -213,13 +213,13 @@ export default function FAQPage() {
           <Text style={styles.footerLabel}>Noch Fragen?</Text>
           <Text style={styles.footerTitle}>Wir helfen gerne persönlich weiter.</Text>
           <View style={styles.footerActions}>
-            <Link href="/pages/ContactPage" asChild>
+            <Link href="/ContactPage" asChild>
               <Pressable style={styles.primaryAction}>
                 <Ionicons name="chatbubble-ellipses-outline" size={16} color={BRAND} />
                 <Text style={styles.primaryActionText}>Kontakt</Text>
               </Pressable>
             </Link>
-            <Link href="/pages/dashboard" asChild>
+            <Link href="/dashboard" asChild>
               <Pressable style={styles.secondaryAction}>
                 <Text style={styles.secondaryActionText}>Kindertagespflege finden</Text>
               </Pressable>

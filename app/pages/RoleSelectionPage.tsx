@@ -2,7 +2,7 @@ import { Link } from 'expo-router';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { BottomNavbar } from '../../components/BottomNavbar';
+import { BottomNavbar } from '../components/BottomNavbar';
 
 const BG = '#EAF2FF';
 
@@ -19,7 +19,7 @@ export default function RoleSelectionPage() {
           </View>
 
           <View style={styles.cardGrid}>
-            <Link href="/pages/ParentSignUpPage" asChild>
+            <Link href="/ParentSignUpPage" asChild>
               <Pressable style={styles.roleCard}>
                 <View style={styles.cardHeader}>
                   <Text style={styles.roleTag}>Für Eltern</Text>
@@ -33,7 +33,7 @@ export default function RoleSelectionPage() {
               </Pressable>
             </Link>
 
-            <Link href="/pages/CaregiverSignupPage" asChild>
+            <Link href="/CaregiverSignupPage" asChild>
               <Pressable style={styles.roleCard}>
                 <View style={styles.cardHeader}>
                   <Text style={styles.roleTag}>Für Kindertagespflegepersonen</Text>
