@@ -10,22 +10,22 @@ import { useAuthStatus } from '../hooks/use-auth-status';
 const BRAND = 'rgb(49,66,154)';
 
 const items = [
-  { key: 'home', label: 'Home', icon: 'home', routeName: 'HomePage', href: '/pages/HomePage' },
-  { key: 'dashboard', label: 'Dashboard', icon: 'grid', routeName: 'dashboard', href: '/pages/dashboard' },
+  { key: 'home', label: 'Home', icon: 'home', routeName: 'HomePage', href: '/HomePage' },
+  { key: 'dashboard', label: 'Dashboard', icon: 'grid', routeName: 'dashboard', href: '/dashboard' },
   {
     key: 'messages',
     label: 'Chat',
     icon: 'chatbubbles',
     routeName: 'MessegeOverviewPage',
-    href: '/pages/MessegeOverviewPage',
-    aliases: ['/pages/MessengerPage'],
+    href: '/MessegeOverviewPage',
+    aliases: ['/MessengerPage'],
   },
   {
     key: 'group',
     label: 'Gruppe',
     icon: 'people',
     routeName: 'betreuungsgruppechat',
-    href: '/pages/betreuungsgruppechat',
+    href: '/betreuungsgruppechat',
   },
 ];
 
@@ -35,9 +35,9 @@ export function BottomNavbar({ state, navigation }: Partial<BottomTabBarProps> =
   const { user, loading, refresh } = useAuthStatus();
   const [checkingProfile, setCheckingProfile] = useState(false);
 
-  const loginPath = '/pages/LoginPage';
+  const loginPath = '/LoginPage';
   const profileTabRouteName = 'ProfilePage';
-  const profileTabHref = '/pages/ProfilePage';
+  const profileTabHref = '/ProfilePage';
 
   const bottomPadding = Math.max(insets.bottom, 10);
   const navHeight = 64 + bottomPadding;

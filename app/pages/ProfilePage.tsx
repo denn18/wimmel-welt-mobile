@@ -16,11 +16,11 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 
-import { BottomNavbar } from '../../components/BottomNavbar';
-import { useAuthStatus } from '../../hooks/use-auth-status';
-import { fetchProfile, profileEndpoint, updateProfile } from '../../services/profile';
-import { PickedFile, pickSingleFile, pickMultipleFiles } from '../../utils/file-picker';
-import { assetUrl, getApiBaseUrl } from '../../utils/url';
+import { BottomNavbar } from '../components/BottomNavbar';
+import { useAuthStatus } from '../hooks/use-auth-status';
+import { fetchProfile, profileEndpoint, updateProfile } from '../services/profile';
+import { PickedFile, pickSingleFile, pickMultipleFiles } from '../utils/file-picker';
+import { assetUrl, getApiBaseUrl } from '../utils/url';
 
 const BRAND = '#31429a';
 const BG = '#EAF2FF';

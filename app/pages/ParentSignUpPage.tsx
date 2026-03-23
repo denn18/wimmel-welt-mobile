@@ -12,11 +12,11 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { apiRequest } from '../../services/api-client';
-import { pickSingleFile } from '../../utils/file-picker';
-import { BottomNavbar } from '../../components/BottomNavbar';
-import { useAuthStatus } from '../../hooks/use-auth-status';
-import type { AuthUser } from '../../types/auth';
+import { apiRequest } from '../services/api-client';
+import { pickSingleFile } from '../utils/file-picker';
+import { BottomNavbar } from '../components/BottomNavbar';
+import { useAuthStatus } from '../hooks/use-auth-status';
+import type { AuthUser } from '../types/auth';
 
 
 const BRAND = 'rgb(49,66,154)';
@@ -154,7 +154,7 @@ export default function ParentSignUpPage() {
           type: 'success',
           message: 'Registrierung erfolgreich! Du wirst jetzt zur Übersicht weitergeleitet.',
         });
-        setTimeout(() => router.replace('/pages/dashboard'), 1200);
+        setTimeout(() => router.replace('/dashboard'), 1200);
       } catch (authError) {
         console.warn('Automatischer Login nach Registrierung nicht möglich', authError);
         setStatus({

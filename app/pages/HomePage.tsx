@@ -4,8 +4,8 @@ import { useCallback, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { BottomNavbar } from '../../components/BottomNavbar';
-import { useAuthStatus } from '../../hooks/use-auth-status';
+import { BottomNavbar } from '../components/BottomNavbar';
+import { useAuthStatus } from '../hooks/use-auth-status';
 
 // Vorgaben aus deiner Web-Version / neuen Werten
 const BG = '#EAF2FF';
@@ -56,7 +56,7 @@ export default function HomeScreen() {
 
   const handleAuthPress = useCallback(async () => {
     if (!user) {
-      router.push('/pages/LoginPage');
+      router.push('/LoginPage');
       return;
     }
 
@@ -90,7 +90,7 @@ export default function HomeScreen() {
 
           <View style={styles.heroImageShell}>
             <Image
-              source={require('../../assets/images/hero-family.svg')}
+              source={require('../assets/images/hero-family.svg')}
               style={styles.heroImage}
               contentFit="contain"
             />
@@ -105,7 +105,7 @@ export default function HomeScreen() {
           <View style={styles.ctaWrap}>
             <Pressable
               style={({ pressed }) => [styles.primaryBtn, pressed && styles.primaryBtnPressed]}
-              onPress={() => router.push('/pages/dashboard')}
+              onPress={() => router.push('/dashboard')}
             >
               <Text style={styles.primaryBtnText}>Kindertagespflege finden</Text>
             </Pressable>

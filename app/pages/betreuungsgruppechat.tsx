@@ -17,11 +17,11 @@ import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
 
-import { useAuthStatus } from '../../hooks/use-auth-status';
-import { ApiUnauthorizedError, apiRequest } from '../../services/api-client';
-import { fetchGroupMessages, loadCareGroup, sendGroupMessage, type CareGroup, type GroupMessage } from '../../services/groups';
-import { pickSingleFile } from '../../utils/file-picker';
-import { assetUrl } from '../../utils/url';
+import { useAuthStatus } from '../hooks/use-auth-status';
+import { ApiUnauthorizedError, apiRequest } from '../services/api-client';
+import { fetchGroupMessages, loadCareGroup, sendGroupMessage, type CareGroup, type GroupMessage } from '../services/groups';
+import { pickSingleFile } from '../utils/file-picker';
+import { assetUrl } from '../utils/url';
 
 const BRAND = 'rgb(49,66,154)';
 const BG = '#EAF2FF';
@@ -68,7 +68,7 @@ export default function BetreuungsgruppechatScreen() {
     } catch (error) {
       if (error instanceof ApiUnauthorizedError) {
         await logout();
-        router.replace('/pages/LoginPage');
+        router.replace('/LoginPage');
         return;
       }
       Alert.alert('Fehler', 'Betreuungsgruppe konnte nicht geladen werden.');
@@ -152,7 +152,7 @@ export default function BetreuungsgruppechatScreen() {
     } catch (error) {
       if (error instanceof ApiUnauthorizedError) {
         await logout();
-        router.replace('/pages/LoginPage');
+        router.replace('/LoginPage');
       }
     }
   }, [logout, router, scrollToLatest, user?.id]);
@@ -230,7 +230,7 @@ export default function BetreuungsgruppechatScreen() {
         <View style={styles.header}>
           <Text style={styles.title}>Betreuungsgruppe</Text>
           {user.role === 'caregiver' ? (
-            <Pressable style={styles.buttonPrimary} onPress={() => router.push('/pages/betreuungsgruppeerstellen')}>
+            <Pressable style={styles.buttonPrimary} onPress={() => router.push('/betreuungsgruppeerstellen')}>
               <Text style={styles.buttonPrimaryText}>Erstellen</Text>
             </Pressable>
           ) : null}
@@ -261,7 +261,7 @@ export default function BetreuungsgruppechatScreen() {
             ) : null}
           </View>
           {user.role === 'caregiver' ? (
-            <Pressable style={styles.buttonPrimary} onPress={() => router.push('/pages/betreuungsgruppeerstellen')}>
+            <Pressable style={styles.buttonPrimary} onPress={() => router.push('/betreuungsgruppeerstellen')}>
               <Text style={styles.buttonPrimaryText}>Bearbeiten</Text>
             </Pressable>
           ) : null}

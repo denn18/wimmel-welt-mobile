@@ -4,7 +4,7 @@ import { ActivityIndicator, Alert, Pressable, ScrollView, StyleSheet, Switch, Te
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 
-import { useAuthStatus } from '../../hooks/use-auth-status';
+import { useAuthStatus } from '../hooks/use-auth-status';
 import {
   fetchGroupCandidates,
   loadCareGroup,
@@ -12,9 +12,9 @@ import {
   deleteCareGroup,
   type CareGroup,
   type GroupCandidate,
-} from '../../services/groups';
-import { fetchConversations } from '../../services/messages';
-import { fetchProfile } from '../../services/profile';
+} from '../services/groups';
+import { fetchConversations } from '../services/messages';
+import { fetchProfile } from '../services/profile';
 
 const BRAND = 'rgb(49,66,154)';
 const BG = '#EAF2FF';
@@ -99,7 +99,7 @@ export default function BetreuungsgruppeErstellenScreen() {
               setSaving(true);
               try {
                 await deleteCareGroup(String(user.id));
-                router.replace('/pages/betreuungsgruppechat');
+                router.replace('/betreuungsgruppechat');
               } catch {
                 Alert.alert('Fehler', 'Betreuungsgruppe konnte nicht gelöscht werden.');
               } finally {
@@ -127,7 +127,7 @@ export default function BetreuungsgruppeErstellenScreen() {
         daycareName: profile?.daycareName || existingGroup?.daycareName || 'Betreuungsgruppe',
         logoImageUrl: profile?.logoImageUrl ?? existingGroup?.logoImageUrl ?? null,
       });
-      router.replace('/pages/betreuungsgruppechat');
+      router.replace('/betreuungsgruppechat');
     } catch {
       Alert.alert('Fehler', 'Betreuungsgruppe konnte nicht gespeichert werden.');
     } finally {

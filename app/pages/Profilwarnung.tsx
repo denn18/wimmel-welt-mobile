@@ -2,18 +2,18 @@ import { Link, useLocalSearchParams } from 'expo-router';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { BottomNavbar } from '../../components/BottomNavbar';
+import { BottomNavbar } from '../components/BottomNavbar';
 
 type ProfilRolle = 'eltern' | 'tagespflegeperson';
 
-const ROLLEN_KONFIG: Record<ProfilRolle, { title: string; href: '/pages/ParentSignUpPage' | '/pages/CaregiverSignupPage' }> = {
+const ROLLEN_KONFIG: Record<ProfilRolle, { title: string; href: '/ParentSignUpPage' | '/CaregiverSignupPage' }> = {
   eltern: {
     title: 'Elternprofil',
-    href: '/pages/ParentSignUpPage',
+    href: '/ParentSignUpPage',
   },
   tagespflegeperson: {
     title: 'Kindertagespflegeprofil',
-    href: '/pages/CaregiverSignupPage',
+    href: '/CaregiverSignupPage',
   },
 };
 
@@ -35,7 +35,7 @@ export default function ProfilwarnungScreen() {
             <Text style={styles.buttonText}>Trotzdem fortfahren</Text>
           </Pressable>
         </Link>
-        <Link href="/pages/RoleSelectionPage" style={styles.link}>
+        <Link href="/RoleSelectionPage" style={styles.link}>
           Zurück zur Rollenwahl
         </Link>
       </View>

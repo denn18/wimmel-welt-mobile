@@ -15,9 +15,9 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { apiRequest } from '../../services/api-client';
-import { assetUrl, FileReference } from '../../utils/url';
-import { BottomNavbar } from '../../components/BottomNavbar';
+import { apiRequest } from '../services/api-client';
+import { assetUrl, FileReference } from '../utils/url';
+import { BottomNavbar } from '../components/BottomNavbar';
 
 const BRAND = 'rgb(49,66,154)';
 
@@ -199,7 +199,7 @@ export default function CaregiverDetailScreen() {
 
   const handleStartConversation = useCallback(() => {
     if (!caregiver?.id) return;
-    router.push(`/pages/MessengerPage?id=${caregiver.id}`);
+    router.push(`/MessengerPage?id=${caregiver.id}`);
   }, [caregiver?.id, router]);
 
   const handleOpenConcept = useCallback(() => {
