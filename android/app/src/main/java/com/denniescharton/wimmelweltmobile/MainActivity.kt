@@ -1,4 +1,4 @@
-package com.anonymous.wimmelweltmobile
+package com.denniescharton.wimmelweltmobile
 
 import android.os.Build
 import android.os.Bundle
