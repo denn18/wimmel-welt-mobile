@@ -4,5 +4,10 @@
   },
   "ios": {
     "bundleIdentifier": "com.anonymous.wimmelweltmobile"
+  },
+  "extra": {
+    "eas": {
+      "projectId": "a54d9025-853e-4ee5-acbc-a70b9dd95799"
+    }
   }
 }
