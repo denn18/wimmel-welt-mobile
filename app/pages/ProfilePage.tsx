@@ -16,7 +16,6 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 
-import { BottomNavbar } from '../components/BottomNavbar';
 import { useAuthStatus } from '../hooks/use-auth-status';
 import { fetchProfile, profileEndpoint, updateProfile } from '../services/profile';
 import { PickedFile, pickSingleFile, pickMultipleFiles } from '../utils/file-picker';
@@ -761,7 +760,6 @@ export default function ProfilePage() {
           <ActivityIndicator size="large" color={BRAND} />
           <Text style={styles.hint}>Profil wird geladen…</Text>
         </View>
-        <BottomNavbar />
       </SafeAreaView>
     );
   }
@@ -772,7 +770,6 @@ export default function ProfilePage() {
         <View style={styles.centered}>
           <Text style={styles.title}>Bitte melde dich an.</Text>
         </View>
-        <BottomNavbar />
       </SafeAreaView>
     );
   }

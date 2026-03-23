@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
-import { Link, useRouter } from 'expo-router';
+import { Link, usePathname, useRouter } from 'expo-router';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useState } from 'react';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -32,6 +32,7 @@ const items = [
 export function BottomNavbar({ state, navigation }: Partial<BottomTabBarProps> = {}) {
   const insets = useSafeAreaInsets();
   const router = useRouter();
+  const pathname = usePathname();
   const { user, loading, refresh } = useAuthStatus();
   const [checkingProfile, setCheckingProfile] = useState(false);
 
@@ -46,6 +47,16 @@ export function BottomNavbar({ state, navigation }: Partial<BottomTabBarProps> =
   const activeIndex = state?.index ?? -1;
   const isStandalone = !state || !navigation;
   const activeRouteName = routes[activeIndex]?.name;
+
+  const isItemFocused = (item: (typeof items)[number]) => {
+    if (activeIndex !== -1) {
+      const routeIndex = routes.findIndex((route) => route.name === item.routeName);
+      return routeIndex === activeIndex;
+    }
+
+    if (pathname === item.href) return true;
+    return item.aliases?.includes(pathname) ?? false;
+  };
 
   const handleProfilePress = async () => {
     if (loading || checkingProfile) return;
@@ -85,7 +96,7 @@ export function BottomNavbar({ state, navigation }: Partial<BottomTabBarProps> =
       <View style={[styles.bottomNav, { paddingBottom: bottomPadding, height: navHeight }]}>
         {items.map((item) => {
           const routeIndex = routes.findIndex((route) => route.name === item.routeName);
-          const isFocused = activeIndex !== -1 && routeIndex === activeIndex;
+          const isFocused = isItemFocused(item);
 
           const handlePress = () => {
             if (navigation && routeIndex !== -1) {
@@ -123,12 +134,15 @@ export function BottomNavbar({ state, navigation }: Partial<BottomTabBarProps> =
           <Ionicons
             name="person-circle"
             size={24}
-            color={activeRouteName === profileTabRouteName ? BRAND : '#94A3B8'}
+            color={activeRouteName === profileTabRouteName || pathname === profileTabHref ? BRAND : '#94A3B8'}
             style={{ opacity: loading ? 0.6 : 1 }}
           />
           <Text
             numberOfLines={2}
-            style={[styles.navLabel, activeRouteName !== profileTabRouteName && styles.navLabelInactive]}
+            style={[
+              styles.navLabel,
+              activeRouteName !== profileTabRouteName && pathname !== profileTabHref && styles.navLabelInactive,
+            ]}
           >
             Profil
           </Text>
