@@ -3,6 +3,7 @@ import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import 'react-native-reanimated';
 
+import { BottomNavbar } from '../components/BottomNavbar';
 import { AuthProvider } from '../context/AuthContext';
 import { useColorScheme } from '../hooks/use-color-scheme';
 
@@ -48,6 +49,7 @@ export default function RootLayout() {
           <Stack.Screen name="MessengerPage" options={{ headerShown: false, title: 'Nachrichten' }} />
           <Stack.Screen name="ProfilePage" options={{ headerShown: false, title: 'Profil' }} />
         </Stack>
+        <BottomNavbar />
         <StatusBar style="auto" />
       </ThemeProvider>
     </AuthProvider>
