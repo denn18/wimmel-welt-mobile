@@ -23,7 +23,6 @@ export function profileEndpoint(user: ProfileUser) {
 
   const endpoint = role === 'caregiver' ? `api/caregivers/${id}` : `api/parents/${id}`;
 
-  console.log('[PROFILE] endpoint', endpoint, { id: user.id, role: user.role }); // [LOG]
 
   return endpoint;
 }

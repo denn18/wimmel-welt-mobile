@@ -79,8 +79,6 @@ export async function apiRequest<T>(path: string, options: ApiRequestOptions = {
   const url = buildApiUrl(path);
   const normalizedHeaders = await normalizeHeaders(headers, body);
 
-  console.log('[API] ->', method, url); // [LOG]
-  console.log('[API] stack', new Error().stack); // [LOG]
 
   const response = await fetch(url, {
     method,
@@ -91,9 +89,6 @@ export async function apiRequest<T>(path: string, options: ApiRequestOptions = {
   });
 
   const textPreview = await safeReadText(response);
-  const previewBody = textPreview.slice(0, 300);
-
-  console.log('[API] <-', response.status, url, previewBody); // [LOG]
 
   if (response.status === 401) {
     throw new ApiUnauthorizedError(`Request failed with 401: ${textPreview}`);

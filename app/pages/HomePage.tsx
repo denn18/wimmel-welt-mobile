@@ -64,7 +64,6 @@ export default function HomeScreen() {
       setAuthActionLoading(true);
       await logout();
     } catch (logoutError) {
-      console.error('Abmelden fehlgeschlagen', logoutError);
     } finally {
       setAuthActionLoading(false);
     }

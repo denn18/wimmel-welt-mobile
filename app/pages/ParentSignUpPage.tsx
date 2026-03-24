@@ -126,16 +126,12 @@ export default function ParentSignUpPage() {
       };
 
       const endpoint = 'api/parents';
-      console.log('[REGISTER] start', { type: 'parent' }); // [LOG]
-      console.log('[REGISTER] endpoint', endpoint); // [LOG]
-      console.log('[REGISTER] payload keys', Object.keys(payload)); // [LOG]
 
       const response = await apiRequest<RegisterResponse>(endpoint, {
         method: 'POST',
         body: JSON.stringify(payload),
       });
 
-      console.log('[REGISTER] success', response?.id ?? null); // [LOG]
 
       const identifier = formState.username || formState.email;
 
@@ -156,7 +152,6 @@ export default function ParentSignUpPage() {
         });
         setTimeout(() => router.replace('/dashboard'), 1200);
       } catch (authError) {
-        console.warn('Automatischer Login nach Registrierung nicht möglich', authError);
         setStatus({
           type: 'success',
           message: 'Registrierung erfolgreich! Bitte melde dich jetzt mit deinen Zugangsdaten an.',
@@ -167,8 +162,6 @@ export default function ParentSignUpPage() {
       setChildren([createChild()]);
       setProfileImage({ dataUrl: null, fileName: '' });
     } catch (error) {
-      console.log('[REGISTER] error', error); // [LOG]
-      console.error('Elternregistrierung fehlgeschlagen', error);
       const fallbackMessage = 'Etwas ist schiefgelaufen. Bitte versuche es später erneut.';
       const message = error instanceof Error && error.message ? error.message : fallbackMessage;
       setStatus({ type: 'error', message });

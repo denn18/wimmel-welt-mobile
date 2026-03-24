@@ -9,7 +9,6 @@ type AnyUser = ReturnType<typeof normalizeAuthUser>;
  * - user & role sind immer normalisiert
  * - refresh() liefert den (neuen) User zurück, damit Caller ihn sofort verwenden können (Navbar Fix!)
  * - setSessionUser() liefert ebenfalls den (gespeicherten) User zurück
- * - Logs klar markiert
  */
 export function useAuthStatus() {
   const auth = useAuth();
@@ -32,17 +31,11 @@ export function useAuthStatus() {
    *   const authUser = user ?? (await refresh());
    */
   const refresh = useCallback(async (): Promise<AnyUser | null> => {
-    // [LOG]
-    console.log('[AUTH] refresh() start');
-
     // auth.refresh() kann void sein — wir holen danach den "neuen" Zustand aus auth.user
     await auth.refresh?.();
 
     // Direkt danach nochmal normalisieren (wichtig, weil state update async ist)
     const next = normalizeAuthUser(auth.user);
-
-    // [LOG]
-    console.log('[AUTH] refresh() done', { hasUser: Boolean(next), id: (next as any)?.id, role: (next as any)?.role });
 
     return next ?? null;
   }, [auth]);
@@ -53,14 +46,7 @@ export function useAuthStatus() {
    */
   const setSessionUser = useCallback(
     async (nextUser: unknown): Promise<AnyUser | null> => {
-      const normalized = normalizeAuthUser(nextUser);
-
-      // [LOG]
-      console.log('[AUTH] setSessionUser()', {
-        hasUser: Boolean(normalized),
-        id: (normalized as any)?.id,
-        role: (normalized as any)?.role,
-      });
+      const normalized = normalizeAuthUser(nextUser as any);
 
       await auth.setSessionUser?.(normalized ?? null);
 

@@ -35,15 +35,12 @@ async function readStoredUser(): Promise<AuthUser | null> {
   try {
     const raw = await AsyncStorage.getItem(STORAGE_KEY);
     if (!raw) {
-      console.log('[AUTH] no stored session'); // [LOG]
       return null;
     }
     const parsed = JSON.parse(raw) as AuthUser;
     const normalized = normalizeAuthUser(parsed);
-    console.log('[AUTH] hydrated from storage', normalized); // [LOG]
     return normalized ?? null;
   } catch (error) {
-    console.log('[AUTH] failed to read storage', error); // [LOG]
     return null;
   }
 }
@@ -53,13 +50,10 @@ async function writeStoredUser(nextUser: AuthUser | null) {
     if (nextUser) {
       const normalized = normalizeAuthUser(nextUser);
       await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(normalized));
-      console.log('[AUTH] stored session user', normalized); // [LOG]
     } else {
       await AsyncStorage.removeItem(STORAGE_KEY);
-      console.log('[AUTH] cleared stored session'); // [LOG]
     }
   } catch (error) {
-    console.log('[AUTH] failed to write storage', error); // [LOG]
   }
 }
 
@@ -79,21 +73,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const normalized = normalizeAuthUser(nextUser);
     await writeStoredUser(normalized);
     setUser(normalized);
-    console.log('[AUTH] setSessionUser', normalized); // [LOG]
   }, []);
 
   const refresh = useCallback(async () => {
-    console.log('[AUTH] refresh requested'); // [LOG]
     return hydrate();
   }, [hydrate]);
 
   const logout = useCallback(async () => {
-    console.log('[AUTH] logout called'); // [LOG]
     await setSessionUser(null);
   }, [setSessionUser]);
 
   useEffect(() => {
-    console.log('[AUTH] initializing provider'); // [LOG]
     void hydrate();
   }, [hydrate]);
 

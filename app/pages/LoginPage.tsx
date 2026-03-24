@@ -31,7 +31,6 @@ export default function LoginScreen() {
   const [message, setMessage] = useState<string | null>(null);
 
   const handleLogin = async () => {
-    console.log('[LOGIN] handleLogin start', { identifier }); // [LOG]
 
     if (!identifier || !password) {
       setMessage('Bitte Benutzername/E-Mail und Passwort eingeben.');
@@ -46,16 +45,13 @@ export default function LoginScreen() {
         method: 'POST',
         body: JSON.stringify({ identifier, password }),
       });
-      console.log('[LOGIN] loggedInUser:', loggedInUser); // [LOG]
 
       const sessionUser = normalizeAuthUser(loggedInUser);
-      console.log('[LOGIN] sessionUser normalized:', sessionUser); // [LOG]
 
       await setSessionUser(sessionUser ?? null);
       setMessage('Login erfolgreich. Du wirst weitergeleitet …');
       router.replace('/dashboard');
     } catch (err) {
-      console.error('[LOGIN] Login failed', err); // [LOG]
       setMessage('Login nicht möglich. Bitte Zugangsdaten prüfen.');
     } finally {
       setLoading(false);

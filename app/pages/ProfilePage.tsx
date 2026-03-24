@@ -135,15 +135,12 @@ function useProfileData(user: { id?: string | number | null; role?: string | nul
 
   useFocusEffect(
     useCallback(() => {
-      console.log('[PROFILE] focus'); // [LOG]
-      console.log('[PROFILE] user', user); // [LOG]
 
       let cancelled = false;
 
       const load = async () => {
         if (!user?.id || !user?.role) {
           const message = 'Kein Benutzer angemeldet.';
-          console.log('[PROFILE] error', message); // [LOG]
           if (!cancelled) {
             setError(message);
             setProfile(null);
@@ -160,16 +157,13 @@ function useProfileData(user: { id?: string | number | null; role?: string | nul
           const resolvedEndpoint = profileEndpoint(user);
           setEndpoint(resolvedEndpoint);
 
-          console.log('[PROFILE] load start', { endpoint: resolvedEndpoint }); // [LOG]
           const data = await fetchProfile<any>(user);
           if (cancelled) return;
 
-          console.log('[PROFILE] loaded raw', data); // [LOG]
 
           const normalized = Array.isArray(data) ? (data[0] ?? null) : data;
           setProfile(normalized);
         } catch (err: any) {
-          console.log('[PROFILE] error', err); // [LOG]
           if (!cancelled) {
             setError(err?.message ? String(err.message) : 'Profil konnte nicht geladen werden.');
             setProfile(null);
@@ -742,7 +736,6 @@ export default function ProfilePage() {
 
     setSaving(true);
     try {
-      console.log('[PROFILE] saving for user:', { id: user.id, role: user.role }); // [LOG]
       const updated = await updateProfile<any>(user, payload);
       const normalized = Array.isArray(updated) ? (updated[0] ?? null) : updated;
 

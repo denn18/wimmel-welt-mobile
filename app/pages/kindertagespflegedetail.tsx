@@ -180,7 +180,6 @@ export default function CaregiverDetailScreen() {
           setLightboxImage(null);
         }
       } catch (e) {
-        console.error('Failed to load caregiver', e);
         if (!ignore) {
           setError('Die Kindertagespflege konnte nicht geladen werden.');
           setCaregiver(null);
