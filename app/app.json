@@ -5,7 +5,7 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/wimmel-welt-icon.png",
-    "scheme": "wimmelwelt",
+    "scheme": "com.denniescharton.wimmelweltmobile",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {

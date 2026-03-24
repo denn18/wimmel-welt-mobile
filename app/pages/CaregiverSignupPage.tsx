@@ -470,7 +470,6 @@ export default function CaregiverSignupPage() {
           router.replace('/ProfilePage');
         }, 1200);
       } catch (authError) {
-        console.warn('Automatisches Login nach Registrierung nicht möglich', authError);
         setStatus({
           type: 'success',
           message: 'Profil gespeichert! Bitte melde dich jetzt mit deinen Zugangsdaten an.',
@@ -488,7 +487,6 @@ export default function CaregiverSignupPage() {
       setRoomGalleryOffset(0);
       setClosedDayInput('');
     } catch (error: any) {
-      console.error('Registrierung der Tagespflegeperson fehlgeschlagen', error);
 
       setStatus({
         type: 'error',
@@ -1790,16 +1788,12 @@ const styles = StyleSheet.create({
 //       };
 
 //       const endpoint = 'api/caregivers';
-//       console.log('[REGISTER] start', { type: 'caregiver' }); // [LOG]
-//       console.log('[REGISTER] endpoint', endpoint); // [LOG]
-//       console.log('[REGISTER] payload keys', Object.keys(payload)); // [LOG]
 
 //       const response = await apiRequest<{ id?: string | number }>(endpoint, {
 //         method: 'POST',
 //         body: JSON.stringify(payload),
 //       });
 
-//       console.log('[REGISTER] success', response?.id ?? null); // [LOG]
 
 //       const identifier = formState.username || formState.email;
 
@@ -1820,7 +1814,6 @@ const styles = StyleSheet.create({
 //         });
 //         setTimeout(() => router.replace('/ProfilePage'), 1200);
 //       } catch (authError) {
-//         console.warn('Automatischer Login nach Registrierung nicht möglich', authError);
 //         setStatus({
 //           type: 'success',
 //           message: 'Profil gespeichert! Bitte melde dich jetzt mit deinen Zugangsdaten an.',
@@ -1836,8 +1829,6 @@ const styles = StyleSheet.create({
 //       setContractDocuments([]);
 //       setClosedDayInput('');
 //     } catch (error) {
-//       console.log('[REGISTER] error', error); // [LOG]
-//       console.error('Registrierung der Tagespflegeperson fehlgeschlagen', error);
 //       const fallbackMessage = 'Etwas ist schiefgelaufen. Bitte versuche es später erneut.';
 //       const message = error instanceof Error && error.message ? error.message : fallbackMessage;
 //       setStatus({ type: 'error', message });

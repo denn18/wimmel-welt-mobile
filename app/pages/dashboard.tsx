@@ -137,7 +137,6 @@ export default function DashboardScreen() {
       const data = await apiRequest<Caregiver[]>(url);
       setCaregivers(data ?? []);
     } catch (e) {
-      console.error('Failed to load caregivers', e);
       setError('Daten konnten nicht geladen werden. Bitte versuche es erneut.');
     } finally {
       setLoading(false);
@@ -163,7 +162,6 @@ export default function DashboardScreen() {
       const data = await apiRequest<LocationSuggestion[]>(url);
       setSuggestions(data ?? []);
     } catch (e) {
-      console.error('Failed to load caregiver locations', e);
       setSuggestions([]);
     } finally {
       setLoadingSuggestions(false);

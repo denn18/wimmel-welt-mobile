@@ -46,7 +46,6 @@ function readFromStorage(): AuthUser | null {
     memoryStore.token = token;
     return withAuthToken(parsed, token);
   } catch (error) {
-    console.warn('Konnte gespeicherten Nutzer nicht lesen', error);
     return null;
   }
 }
@@ -67,7 +66,6 @@ export async function persistAuthUser(user: AuthUser): Promise<void> {
     storage.setItem(AUTH_USER_KEY, JSON.stringify(withAuthToken(user, token)));
     if (token) storage.setItem(AUTH_TOKEN_KEY, token);
   } catch (error) {
-    console.warn('Konnte Nutzer nicht speichern', error);
   }
 }
 
@@ -82,7 +80,6 @@ export async function removeStoredAuthUser(): Promise<void> {
     storage.removeItem(AUTH_USER_KEY);
     storage.removeItem(AUTH_TOKEN_KEY);
   } catch (error) {
-    console.warn('Konnte gespeicherten Nutzer nicht löschen', error);
   }
 }
 

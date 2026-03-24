@@ -27,7 +27,7 @@
       <dict>
         <key>CFBundleURLSchemes</key>
         <array>
-          <string>com.anonymous.wimmelweltmobile</string>
+          <string>com.denniescharton.wimmelweltmobile</string>
         </array>
       </dict>
     </array>

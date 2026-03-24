@@ -64,10 +64,6 @@ export function assetUrl(path?: FileReference) {
   return `${baseUrl}${normalizedCandidate}`;
 }
 
-export function logApiBaseUrlForDebug() {
-  // eslint-disable-next-line no-console
-  console.log('[API] Base URL:', getApiBaseUrl());
-}
 
 export function getConnectionDebugInfo() {
   return {

@@ -44,7 +44,6 @@ export default function ContactPage() {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch (error) {
-      console.warn('Clipboard not available', error);
       Alert.alert('Hinweis', 'Deine Zwischenablage konnte nicht erreicht werden.');
     }
   }
@@ -62,7 +61,6 @@ export default function ContactPage() {
         setUploadMessage(`"${file.name}" wurde erfolgreich ausgewählt.`);
       }
     } catch (error) {
-      console.warn('Document picking failed', error);
       Alert.alert('Upload fehlgeschlagen', 'Bitte versuche es später erneut.');
     }
   }

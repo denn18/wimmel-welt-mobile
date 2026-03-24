@@ -5,6 +5,11 @@ const allowedEnvironments: AppEnvironment[] = ['development', 'staging', 'produc
 const rawEnv = process.env.EXPO_PUBLIC_APP_ENV?.toLowerCase() as AppEnvironment | undefined;
 const normalizedEnv: AppEnvironment = rawEnv && allowedEnvironments.includes(rawEnv) ? rawEnv : 'staging';
 
+
+if (normalizedEnv === 'production' && !process.env.EXPO_PUBLIC_API_URL) {
+  throw new Error('EXPO_PUBLIC_API_URL must be set for production builds.');
+}
+
 function normalizeBaseUrl(baseUrl: string) {
   return baseUrl.replace(/\/$/, '');
 }
