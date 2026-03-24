@@ -5,6 +5,7 @@ import {
   Alert,
   FlatList,
   Image,
+  Keyboard,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -51,6 +52,7 @@ export default function BetreuungsgruppechatScreen() {
   const [composer, setComposer] = useState('');
   const [loading, setLoading] = useState(false);
   const [sending, setSending] = useState(false);
+  const [keyboardVisible, setKeyboardVisible] = useState(false);
   const handleBack = useCallback(() => {
     if (router.canGoBack()) {
       router.back();
@@ -183,6 +185,16 @@ export default function BetreuungsgruppechatScreen() {
     if (messages.length) scrollToLatest(false);
   }, [messages.length, scrollToLatest]);
 
+  useEffect(() => {
+    const showSubscription = Keyboard.addListener('keyboardDidShow', () => setKeyboardVisible(true));
+    const hideSubscription = Keyboard.addListener('keyboardDidHide', () => setKeyboardVisible(false));
+
+    return () => {
+      showSubscription.remove();
+      hideSubscription.remove();
+    };
+  }, []);
+
   const handleSendText = async () => {
     if (!group?.caregiverId || !canWrite || !composer.trim() || sending) return;
 
@@ -314,7 +326,7 @@ export default function BetreuungsgruppechatScreen() {
         {!canWrite ? (
           <Text style={styles.mutedBar}>Nur die betreuende Kindertagespflegeperson kann schreiben.</Text>
         ) : (
-          <View style={[styles.composer, { paddingBottom: Math.max(insets.bottom, 6) }]}>
+          <View style={[styles.composer, { paddingBottom: keyboardVisible ? 6 : Math.max(insets.bottom, 6) }]}>
             <TextInput
               value={composer}
               onChangeText={setComposer}

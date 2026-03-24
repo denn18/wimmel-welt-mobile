@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   FlatList,
+  Keyboard,
   KeyboardAvoidingView,
   Linking,
   Platform,
@@ -86,6 +87,7 @@ export default function MessageDetailScreen() {
   const [pendingAttachments, setPendingAttachments] = useState<PickedFile[]>([]);
   const [loadingMessages, setLoadingMessages] = useState(true);
   const [sending, setSending] = useState(false);
+  const [keyboardVisible, setKeyboardVisible] = useState(false);
 
   const scrollToLatest = useCallback((animated = true) => {
     requestAnimationFrame(() => {
@@ -136,6 +138,16 @@ export default function MessageDetailScreen() {
     if (!messages.length) return;
     scrollToLatest(false);
   }, [messages.length, scrollToLatest]);
+
+  useEffect(() => {
+    const showSubscription = Keyboard.addListener('keyboardDidShow', () => setKeyboardVisible(true));
+    const hideSubscription = Keyboard.addListener('keyboardDidHide', () => setKeyboardVisible(false));
+
+    return () => {
+      showSubscription.remove();
+      hideSubscription.remove();
+    };
+  }, []);
 
   const partnerName = useMemo(() => {
     if (!partner) return 'Kontakt';
@@ -260,7 +272,7 @@ export default function MessageDetailScreen() {
           </View>
         ) : null}
 
-        <View style={[styles.composer, { paddingBottom: Math.max(insets.bottom, 6) }]}>
+        <View style={[styles.composer, { paddingBottom: keyboardVisible ? 6 : Math.max(insets.bottom, 6) }]}>
           <Pressable style={styles.attachButton} onPress={handlePickAttachments} disabled={sending}>
             <Ionicons name="attach" size={18} color={BRAND} />
           </Pressable>
