@@ -91,11 +91,7 @@ export function BottomNavbar({ state, navigation }: Partial<BottomTabBarProps> =
   return (
     <SafeAreaView
       edges={['bottom']}
-      style={[
-        styles.wrapper,
-        isStandalone ? styles.wrapperStandalone : styles.wrapperEmbedded,
-        { height: navHeight },
-      ]}
+      style={[styles.wrapper, isStandalone ? styles.wrapperStandalone : styles.wrapperEmbedded, { height: navHeight }]}
       pointerEvents="box-none"
     >
       <View style={[styles.bottomNav, { paddingBottom: bottomPadding, height: navHeight }]}>
@@ -162,11 +158,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
   },
   wrapperStandalone: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    bottom: 0,
-    zIndex: 20,
+    width: '100%',
   },
   wrapperEmbedded: {
     width: '100%',
