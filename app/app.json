@@ -24,7 +24,7 @@
       "package": "com.denniescharton.wimmelweltmobile"
     },
     "splash": {
-      "image": "./assets/wimmel-welt-icon.png",
+      "image": "./assets/images/wimmel-welt-icon.png",
       "resizeMode": "contain",
       "backgroundColor": "#EEF2FF"
     },
@@ -37,7 +37,7 @@
       [
         "expo-splash-screen",
         {
-          "image": "./assets/wimmel-welt-icon.png",
+          "image": "./assets/images/wimmel-welt-icon.png",
           "imageWidth": 200,
           "resizeMode": "contain",
           "backgroundColor": "#EEF2FF",
