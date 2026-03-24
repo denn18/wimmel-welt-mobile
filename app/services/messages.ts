@@ -35,6 +35,9 @@ export type SendMessagePayload = {
   senderId?: string | number;
   recipientId: string | number;
   body?: string;
+  senderRole?: string | null;
+  recipientRole?: string | null;
+  notifyWithPush?: boolean;
   attachments?: Array<{
     name?: string;
     data: string;
@@ -45,7 +48,25 @@ export type SendMessagePayload = {
 
 export async function sendMessage(payload: SendMessagePayload) {
   const { conversationId, ...body } = payload;
-  return apiRequest<Message>(`api/messages/${conversationId}`, {
+  const query = new URLSearchParams();
+
+  if (payload.notifyWithPush !== false) {
+    query.set('push', '1');
+  }
+
+  if (payload.senderRole) {
+    query.set('senderRole', payload.senderRole);
+  }
+
+  if (payload.recipientRole) {
+    query.set('recipientRole', payload.recipientRole);
+  }
+
+  query.set('context', 'direct-message');
+
+  const querySuffix = query.toString() ? `?${query.toString()}` : '';
+
+  return apiRequest<Message>(`api/messages/${conversationId}${querySuffix}`, {
     method: 'POST',
     body: JSON.stringify({
       ...body,

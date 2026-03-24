@@ -179,6 +179,9 @@ export default function MessageDetailScreen() {
         conversationId,
         recipientId: String(targetId),
         body: trimmedBody,
+        senderRole: typeof user.role === 'string' ? user.role : null,
+        recipientRole: typeof partner?.role === 'string' ? partner.role : null,
+        notifyWithPush: true,
         attachments: pendingAttachments.map((file) => ({ name: file.fileName, data: file.dataUrl, mimeType: file.mimeType })),
       });
       setMessages((current) => [...current, sent]);
