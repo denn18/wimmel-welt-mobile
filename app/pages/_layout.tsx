@@ -6,7 +6,9 @@ import 'react-native-reanimated';
 
 import { BottomNavbar } from '../components/BottomNavbar';
 import { AuthProvider } from '../context/AuthContext';
+import { useAuthStatus } from '../hooks/use-auth-status';
 import { useColorScheme } from '../hooks/use-color-scheme';
+import { usePushRegistration } from '../hooks/use-push-registration';
 
 const APP_BACKGROUND = '#f5f7fb';
 
@@ -14,11 +16,18 @@ export const unstable_settings = {
   initialRouteName: 'HomePage',
 };
 
+function PushRegistrationBridge() {
+  const { user } = useAuthStatus();
+  usePushRegistration(user);
+  return null;
+}
+
 export default function RootLayout() {
   const colorScheme = useColorScheme();
 
   return (
     <AuthProvider>
+      <PushRegistrationBridge />
       <ThemeProvider
         value={{
           ...(colorScheme === 'dark' ? DarkTheme : DefaultTheme),

@@ -61,3 +61,9 @@ the correct backend and telemetry targets:
 
 These values are exposed via `config/environment.ts` and used by the shared API client in `services/api-client.ts`, ensuring that
 all network and observability calls target the same environment.
+
+## Push notifications (Expo)
+
+The app includes runtime registration logic for Expo push tokens in `services/push-notifications.ts` and `hooks/use-push-registration.ts`.
+
+To enable real push delivery in builds, install `expo-notifications` in the app package and run a native rebuild (`expo prebuild` / EAS build).

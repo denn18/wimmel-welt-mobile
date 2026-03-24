@@ -203,6 +203,8 @@ export default function BetreuungsgruppechatScreen() {
       await sendGroupMessage(group.caregiverId, {
         body: composer.trim(),
         participantIds: group.participantIds,
+        senderRole: typeof user.role === 'string' ? user.role : null,
+        notifyWithPush: true,
       });
       setComposer('');
       await loadMessages();
@@ -222,6 +224,8 @@ export default function BetreuungsgruppechatScreen() {
       await sendGroupMessage(group.caregiverId, {
         body: composer.trim() || undefined,
         participantIds: group.participantIds,
+        senderRole: typeof user.role === 'string' ? user.role : null,
+        notifyWithPush: true,
         attachments: [{ name: picked.fileName, data: picked.dataUrl, mimeType: picked.mimeType }],
       });
       setComposer('');

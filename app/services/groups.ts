@@ -213,10 +213,27 @@ export async function sendGroupMessage(
   payload: {
     body?: string;
     participantIds: string[];
+    senderRole?: string | null;
+    notifyWithPush?: boolean;
     attachments?: Array<{ name?: string; data: string; mimeType?: string | null; size?: number | null }>;
   },
 ) {
-  return apiRequest<GroupMessage>(`api/messages/group/${encodeURIComponent(caregiverId)}`, {
+  const query = new URLSearchParams();
+
+  if (payload.notifyWithPush !== false) {
+    query.set('push', '1');
+  }
+
+  if (payload.senderRole) {
+    query.set('senderRole', payload.senderRole);
+  }
+
+  query.set('recipientRole', 'parent');
+  query.set('context', 'care-group-message');
+
+  const querySuffix = query.toString() ? `?${query.toString()}` : '';
+
+  return apiRequest<GroupMessage>(`api/messages/group/${encodeURIComponent(caregiverId)}${querySuffix}`, {
     method: 'POST',
     body: JSON.stringify({
       body: payload.body,
