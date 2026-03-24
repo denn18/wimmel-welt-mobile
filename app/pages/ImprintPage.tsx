@@ -61,9 +61,11 @@ export default function ImprintPage() {
             <Text style={styles.badgeText}>Impressum</Text>
           </View>
           <Text style={styles.pageTitle}>Angaben gemäß § 5 TMG</Text>
-          <Text style={styles.leadText}>
+          {
+          /* Früher in Prod.
+           <Text style={styles.leadText}>
             Dieses Impressum dient als Platzhalter und wird bei Bedarf durch die finalen Unternehmensdaten ersetzt.
-          </Text>
+          </Text> */}
         </View>
 
         <View style={styles.sectionStack}>
