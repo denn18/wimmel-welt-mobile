@@ -221,7 +221,7 @@ export default function MessageDetailScreen() {
     <SafeAreaView style={styles.safeArea} edges={['top']}>
       <Stack.Screen options={{ headerShown: false }} />
       <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        behavior={Platform.OS === 'ios' ? 'height' : undefined}
         keyboardVerticalOffset={Platform.OS === 'ios' ? insets.top + 8 : 0}
         style={styles.flex}
       >
@@ -240,6 +240,9 @@ export default function MessageDetailScreen() {
             data={messages}
             keyExtractor={(item) => item.id}
             keyboardShouldPersistTaps="handled"
+            automaticallyAdjustKeyboardInsets={false}
+            automaticallyAdjustContentInsets={false}
+            contentInset={{ top: 0, bottom: 0 }}
             contentContainerStyle={styles.messageList}
             onContentSizeChange={() => scrollToLatest(false)}
             ListEmptyComponent={<Text style={styles.hint}>Noch keine Nachrichten vorhanden.</Text>}
@@ -272,7 +275,7 @@ export default function MessageDetailScreen() {
           </View>
         ) : null}
 
-        <View style={[styles.composer, { paddingBottom: keyboardVisible ? 6 : Math.max(insets.bottom, 6) }]}>
+        <View style={[styles.composer, { paddingBottom: keyboardVisible ? 0 : insets.bottom }]}>
           <Pressable style={styles.attachButton} onPress={handlePickAttachments} disabled={sending}>
             <Ionicons name="attach" size={18} color={BRAND} />
           </Pressable>
@@ -313,7 +316,7 @@ const styles = StyleSheet.create({
   },
   backBtn: { width: 32, alignItems: 'center', justifyContent: 'center' },
   threadTitle: { flex: 1, fontSize: 16, fontWeight: '700', color: '#0f172a' },
-  messageList: { gap: 10, paddingHorizontal: 12, paddingTop: 10, paddingBottom: 12 },
+  messageList: { gap: 10, paddingHorizontal: 12, paddingTop: 10, paddingBottom: 0 },
   messageBubble: { maxWidth: '85%', borderRadius: 14, padding: 10, gap: 6 },
   bubbleOwn: { backgroundColor: BRAND },
   bubblePartner: { backgroundColor: '#fff' },

@@ -269,7 +269,7 @@ export default function BetreuungsgruppechatScreen() {
   return (
     <SafeAreaView style={styles.safeArea} edges={['top']}>
       <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        behavior={Platform.OS === 'ios' ? 'height' : undefined}
         keyboardVerticalOffset={Platform.OS === 'ios' ? insets.top + 8 : 0}
         style={styles.flex}
       >
@@ -302,6 +302,9 @@ export default function BetreuungsgruppechatScreen() {
             data={messages}
             keyExtractor={(item) => item.id}
             keyboardShouldPersistTaps="handled"
+            automaticallyAdjustKeyboardInsets={false}
+            automaticallyAdjustContentInsets={false}
+            contentInset={{ top: 0, bottom: 0 }}
             contentContainerStyle={styles.listContent}
             onContentSizeChange={() => scrollToLatest(false)}
             ListEmptyComponent={<Text style={styles.muted}>Noch keine Nachrichten vorhanden.</Text>}
@@ -326,7 +329,7 @@ export default function BetreuungsgruppechatScreen() {
         {!canWrite ? (
           <Text style={styles.mutedBar}>Nur die betreuende Kindertagespflegeperson kann schreiben.</Text>
         ) : (
-          <View style={[styles.composer, { paddingBottom: keyboardVisible ? 6 : Math.max(insets.bottom, 6) }]}>
+          <View style={[styles.composer, { paddingBottom: keyboardVisible ? 0 : insets.bottom }]}>
             <TextInput
               value={composer}
               onChangeText={setComposer}
@@ -372,7 +375,7 @@ const styles = StyleSheet.create({
   buttonPrimary: { backgroundColor: BRAND, paddingHorizontal: 12, paddingVertical: 8, borderRadius: 10 },
   buttonPrimaryText: { color: '#fff', fontWeight: '700' },
   muted: { color: '#64748b' },
-  listContent: { gap: 8, paddingHorizontal: 12, paddingVertical: 10 },
+  listContent: { gap: 8, paddingHorizontal: 12, paddingTop: 10, paddingBottom: 0 },
   messageRow: { flexDirection: 'row', alignItems: 'flex-end', gap: 6 },
   avatar: { width: 24, height: 24, borderRadius: 12 },
   avatarFallback: { width: 24, height: 24, borderRadius: 12, alignItems: 'center', justifyContent: 'center', backgroundColor: '#eef2ff' },
