@@ -51,6 +51,13 @@ export default function BetreuungsgruppechatScreen() {
   const [composer, setComposer] = useState('');
   const [loading, setLoading] = useState(false);
   const [sending, setSending] = useState(false);
+  const handleBack = useCallback(() => {
+    if (router.canGoBack()) {
+      router.back();
+      return;
+    }
+    router.push('/MessegeOverviewPage');
+  }, [router]);
 
   const canWrite = useMemo(() => user?.role === 'caregiver' && group?.caregiverId === userId, [group?.caregiverId, user?.role, userId]);
 
@@ -228,7 +235,12 @@ export default function BetreuungsgruppechatScreen() {
     return (
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.header}>
-          <Text style={styles.title}>Betreuungsgruppe</Text>
+          <Pressable onPress={handleBack} style={styles.backBtn}>
+            <Ionicons name="arrow-back" size={20} color={BRAND} />
+          </Pressable>
+          <View style={styles.headerMain}>
+            <Text style={styles.title}>Betreuungsgruppe</Text>
+          </View>
           {user.role === 'caregiver' ? (
             <Pressable style={styles.buttonPrimary} onPress={() => router.push('/betreuungsgruppeerstellen')}>
               <Text style={styles.buttonPrimaryText}>Erstellen</Text>
@@ -250,6 +262,9 @@ export default function BetreuungsgruppechatScreen() {
         style={styles.flex}
       >
         <View style={styles.header}>
+          <Pressable onPress={handleBack} style={styles.backBtn}>
+            <Ionicons name="arrow-back" size={20} color={BRAND} />
+          </Pressable>
           <View style={styles.headerMain}>
             <Text style={styles.title}>{group?.daycareName || 'Betreuungsgruppe'}</Text>
             {!!group ? (
@@ -339,6 +354,7 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
   },
   headerMain: { flex: 1, gap: 2 },
+  backBtn: { width: 32, alignItems: 'center', justifyContent: 'center' },
   title: { color: BRAND, fontSize: 20, fontWeight: '800' },
   membersInline: { color: '#64748b', fontSize: 12 },
   buttonPrimary: { backgroundColor: BRAND, paddingHorizontal: 12, paddingVertical: 8, borderRadius: 10 },

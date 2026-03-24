@@ -39,6 +39,7 @@ export function BottomNavbar({ state, navigation }: Partial<BottomTabBarProps> =
   const loginPath = '/LoginPage';
   const profileTabRouteName = 'ProfilePage';
   const profileTabHref = '/ProfilePage';
+  const hiddenOnPaths = ['/MessengerPage', '/betreuungsgruppechat'];
 
   const bottomPadding = Math.max(insets.bottom, 10);
   const navHeight = 64 + bottomPadding;
@@ -57,6 +58,10 @@ export function BottomNavbar({ state, navigation }: Partial<BottomTabBarProps> =
     if (pathname === item.href) return true;
     return item.aliases?.includes(pathname) ?? false;
   };
+
+  if (hiddenOnPaths.includes(pathname)) {
+    return null;
+  }
 
   const handleProfilePress = async () => {
     if (loading || checkingProfile) return;
