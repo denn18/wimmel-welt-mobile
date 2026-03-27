@@ -18,6 +18,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { apiRequest } from '../services/api-client';
 import { assetUrl, FileReference } from '../utils/url';
 import { BottomNavbar } from '../components/BottomNavbar';
+import { useAuthStatus } from '../hooks/use-auth-status';
 
 const BRAND = 'rgb(49,66,154)';
 const BG = '#EAF2FF';
@@ -100,6 +101,7 @@ function ScheduleList({ entries, emptyLabel }: { entries?: ScheduleEntry[]; empt
 
 export default function CaregiverDetailScreen() {
   const router = useRouter();
+  const { user, loading: authLoading } = useAuthStatus();
   const params = useLocalSearchParams();
   const caregiverId = useMemo(() => (Array.isArray(params.id) ? params.id[0] : params.id), [params.id]);
 
@@ -224,6 +226,7 @@ export default function CaregiverDetailScreen() {
   const profileImageUrl = caregiver?.profileImageUrl ? assetUrl(caregiver.profileImageUrl) : '';
   const logoUrl = caregiver?.logoImageUrl ? assetUrl(caregiver.logoImageUrl) : '';
   const conceptUrl = caregiver?.conceptUrl ? assetUrl(caregiver.conceptUrl) : '';
+  const isAuthenticated = Boolean(user);
 
   return (
     //Vorher damit hat man aber komisches Padding über
@@ -404,26 +407,38 @@ export default function CaregiverDetailScreen() {
           </Section>
 
           <Section title="Kontakt">
-            <View style={styles.contactList}>
-              {caregiver.phone ? (
-                <Pressable onPress={() => Linking.openURL(`tel:${caregiver.phone}`)} style={styles.contactRow}>
-                  <Ionicons name="call" size={16} color={BRAND} />
-                  <Text style={styles.bodyText}>{caregiver.phone}</Text>
+            {authLoading ? (
+              <Text style={styles.muted}>Prüfe Anmeldestatus …</Text>
+            ) : isAuthenticated ? (
+              <View style={styles.contactList}>
+                {caregiver.phone ? (
+                  <Pressable onPress={() => Linking.openURL(`tel:${caregiver.phone}`)} style={styles.contactRow}>
+                    <Ionicons name="call" size={16} color={BRAND} />
+                    <Text style={styles.bodyText}>{caregiver.phone}</Text>
+                  </Pressable>
+                ) : null}
+                {caregiver.email ? (
+                  <Pressable onPress={() => Linking.openURL(`mailto:${caregiver.email}`)} style={styles.contactRow}>
+                    <Ionicons name="mail" size={16} color={BRAND} />
+                    <Text style={styles.bodyText}>{caregiver.email}</Text>
+                  </Pressable>
+                ) : null}
+                {formattedAddress ? (
+                  <View style={styles.contactRow}>
+                    <Ionicons name="location" size={16} color={BRAND} />
+                    <Text style={styles.bodyText}>{formattedAddress}</Text>
+                  </View>
+                ) : null}
+              </View>
+            ) : (
+              <View style={styles.contactLocked}>
+                <Text style={styles.muted}>Kontaktdaten nach Anmeldung verfügbar.</Text>
+                <Pressable style={styles.primaryAction} onPress={() => router.push('/LoginPage')}>
+                  <Ionicons name="log-in-outline" size={16} color="#fff" />
+                  <Text style={styles.primaryActionText}>Anmelden</Text>
                 </Pressable>
-              ) : null}
-              {caregiver.email ? (
-                <Pressable onPress={() => Linking.openURL(`mailto:${caregiver.email}`)} style={styles.contactRow}>
-                  <Ionicons name="mail" size={16} color={BRAND} />
-                  <Text style={styles.bodyText}>{caregiver.email}</Text>
-                </Pressable>
-              ) : null}
-              {formattedAddress ? (
-                <View style={styles.contactRow}>
-                  <Ionicons name="location" size={16} color={BRAND} />
-                  <Text style={styles.bodyText}>{formattedAddress}</Text>
-                </View>
-              ) : null}
-            </View>
+              </View>
+            )}
           </Section>
         </ScrollView>
       )}
@@ -683,6 +698,10 @@ const styles = StyleSheet.create({
   },
   contactList: {
     gap: 8,
+  },
+  contactLocked: {
+    gap: 12,
+    alignItems: 'flex-start',
   },
   contactRow: {
     flexDirection: 'row',
