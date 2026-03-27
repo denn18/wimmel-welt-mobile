@@ -239,8 +239,15 @@ export default function BetreuungsgruppechatScreen() {
   if (!user) {
     return (
       <SafeAreaView style={styles.safeArea}>
+        <View style={styles.header}>
+          <Pressable onPress={handleBack} style={styles.backBtn}>
+            <Ionicons name="arrow-back" size={20} color={BRAND} />
+          </Pressable>
+          <View style={styles.headerMain}>
+            <Text style={styles.title}>Betreuungsgruppe</Text>
+          </View>
+        </View>
         <View style={styles.centered}>
-          <Text style={styles.title}>Betreuungsgruppe</Text>
           <Text style={styles.muted}>Bitte melde dich an.</Text>
         </View>
       </SafeAreaView>

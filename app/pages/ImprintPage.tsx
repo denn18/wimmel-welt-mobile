@@ -1,5 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useRouter } from 'expo-router';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { BottomNavbar } from '../components/BottomNavbar';
@@ -45,12 +46,16 @@ const sections = [
 ];
 
 export default function ImprintPage() {
+  const router = useRouter();
+
   return (
     // Vorher, hat unnötiges Padding hinzugefügt <SafeAreaView style={styles.safeArea}>
     <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <View style={styles.titleRow}>
-          <Ionicons name="information-circle" size={20} color={BRAND} />
+          <Pressable onPress={() => router.back()} style={styles.backBtn}>
+            <Ionicons name="arrow-back" size={20} color={BRAND} />
+          </Pressable>
           <Text style={styles.topBarTitle}>Impressum</Text>
           <View style={styles.placeholderIcon}>
             <Ionicons name="ellipsis-horizontal" size={20} color={BRAND} />
@@ -104,6 +109,13 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 4,
     marginBottom: 4,
+  },
+  backBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   topBarTitle: {
     fontSize: 16,
