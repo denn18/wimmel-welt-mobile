@@ -193,7 +193,6 @@ export default function CaregiverSignupPage() {
   const router = useRouter();
   const { setSessionUser } = useAuthStatus();
 
-  const [showWarning, setShowWarning] = useState(true);
   const [formState, setFormState] = useState<FormState>(buildInitialState);
   const [profileImage, setProfileImage] = useState<PickedFile | null>(null);
   const [logoImage, setLogoImage] = useState<PickedFile | null>(null);
@@ -500,19 +499,8 @@ export default function CaregiverSignupPage() {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      {showWarning ? (
-        <View style={styles.warningCard}>
-          <Text style={styles.warningTitle}>Tagespflegeprofil</Text>
-          <Text style={styles.warningText}>
-            Wir empfehlen die Profilerstellung auf einem Laptop oder Computer durchzuführen.
-          </Text>
-          <Pressable onPress={() => setShowWarning(false)} style={styles.primaryButton}>
-            <Text style={styles.primaryButtonText}>Trotzdem fortfahren</Text>
-          </Pressable>
-        </View>
-      ) : (
-        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
-          <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
+        <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
             <View style={styles.header}>
               <Pressable onPress={() => router.back()} style={styles.backBtn}>
                 <Ionicons name="arrow-back" size={20} color={BRAND} />
@@ -976,9 +964,8 @@ export default function CaregiverSignupPage() {
             </Pressable>
 
             <View style={{ height: 22 }} />
-          </ScrollView>
-        </KeyboardAvoidingView>
-      )}
+        </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
@@ -1199,26 +1186,6 @@ const styles = StyleSheet.create({
   subtitle: {
     color: '#475569',
     lineHeight: 20,
-  },
-  warningCard: {
-    margin: 16,
-    marginTop: 80,
-    backgroundColor: 'rgba(255,255,255,0.92)',
-    borderRadius: 18,
-    padding: 16,
-    gap: 12,
-    borderWidth: 1,
-    borderColor: '#e2e8f0',
-  },
-  warningTitle: {
-    fontSize: 22,
-    fontWeight: '800',
-    color: BRAND,
-    textAlign: 'center',
-  },
-  warningText: {
-    color: '#475569',
-    textAlign: 'center',
   },
   card: {
     backgroundColor: 'rgba(255,255,255,0.92)',
