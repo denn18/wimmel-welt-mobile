@@ -23,6 +23,9 @@ import { assetUrl } from '../utils/url';
 
 const BRAND = 'rgb(49,66,154)';
 const BG = '#EAF2FF';
+const CARD_BG = 'rgba(255,255,255,0.7)';
+const darkbluefont = '#353e73';
+
 
 function formatTime(value?: string) {
   if (!value) return '';
@@ -318,7 +321,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   backBtn: { width: 32, alignItems: 'center', justifyContent: 'center' },
-  threadTitle: { flex: 1, fontSize: 16, fontWeight: '700', color: '#0f172a' },
+  threadTitle: { flex: 1, fontSize: 16, fontWeight: '700', color: darkbluefont },
   messageList: { gap: 10, paddingHorizontal: 12, paddingTop: 10, paddingBottom: 0 },
   messageBubble: { maxWidth: '85%', borderRadius: 14, padding: 10, gap: 6 },
   bubbleOwn: { backgroundColor: BRAND },

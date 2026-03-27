@@ -130,7 +130,8 @@ const sections: Section[] = [
 
 export default function PrivacyPolicyPage() {
   return (
-    <SafeAreaView style={styles.safeArea}>
+   //  Hat unnötiges Padding hinzugefügt <SafeAreaView style={styles.safeArea}>
+   <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <View style={styles.titleRow}>
           <Ionicons name="shield-checkmark" size={20} color={BRAND} />

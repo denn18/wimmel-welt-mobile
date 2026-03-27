@@ -46,7 +46,8 @@ const sections = [
 
 export default function ImprintPage() {
   return (
-    <SafeAreaView style={styles.safeArea}>
+    // Vorher, hat unnötiges Padding hinzugefügt <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <View style={styles.titleRow}>
           <Ionicons name="information-circle" size={20} color={BRAND} />

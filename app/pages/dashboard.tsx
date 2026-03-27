@@ -15,7 +15,7 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
- //Neuer richtiger Pfad
+//Neuer richtiger Pfad
 import { BottomNavbar } from '../components/BottomNavbar';
 
 import { apiRequest } from '../services/api-client';
@@ -23,6 +23,9 @@ import { assetUrl, FileReference } from '../utils/url';
 
 const BRAND = 'rgb(49,66,154)';
 const BG = '#EAF2FF';
+const CARD_BG = 'rgba(255,255,255,0.7)';
+const darkbluefont = '#353e73';
+
 
 type LocationSuggestion = {
   postalCode?: string;
@@ -206,9 +209,7 @@ export default function DashboardScreen() {
   );
 
   return (
-    // wie bei Home: bottom-edge rausnehmen, damit kein extra "Luft"-Padding entsteht
     <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
-      {/* Overlay zum Schließen der Suggestions */}
       {suggestionsOpen ? (
         <Pressable
           style={styles.overlay}
@@ -225,13 +226,6 @@ export default function DashboardScreen() {
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
-        {/* Hier Wimmel Welt erstmal ausblenden */}
-        {/* Top Title (zentriert wie Screenshot) */}
-        {/* <View style={styles.topHeader}>
-        <Text style={styles.topTitle}>Wimmel Welt</Text>
-        </View> */}
-
-        {/* Header */}
         <View style={styles.headerBlock}>
           <Text style={styles.pageTitle}>Kindertagespflege finden</Text>
           <Text style={styles.pageSubtitle}>
@@ -239,7 +233,6 @@ export default function DashboardScreen() {
           </Text>
         </View>
 
-        {/* Search Card */}
         <View style={styles.searchCard}>
           <Text style={styles.label}>Ort oder Postleitzahl suchen</Text>
 
@@ -258,7 +251,7 @@ export default function DashboardScreen() {
                 setSuggestionsOpen(true);
                 void loadSuggestions(searchTerm);
               }}
-              placeholder="aktuell nur 33332, Gütersloh :)"
+              placeholder="hier Postleitzahl eingeben"
               placeholderTextColor="#94A3B8"
               style={styles.input}
               returnKeyType="search"
@@ -266,7 +259,6 @@ export default function DashboardScreen() {
             />
           </View>
 
-          {/* Suggestions Dropdown */}
           {suggestionsOpen && (loadingSuggestions || suggestions.length > 0) ? (
             <View style={styles.suggestionBox}>
               {loadingSuggestions ? (
@@ -308,13 +300,11 @@ export default function DashboardScreen() {
           </View>
         </View>
 
-        {/* Result Header */}
         <View style={styles.resultsHeader}>
           <Text style={styles.resultsTitle}>Gefundene Kindertagespflegepersonen</Text>
           <Text style={styles.resultsSubtitle}>Scroll durch die Kacheln, vergleiche Angebote und öffne Details.</Text>
         </View>
 
-        {/* Caregiver Cards */}
         <View style={styles.list}>
           {caregivers.map((caregiver) => {
             const logoUrl = caregiver.logoImageUrl ? assetUrl(caregiver.logoImageUrl) : '';
@@ -393,12 +383,16 @@ export default function DashboardScreen() {
                   <View style={styles.btnRow}>
                     <Pressable style={styles.primaryAction} onPress={() => router.push(`/kindertagespflegedetail?id=${caregiver.id}`)}>
                       <Ionicons name="chatbubble-ellipses" size={16} color="#fff" />
-                      <Text style={styles.primaryActionText}>Kennenlernen</Text>
+                      <Text style={styles.primaryActionText} numberOfLines={1}>
+                        Kennenlernen
+                      </Text>
                     </Pressable>
 
                     <Pressable style={styles.secondaryAction} onPress={() => handleOpenMessenger(caregiver)}>
                       <Ionicons name="mail" size={16} color={BRAND} />
-                      <Text style={styles.secondaryActionText}>Nachricht</Text>
+                      <Text style={styles.secondaryActionText} numberOfLines={1}>
+                        Nachricht
+                      </Text>
                     </Pressable>
                   </View>
                 </View>
@@ -425,19 +419,18 @@ export default function DashboardScreen() {
       </ScrollView>
 
       {/* exakt wie bei Home: BottomNavbar als Overlay unter dem ScrollView */}
-    
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-    //safeArea: { flex: 1, backgroundColor: '#f5f7fb' },
-    safeArea: { flex: 1, backgroundColor: BG},
+  //safeArea: { flex: 1, backgroundColor: '#f5f7fb' },
+  safeArea: { flex: 1, backgroundColor: BG },
 
   content: {
     paddingHorizontal: 18,
     paddingTop: 10,
-    paddingBottom: 0, // kein extra Abstand vor Navbar
+    paddingBottom: 0,
     gap: 14,
   },
 
@@ -466,7 +459,7 @@ const styles = StyleSheet.create({
     zIndex: 10,
   },
 
-  label: { fontSize: 14, fontWeight: '800', color: '#0F172A' },
+  label: { fontSize: 14, fontWeight: '800', color: darkbluefont},
 
   inputWrap: {
     borderRadius: 16,
@@ -583,7 +576,7 @@ const styles = StyleSheet.create({
 
   primaryAction: {
     flex: 1,
-    minHeight: 38,
+    minHeight: 45,
     borderRadius: 999,
     backgroundColor: '#2F5FE8',
     paddingHorizontal: 12,
@@ -593,15 +586,15 @@ const styles = StyleSheet.create({
     gap: 8,
     justifyContent: 'center',
   },
-  primaryActionText: { color: '#fff', fontWeight: '900', fontSize: 12.5 },
+  primaryActionText: { color: '#fff', fontWeight: '900', fontSize: 11 },
 
   secondaryAction: {
-    minHeight: 38,
+    minHeight: 45,
     borderRadius: 999,
     borderWidth: 1,
     borderColor: '#BFD3FF',
     backgroundColor: 'rgba(255,255,255,0.95)',
-    paddingHorizontal: 14,
+    paddingHorizontal: 12,
     paddingVertical: 10,
     flexDirection: 'row',
     alignItems: 'center',

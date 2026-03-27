@@ -74,7 +74,8 @@ export default function ContactPage() {
   }
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    // Vorher hat unnötiges Padding hinzugefügt <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
         <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
           <View style={styles.titleRow}>

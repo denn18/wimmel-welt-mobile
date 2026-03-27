@@ -165,7 +165,8 @@ export default function FAQPage() {
   }
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+   // <SafeAreaView style={styles.safeArea}>
+   <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <View style={styles.headerCard}>
           <View style={styles.badge}>

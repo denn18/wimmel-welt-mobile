@@ -20,6 +20,9 @@ import { assetUrl, FileReference } from '../utils/url';
 import { BottomNavbar } from '../components/BottomNavbar';
 
 const BRAND = 'rgb(49,66,154)';
+const BG = '#EAF2FF';
+const darkbluefont = '#353e73';
+
 
 function formatAvailableSpotsLabel(spots?: number) {
   const value = typeof spots === 'number' ? spots : 0;
@@ -223,13 +226,15 @@ export default function CaregiverDetailScreen() {
   const conceptUrl = caregiver?.conceptUrl ? assetUrl(caregiver.conceptUrl) : '';
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    //Vorher damit hat man aber komisches Padding über
+    // BottomNavbar<SafeAreaView style={styles.safeArea}>
+    <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
       <View style={styles.header}>
         <Pressable onPress={() => router.back()} style={styles.backBtn}>
           <Ionicons name="arrow-back" size={20} color={BRAND} />
           <Text style={styles.backText}>Zurück</Text>
         </Pressable>
-        <Text style={styles.title}>Tagespflege kennenlernen</Text>
+        <Text style={styles.title}>Kindertagespflege Steckbrief</Text>
       </View>
 
       {loading ? (
@@ -441,7 +446,7 @@ export default function CaregiverDetailScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#f5f7fb',
+    backgroundColor: '#EAF2FF',
   },
   header: {
     flexDirection: 'row',
@@ -484,7 +489,7 @@ const styles = StyleSheet.create({
   caregiverName: {
     fontSize: 20,
     fontWeight: '800',
-    color: '#0f172a',
+    color: darkbluefont,
   },
   chipRow: {
     flexDirection: 'row',
