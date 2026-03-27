@@ -174,14 +174,16 @@ export default function BetreuungsgruppeErstellenScreen() {
             placeholderTextColor="#94a3b8"
           />
 
-          <TextInput
+          
+           {/* Text Input also Gruppenbeschreibung erstmal weglassen
+          {/* <TextInput
             value={description}
             onChangeText={setDescription}
             style={[styles.input, styles.textarea]}
             placeholder="Gruppenbeschreibung"
             placeholderTextColor="#94a3b8"
             multiline
-          />
+          /> */} 
 
           <View style={styles.rowBetween}>
             <Text style={styles.sectionTitle}>Teilnehmer sichtbar</Text>
