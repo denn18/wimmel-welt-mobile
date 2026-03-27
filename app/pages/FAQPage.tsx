@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
-import { Link } from 'expo-router';
+import { Link, useRouter } from 'expo-router';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -147,6 +147,7 @@ const faqData: FaqSection[] = [
 ];
 
 export default function FAQPage() {
+  const router = useRouter();
   const [activeCategory, setActiveCategory] = useState(faqData[0].category);
   const activeSection = useMemo(
     () => faqData.find((section) => section.category === activeCategory) ?? faqData[0],
@@ -168,6 +169,16 @@ export default function FAQPage() {
    // <SafeAreaView style={styles.safeArea}>
    <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+        <View style={styles.titleRow}>
+          <Pressable onPress={() => router.back()} style={styles.backBtn}>
+            <Ionicons name="arrow-back" size={20} color={BRAND} />
+          </Pressable>
+          <Text style={styles.topBarTitle}>FAQ</Text>
+          <View style={styles.placeholderIcon}>
+            <Ionicons name="ellipsis-horizontal" size={20} color={BRAND} />
+          </View>
+        </View>
+
         <View style={styles.headerCard}>
           <View style={styles.badge}>
             <Text style={styles.badgeText}>Häufige Fragen</Text>
@@ -241,6 +252,35 @@ const styles = StyleSheet.create({
     padding: 16,
     gap: 14,
     paddingBottom: 120,
+  },
+  titleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 4,
+    marginBottom: 4,
+  },
+  backBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  topBarTitle: {
+    fontSize: 16,
+    fontWeight: '800',
+    color: BRAND,
+    letterSpacing: 0.2,
+  },
+  placeholderIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: 'transparent',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   headerCard: {
     backgroundColor: '#f7f9ff',

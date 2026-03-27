@@ -1,4 +1,5 @@
 import { useRouter } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
 import { useMemo, useState } from 'react';
 import {
   KeyboardAvoidingView,
@@ -513,6 +514,9 @@ export default function CaregiverSignupPage() {
         <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
           <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
             <View style={styles.header}>
+              <Pressable onPress={() => router.back()} style={styles.backBtn}>
+                <Ionicons name="arrow-back" size={20} color={BRAND} />
+              </Pressable>
               <Text style={styles.kicker}>Profil für Kindertagespflegepersonen</Text>
               <Text style={styles.title}>Erzähl Familien, welche Betreuung du anbietest.</Text>
               <Text style={styles.subtitle}>
@@ -1173,6 +1177,14 @@ const styles = StyleSheet.create({
   },
   header: {
     gap: 6,
+  },
+  backBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginLeft: -6,
   },
   kicker: {
     color: BRAND,

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import * as DocumentPicker from 'expo-document-picker';
 import {
   Alert,
@@ -24,6 +25,7 @@ const BG = '#EAF2FF';
 const darkbluefont = '#353e73';
 
 export default function ContactPage() {
+  const router = useRouter();
   const [copied, setCopied] = useState(false);
   const [uploadMessage, setUploadMessage] = useState('');
   const [formState, setFormState] = useState({ firstName: '', lastName: '', feedback: '' });
@@ -79,7 +81,9 @@ export default function ContactPage() {
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
         <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
           <View style={styles.titleRow}>
-            <Ionicons name="chatbox-ellipses" size={20} color={BRAND} />
+            <Pressable onPress={() => router.back()} style={styles.backBtn}>
+              <Ionicons name="arrow-back" size={20} color={BRAND} />
+            </Pressable>
             <Text style={styles.topBarTitle}>Kontakt</Text>
             <View style={styles.placeholderIcon}>
               <Ionicons name="ellipsis-horizontal" size={20} color={BRAND} />
@@ -192,6 +196,13 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 4,
     marginBottom: 4,
+  },
+  backBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   topBarTitle: {
     fontSize: 16,
