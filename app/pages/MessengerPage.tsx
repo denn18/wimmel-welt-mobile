@@ -14,7 +14,7 @@ import {
   TextInput,
   View,
 } from 'react-native';
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuthStatus } from '../hooks/use-auth-status';
 import { ApiUnauthorizedError, apiRequest } from '../services/api-client';
 import { fetchMessages, sendMessage as sendMessageRequest, type Message, type MessageAttachment } from '../services/messages';
@@ -75,8 +75,6 @@ export default function MessageDetailScreen() {
   const params = useLocalSearchParams<{ id?: string | string[] }>();
   const targetId = useMemo(() => (Array.isArray(params.id) ? params.id[0] : params.id || ''), [params.id]);
   const { user, loading: authLoading, logout } = useAuthStatus();
-  const insets = useSafeAreaInsets();
-
   const listRef = useRef<FlatList<Message>>(null);
 
   const conversationId = useMemo(() => {
@@ -143,14 +141,25 @@ export default function MessageDetailScreen() {
   }, [messages.length, scrollToLatest]);
 
   useEffect(() => {
-    const showSubscription = Keyboard.addListener('keyboardDidShow', () => setKeyboardVisible(true));
-    const hideSubscription = Keyboard.addListener('keyboardDidHide', () => setKeyboardVisible(false));
+    const showEvent = Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow';
+    const hideEvent = Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide';
+
+    const showSubscription = Keyboard.addListener(showEvent, () => {
+      setKeyboardVisible(true);
+      requestAnimationFrame(() => {
+        setTimeout(() => scrollToLatest(false), 50);
+      });
+    });
+
+    const hideSubscription = Keyboard.addListener(hideEvent, () => {
+      setKeyboardVisible(false);
+    });
 
     return () => {
       showSubscription.remove();
       hideSubscription.remove();
     };
-  }, []);
+  }, [scrollToLatest]);
 
   const partnerName = useMemo(() => {
     if (!partner) return 'Kontakt';
@@ -227,8 +236,8 @@ export default function MessageDetailScreen() {
     <SafeAreaView style={styles.safeArea} edges={['top']}>
       <Stack.Screen options={{ headerShown: false }} />
       <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'height' : undefined}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? insets.top + 8 : 0}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        keyboardVerticalOffset={0}
         style={styles.flex}
       >
         <View style={styles.header}>
@@ -246,11 +255,15 @@ export default function MessageDetailScreen() {
             data={messages}
             keyExtractor={(item) => item.id}
             keyboardShouldPersistTaps="handled"
+            keyboardDismissMode={Platform.OS === 'ios' ? 'interactive' : 'on-drag'}
             automaticallyAdjustKeyboardInsets={false}
             automaticallyAdjustContentInsets={false}
+            contentInsetAdjustmentBehavior="never"
             contentInset={{ top: 0, bottom: 0 }}
             contentContainerStyle={styles.messageList}
-            onContentSizeChange={() => scrollToLatest(false)}
+            onContentSizeChange={() => {
+              if (!keyboardVisible) scrollToLatest(false);
+            }}
             ListEmptyComponent={<Text style={styles.hint}>Noch keine Nachrichten vorhanden.</Text>}
             renderItem={({ item }) => {
               const isOwn = item.senderId === String(user.id);
@@ -281,7 +294,7 @@ export default function MessageDetailScreen() {
           </View>
         ) : null}
 
-        <View style={[styles.composer, { paddingBottom: keyboardVisible ? 0 : insets.bottom }]}>
+        <View style={styles.composer}>
           <Pressable style={styles.attachButton} onPress={handlePickAttachments} disabled={sending}>
             <Ionicons name="attach" size={18} color={BRAND} />
           </Pressable>
