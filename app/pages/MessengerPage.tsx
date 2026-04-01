@@ -368,16 +368,28 @@ const styles = StyleSheet.create({
     backgroundColor: '#e0e7ff',
   },
   pendingLabel: { color: BRAND, fontWeight: '700' },
+
   composer: {
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-    gap: 8,
-   // backgroundColor: '#fff', erstmal nicht farblich absetzeh
-    borderTopWidth: 1,
-    borderTopColor: '#e2e8f0',
-    paddingHorizontal: 10,
-    paddingTop: 8,
-  },
+  flexDirection: 'row',
+  alignItems: 'flex-end',
+  gap: 8,
+  borderTopWidth: 1,
+  borderTopColor: '#e2e8f0',
+  paddingHorizontal: 10,
+  //hier ist Abstand von InputFeld zu Tastatur zu BottomLayout erstmal gut abgestimmt
+  paddingTop: 12,
+  paddingBottom: 25,
+},
+  // composer: {
+  //   flexDirection: 'row',
+  //   alignItems: 'flex-end',
+  //   gap: 8,
+  //  // backgroundColor: '#fff', erstmal nicht farblich absetzeh
+  //   borderTopWidth: 1,
+  //   borderTopColor: '#e2e8f0',
+  //   paddingHorizontal: 10,
+  //   paddingTop: 8,
+  // },
   attachButton: {
     width: 40,
     height: 40,
