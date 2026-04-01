@@ -14,7 +14,7 @@ import {
   TextInput,
   View,
 } from 'react-native';
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
 
@@ -41,7 +41,6 @@ function formatDate(value?: string) {
 
 export default function BetreuungsgruppechatScreen() {
   const router = useRouter();
-  const insets = useSafeAreaInsets();
   const { user, logout } = useAuthStatus();
   const userId = String(user?.id ?? '');
   const listRef = useRef<FlatList<GroupMessage>>(null);
@@ -186,14 +185,25 @@ export default function BetreuungsgruppechatScreen() {
   }, [messages.length, scrollToLatest]);
 
   useEffect(() => {
-    const showSubscription = Keyboard.addListener('keyboardDidShow', () => setKeyboardVisible(true));
-    const hideSubscription = Keyboard.addListener('keyboardDidHide', () => setKeyboardVisible(false));
+    const showEvent = Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow';
+    const hideEvent = Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide';
+
+    const showSubscription = Keyboard.addListener(showEvent, () => {
+      setKeyboardVisible(true);
+      requestAnimationFrame(() => {
+        setTimeout(() => scrollToLatest(false), 50);
+      });
+    });
+
+    const hideSubscription = Keyboard.addListener(hideEvent, () => {
+      setKeyboardVisible(false);
+    });
 
     return () => {
       showSubscription.remove();
       hideSubscription.remove();
     };
-  }, []);
+  }, [scrollToLatest]);
 
   const handleSendText = async () => {
     if (!group?.caregiverId || !canWrite || !composer.trim() || sending) return;
@@ -280,8 +290,8 @@ export default function BetreuungsgruppechatScreen() {
   return (
     <SafeAreaView style={styles.safeArea} edges={['top']}>
       <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'height' : undefined}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? insets.top + 8 : 0}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        keyboardVerticalOffset={0}
         style={styles.flex}
       >
         <View style={styles.header}>
@@ -313,11 +323,15 @@ export default function BetreuungsgruppechatScreen() {
             data={messages}
             keyExtractor={(item) => item.id}
             keyboardShouldPersistTaps="handled"
+            keyboardDismissMode={Platform.OS === 'ios' ? 'interactive' : 'on-drag'}
             automaticallyAdjustKeyboardInsets={false}
             automaticallyAdjustContentInsets={false}
+            contentInsetAdjustmentBehavior="never"
             contentInset={{ top: 0, bottom: 0 }}
             contentContainerStyle={styles.listContent}
-            onContentSizeChange={() => scrollToLatest(false)}
+            onContentSizeChange={() => {
+              if (!keyboardVisible) scrollToLatest(false);
+            }}
             ListEmptyComponent={<Text style={styles.muted}>Noch keine Nachrichten vorhanden.</Text>}
             renderItem={({ item }) => {
               const isOwn = item.senderId === userId;
@@ -340,7 +354,7 @@ export default function BetreuungsgruppechatScreen() {
         {!canWrite ? (
           <Text style={styles.mutedBar}>Nur die betreuende Kindertagespflegeperson kann schreiben.</Text>
         ) : (
-          <View style={[styles.composer, { paddingBottom: keyboardVisible ? 0 : insets.bottom }]}>
+          <View style={styles.composer}>
             <TextInput
               value={composer}
               onChangeText={setComposer}
@@ -404,7 +418,8 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: '#e2e8f0',
     paddingHorizontal: 10,
-    paddingTop: 8,
+    paddingTop: 12,
+    paddingBottom: 25,
   },
   input: {
     flex: 1,
