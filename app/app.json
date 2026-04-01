@@ -22,7 +22,7 @@
       "package": "com.denniescharton.wimmelweltmobile"
     },
     "splash": {
-      "image": "./assets/images/wimmel-welt-icon.png",
+           "image": "./assets/images/ww-Transparent.svg",
       "resizeMode": "contain",
       "backgroundColor": "#EEF2FF"
     },

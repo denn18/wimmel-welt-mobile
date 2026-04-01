@@ -89,9 +89,10 @@ export default function HomeScreen() {
 
           <View style={styles.heroImageShell}>
             <Image
-              source={require('../assets/images/hero-family.svg')}
+             // source={require('../assets/images/hero-family.svg')}
+                source={require('../assets/images/ww-Transparent.svg')}
               style={styles.heroImage}
-              contentFit="contain"
+            //  contentFit="contain"
             />
           </View>
 
@@ -201,7 +202,7 @@ const styles = StyleSheet.create({
     marginTop: 14,
     borderRadius: 16,
     overflow: 'hidden',
-    backgroundColor: BRAND_50,
+ //   backgroundColor: BRAND_50,
     height: 224,
   },
   heroImage: {
