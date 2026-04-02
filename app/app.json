@@ -4,7 +4,7 @@
     "slug": "wimmel-welt-mobile",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/wimmel-welt-icon.png",
+    "icon": "./assets/images/ww-Weiß.png",
     "scheme": "com.denniescharton.wimmelweltmobile",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
@@ -22,9 +22,9 @@
       "package": "com.denniescharton.wimmelweltmobile"
     },
     "splash": {
-           "image": "./assets/images/ww-Transparent.svg",
-      "resizeMode": "contain",
-      "backgroundColor": "#EEF2FF"
+           "image": "./assets/images/ww-Weiß.png",
+      "resizeMode": "contain"
+
     },
     "web": {
       "output": "static",
@@ -35,13 +35,11 @@
       [
         "expo-splash-screen",
         {
-          "image": "./assets/images/wimmel-welt-icon.png",
+          "image": "./assets/images/ww-Weiß.png",
           "imageWidth": 200,
-          "resizeMode": "contain",
-          "backgroundColor": "#EEF2FF",
-          "dark": {
-            "backgroundColor": "#EEF2FF"
-          }
+          "resizeMode": "contain"
+       
+        
         }
       ],
       "expo-font"
