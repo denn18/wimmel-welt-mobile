@@ -15,9 +15,11 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
+import { useRouter } from 'expo-router';
 
 import { useAuthStatus } from '../hooks/use-auth-status';
-import { fetchProfile, profileEndpoint, updateProfile } from '../services/profile';
+import { ApiHttpError } from '../services/api-client';
+import { deleteProfile, fetchProfile, profileEndpoint, updateProfile } from '../services/profile';
 import { PickedFile, pickSingleFile, pickMultipleFiles } from '../utils/file-picker';
 import { assetUrl, getApiBaseUrl } from '../utils/url';
 
@@ -193,6 +195,25 @@ function Section({ title, children }: { title: string; children: React.ReactNode
   );
 }
 
+function resolveApiErrorMessage(error: unknown, fallback: string) {
+  if (error instanceof ApiHttpError) {
+    const match = error.message.match(/\{.*\}/);
+    if (match?.[0]) {
+      try {
+        const parsed = JSON.parse(match[0]) as { message?: string; error?: string };
+        if (typeof parsed.message === 'string' && parsed.message.trim()) return parsed.message;
+        if (typeof parsed.error === 'string' && parsed.error.trim()) return parsed.error;
+      } catch {}
+    }
+  }
+
+  if (error instanceof Error && error.message.trim()) {
+    return error.message;
+  }
+
+  return fallback;
+}
+
 function LabeledInput({
   label,
   value,
@@ -359,10 +380,16 @@ function ParentProfileEditor({
   profile,
   onSave,
   saving,
+  deleting,
+  onDelete,
+  deleteError,
 }: {
   profile: ParentProfile;
   onSave: (payload: unknown) => Promise<void>;
   saving: boolean;
+  deleting: boolean;
+  onDelete: () => void;
+  deleteError: string | null;
 }) {
   const [formState, setFormState] = useState({
     firstName: profile.firstName || '',
@@ -513,10 +540,18 @@ function ParentProfileEditor({
       </Section>
 
       <View style={{ gap: 10 }}>
-        <Pressable style={[styles.buttonPrimary, saving && styles.buttonDisabled]} disabled={saving} onPress={handleSubmit}>
+        <Pressable
+          style={[styles.buttonPrimary, (saving || deleting) && styles.buttonDisabled]}
+          disabled={saving || deleting}
+          onPress={handleSubmit}
+        >
           <Text style={styles.buttonPrimaryText}>{saving ? 'Speichern…' : 'Profil speichern'}</Text>
         </Pressable>
+        <Pressable style={[styles.buttonDanger, deleting && styles.buttonDisabled]} disabled={deleting} onPress={onDelete}>
+          <Text style={styles.buttonDangerText}>{deleting ? 'Profil wird gelöscht…' : 'Profil löschen'}</Text>
+        </Pressable>
         {statusMessage ? <Text style={styles.successText}>{statusMessage}</Text> : null}
+        {deleteError ? <Text style={styles.errorText}>{deleteError}</Text> : null}
       </View>
     </View>
   );
@@ -526,10 +561,16 @@ function CaregiverProfileEditor({
   profile,
   onSave,
   saving,
+  deleting,
+  onDelete,
+  deleteError,
 }: {
   profile: CaregiverProfile;
   onSave: (payload: unknown) => Promise<void>;
   saving: boolean;
+  deleting: boolean;
+  onDelete: () => void;
+  deleteError: string | null;
 }) {
   const [formState, setFormState] = useState({
     firstName: profile.firstName || '',
@@ -711,19 +752,30 @@ function CaregiverProfileEditor({
 
 
       <View style={{ gap: 10 }}>
-        <Pressable style={[styles.buttonPrimary, saving && styles.buttonDisabled]} disabled={saving} onPress={handleSubmit}>
+        <Pressable
+          style={[styles.buttonPrimary, (saving || deleting) && styles.buttonDisabled]}
+          disabled={saving || deleting}
+          onPress={handleSubmit}
+        >
           <Text style={styles.buttonPrimaryText}>{saving ? 'Speichern…' : 'Profil speichern'}</Text>
         </Pressable>
+        <Pressable style={[styles.buttonDanger, deleting && styles.buttonDisabled]} disabled={deleting} onPress={onDelete}>
+          <Text style={styles.buttonDangerText}>{deleting ? 'Profil wird gelöscht…' : 'Profil löschen'}</Text>
+        </Pressable>
         {statusMessage ? <Text style={styles.successText}>{statusMessage}</Text> : null}
+        {deleteError ? <Text style={styles.errorText}>{deleteError}</Text> : null}
       </View>
     </View>
   );
 }
 
 export default function ProfilePage() {
-  const { user, loading: authLoading, refresh } = useAuthStatus();
+  const router = useRouter();
+  const { user, loading: authLoading, refresh, logout } = useAuthStatus();
   const { profile, loading, error, setProfile } = useProfileData(user ?? null);
   const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   useMemo(() => getApiBaseUrl(), []);
   const title = useMemo(() => {
@@ -744,6 +796,42 @@ export default function ProfilePage() {
     } finally {
       setSaving(false);
     }
+  };
+
+  const performDelete = async () => {
+    if (!user?.id || !user?.role || deleting) return;
+
+    setDeleting(true);
+    setDeleteError(null);
+
+    try {
+      await deleteProfile(user);
+      await logout();
+      router.replace('/LoginPage');
+    } catch (error: unknown) {
+      if (error instanceof ApiHttpError && error.status === 404) {
+        await logout();
+        router.replace('/LoginPage');
+        return;
+      }
+      const message = resolveApiErrorMessage(error, 'Profil konnte nicht gelöscht werden. Bitte versuche es erneut.');
+      setDeleteError(message);
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  const handleDeletePress = () => {
+    setDeleteError(null);
+
+    Alert.alert(
+      'Profil wirklich löschen?',
+      'Dein Profil und alle verknüpften Daten werden dauerhaft gelöscht. Diese Aktion kann nicht rückgängig gemacht werden.',
+      [
+        { text: 'Abbrechen', style: 'cancel' },
+        { text: 'Profil löschen', style: 'destructive', onPress: () => void performDelete() },
+      ],
+    );
   };
 
   if (authLoading) {
@@ -790,9 +878,23 @@ export default function ProfilePage() {
 
           {!loading && profile ? (
             user.role === 'caregiver' ? (
-              <CaregiverProfileEditor profile={profile as CaregiverProfile} onSave={handleSave} saving={saving} />
+              <CaregiverProfileEditor
+                profile={profile as CaregiverProfile}
+                onSave={handleSave}
+                saving={saving}
+                deleting={deleting}
+                onDelete={handleDeletePress}
+                deleteError={deleteError}
+              />
             ) : (
-              <ParentProfileEditor profile={profile as ParentProfile} onSave={handleSave} saving={saving} />
+              <ParentProfileEditor
+                profile={profile as ParentProfile}
+                onSave={handleSave}
+                saving={saving}
+                deleting={deleting}
+                onDelete={handleDeletePress}
+                deleteError={deleteError}
+              />
             )
           ) : null}
         </ScrollView>
@@ -855,6 +957,17 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   buttonPrimaryText: { color: '#ffffff', fontWeight: '800' },
+  buttonDanger: {
+    borderRadius: 24,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: '#dc2626',
+    backgroundColor: '#fff5f5',
+  },
+  buttonDangerText: { color: '#b91c1c', fontWeight: '800' },
   buttonGhost: { borderRadius: 24, borderWidth: 1, borderColor: BRAND, paddingHorizontal: 16, paddingVertical: 10 },
   buttonGhostText: { color: BRAND, fontWeight: '800' },
   removeButton: { paddingVertical: 8 },

@@ -38,4 +38,9 @@ export async function updateProfile<T = unknown>(user: ProfileUser, payload: unk
   });
 }
 
+export async function deleteProfile(user: ProfileUser) {
+  return apiRequest<void>(profileEndpoint(user), {
+    method: 'DELETE',
+  });
+}
 
