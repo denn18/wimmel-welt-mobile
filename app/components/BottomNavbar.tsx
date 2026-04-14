@@ -188,7 +188,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 2,
   },
   navLabel: {
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: '800',
     color: BRAND,
     textAlign: 'center',
